@@ -1,42 +1,22 @@
-﻿using FRCGroove.Win.models;
+﻿using FRCGroove.Lib;
+using FRCGroove.Lib.models;
 
-using RestSharp;
-using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FRCGroove.Win
 {
     public partial class Form1 : Form
     {
-        RestClient client = new RestClient("https://frc-api.firstinspires.org/v2.0/2019");
-
-        Dictionary<string, DateTime> _knownStartTimes = new Dictionary<string, DateTime>()
-        {   {"TXCHA~Qualification", new DateTime(2019, 3, 15, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXCHA~Playoff", new DateTime(2019, 3, 16, 14, 00, 00, DateTimeKind.Utc)},
-            {"TXPAS~Qualification", new DateTime(2019, 3, 29, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXPAS~Playoff", new DateTime(2019, 3, 30, 14, 00, 00, DateTimeKind.Utc)} };
-
         public Form1()
         {
             InitializeComponent();
-
-            string clientid = ConfigurationManager.AppSettings["clientid"];
-            string clientsecret = ConfigurationManager.AppSettings["clientsecret"];
-            client.Authenticator = new HttpBasicAuthenticator(clientid, clientsecret);
         }
 
         private void btnGo_Click(object sender, EventArgs e)
         {
-            List<Event> districtEvents = GetEventListing("TX", 3103);
+            List<Event> districtEvents = FRCEventsAPI.GetEventListing("TX", 3103);
             if (districtEvents != null && districtEvents.Count > 0)
             {
                 foreach (Event districtEvent in districtEvents)
@@ -56,8 +36,8 @@ namespace FRCGroove.Win
                     //    txtResults.Text += "\t<<no matches scheduled>>\r\n";
                     //}
 
-                    List<EventRanking> eventRanks = GetEventRankings(districtEvent.code, 3103);
-                    List<DistrictRank> districtRanks = GetDistrictRankings("TX", 3103);
+                    List<EventRanking> eventRanks = FRCEventsAPI.GetEventRankings(districtEvent.code, 3103);
+                    List<DistrictRank> districtRanks = FRCEventsAPI.GetDistrictRankings("TX", 3103);
                     txtResults.Text += $"Our current event rank: {(eventRanks.Count > 0 ? eventRanks[0].rank.ToString() : "n/a")} (District: {districtRanks[0].rank})";
 
                     //List<EventRanking> rankings = GetEventRankings(districtEvent.code);
@@ -115,106 +95,6 @@ namespace FRCGroove.Win
             {
                 txtResults.Text = "no events";
             }
-        }
-
-        private List<Event> GetEventListing(string districtCode, int teamNumber = 0)
-        {
-            string path = $"events/?districtCode={districtCode}";
-            if (teamNumber > 0) path += $"&teamNumber={teamNumber}";
-
-            var request = new RestRequest(path);
-            var response = client.Execute<EventListing>(request);
-
-            List<Event> eventListing = response.Data.Events.OrderBy(t => t.dateStart).ToList();
-
-            return eventListing;
-        }
-
-        private List<Match> GetEventSchedule(string eventCode, int teamNumber = 0)
-        {
-            string path = $"schedule/{eventCode}";
-            if (teamNumber > 0) path += $"?teamNumber={teamNumber}";
-
-            var request = new RestRequest(path);
-            var response = client.Execute<ScheduleListing>(request);
-
-            List<Match> schedule = response.Data.Schedule.OrderByDescending(t => t.tournamentLevel).ThenBy(t => t.matchNumber).ToList();
-
-            //TODO: AdjustForTimeZone(eventCode, schedule);
-
-            return schedule;
-        }
-
-        private List<Match> GetHybridSchedule(string eventCode, string tournamentLevel)
-        {
-            string path = $"schedule/{eventCode}/{tournamentLevel}/hybrid";
-
-            var request = new RestRequest(path);
-            var response = client.Execute<ScheduleListing>(request);
-
-            List<Match> schedule = response.Data.Schedule.OrderBy(t => t.matchNumber).ToList();
-
-            AdjustForTimeZone(eventCode, tournamentLevel, schedule);
-
-            return schedule;
-        }
-
-        private List<Match> GetFullHybridSchedule(string eventCode)
-        {
-            List<Match> qualifications = GetHybridSchedule(eventCode, "Qualification");
-            List<Match> playoffs = GetHybridSchedule(eventCode, "Playoff");
-
-            List<Match> schedule = new List<Match>();
-            schedule.AddRange(qualifications);
-            schedule.AddRange(playoffs);
-
-            return schedule;
-        }
-
-        private void AdjustForTimeZone(string eventCode, string tournamentLevel, List<Match> schedule)
-        {
-            //checks to see if the start times are listed inaccurately for the timezone and adjust
-            if (schedule.Count > 0 && _knownStartTimes.ContainsKey($"{eventCode}~{tournamentLevel}"))
-            {
-                DateTime knownStartTime = _knownStartTimes[$"{eventCode}~{tournamentLevel}"];
-                double delta = (knownStartTime - schedule[0].startTime).TotalMinutes;
-                if (Math.Abs(delta) > 50)
-                {
-                    foreach (Match match in schedule)
-                    {
-                        match.startTime = match.startTime.AddMinutes(delta);
-                    }
-                }
-            }
-        }
-
-        private List<EventRanking> GetEventRankings(string eventCode, int teamNumber = 0)
-        {
-            string path = $"rankings/{eventCode}";
-            if (teamNumber > 0) path += $"?teamNumber={teamNumber}";
-
-            var request = new RestRequest(path);
-            var response = client.Execute<EventRankListing>(request);
-
-            List<EventRanking> eventRankings = response.Data.Rankings.OrderBy(t => t.rank).ToList();
-
-            return eventRankings;
-        }
-
-        private List<DistrictRank> GetDistrictRankings(string districtCode, int teamNumber = 0)
-        {
-            string path = $"rankings/district/";
-            if (teamNumber > 0)
-                path += $"?teamNumber={teamNumber}";
-            else
-                path += $"{districtCode}";
-
-            var request = new RestRequest(path);
-            var response = client.Execute<DistrictRankListing>(request);
-
-            List<DistrictRank> districtRankings = response.Data.districtRanks.OrderBy(t => t.rank).ToList();
-
-            return districtRankings;
         }
     }
 }
