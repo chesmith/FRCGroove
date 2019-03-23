@@ -22,7 +22,7 @@ namespace FRCGroove.Lib
             {"TXCHA~Playoff", new DateTime(2019, 3, 16, 14, 00, 00, DateTimeKind.Utc)},
             {"TXPAS~Qualification", new DateTime(2019, 3, 29, 11, 00, 00, DateTimeKind.Utc)},
             {"TXPAS~Playoff", new DateTime(2019, 3, 30, 14, 00, 00, DateTimeKind.Utc)},
-            {"TXGRE~Qualification", new DateTime(2019, 3, 22, 14, 00, 00, DateTimeKind.Utc)},
+            {"TXGRE~Qualification", new DateTime(2019, 3, 22, 11, 00, 00, DateTimeKind.Utc)},
             {"TXGRE~Playoff", new DateTime(2019, 3, 23, 14, 00, 00, DateTimeKind.Utc)}};
 
         public static List<Event> GetEventListing(string districtCode, int teamNumber = 0)
@@ -123,6 +123,22 @@ namespace FRCGroove.Lib
             List<DistrictRank> districtRankings = response.Data.districtRanks.OrderBy(t => t.rank).ToList();
 
             return districtRankings;
+        }
+
+        public static List<RegisteredTeam> GetTeamListing(string districtCode, int teamNumber = 0)
+        {
+            string path = $"teams/";
+            if (teamNumber > 0)
+                path += $"?teamNumber={teamNumber}";
+            else
+                path += $"?districtCode={districtCode}";
+
+            var request = new RestRequest(path);
+            var response = _client.Execute<RegisteredTeamListing>(request);
+
+            List<RegisteredTeam> registeredTeams = response.Data.teams.OrderBy(t => t.teamNumber).ToList();
+
+            return registeredTeams;
         }
     }
 }

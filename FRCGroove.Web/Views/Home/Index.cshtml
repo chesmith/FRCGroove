@@ -1,0 +1,121 @@
+﻿@using FRCGroove.Lib.models
+@model FRCGroove.Web.Models.Dashboard
+
+@{
+    ViewBag.Title = "FRC Groove";
+}
+
+<style>
+    table {
+
+    }
+
+    td {
+        padding: 2px;
+        text-align: center;
+    }
+
+    td.blue {
+        color: blue;
+    }
+
+    td.red {
+        color: red;
+    }
+</style>
+<div>
+    @if (Model != null)
+    {
+        Boolean inFuture = false;
+
+        string aheadBehind = "ahead";
+        if (Model.ScheduleOffset > 0) { aheadBehind = "behind"; }
+        <p><i>Running about @Math.Round(Model.ScheduleOffset, 0) minutes @aheadBehind (<a href="#latest">next match</a>)</i></p>
+
+        <div>Team @Model.Teams[0].teamNumber @Model.Teams[0].nameShort (Event #@Model.EventRank / District #@Model.DistrictRank)</div>
+        <div style="font-size:x-small;">OPR: @Math.Round(Model.Stats.oprs["frc" + Model.Teams[0].teamNumber.ToString()],2), DPR: @Math.Round(Model.Stats.dprs["frc" + Model.Teams[0].teamNumber.ToString()],2), CCWM: @Math.Round(Model.Stats.ccwms["frc" + Model.Teams[0].teamNumber.ToString()],2)</div>
+        <br />
+        <table border="1" cellpadding="3" width="100%">
+            @foreach (Match match in Model.Matches)
+            {
+                if (match.actualStartTime.Year == 1 && !inFuture)
+                {
+                    inFuture = true;
+                    <tr><td colspan="5" style="height: 10px; background-color: black"><a name="latest"></a></td></tr>
+                }
+
+                List<Team> redAlliance = match.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                List<Team> blueAlliance = match.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+
+                Dictionary<int, string> teamStyles = new Dictionary<int, string>();
+                foreach (Team team in match.teams)
+                {
+                    if (Model.Teams.Where(t => t.teamNumber == team.teamNumber).Count() > 0)
+                    { teamStyles[team.teamNumber] = "font-weight: bold;"; }
+                    else
+                    { teamStyles[team.teamNumber] = string.Empty; }
+                }
+                <tr>
+                    <td style="text-align: center">
+                        @match.tournamentLevel @match.matchNumber<br />
+                        <span style="font-size: x-small">@match.startTime.ToString("ddd M/d h:mm")</span>
+                        @if (match.actualStartTime.Year > 1)
+                        {
+                            <span style="font-size: x-small">(@match.actualStartTime.ToString("h:mm"))</span>
+                        }
+                    </td>
+                    <td class="red">
+                        <div style="@teamStyles[redAlliance[0].teamNumber]">@redAlliance[0].teamNumber</div>
+                        <div style="@teamStyles[redAlliance[1].teamNumber]">@redAlliance[1].teamNumber</div>
+                        <div style="@teamStyles[redAlliance[2].teamNumber]">@redAlliance[2].teamNumber</div>
+                    </td>
+                    @{
+                        string scoreRed = string.Empty;
+                        string scoreBlue = string.Empty;
+                        if (match.actualStartTime.Year > 1)
+                        {
+                            scoreRed = match.scoreRedFinal.ToString();
+                            scoreBlue = match.scoreBlueFinal.ToString();
+                        }
+                        string boldStyle = "font-weight: bold;";
+                    }
+                    <td class="red" style="@((match.scoreRedFinal > match.scoreBlueFinal) ? boldStyle : "")">@scoreRed</td>
+                    <td class="blue" style="@((match.scoreRedFinal < match.scoreBlueFinal) ? boldStyle : "")">@scoreBlue</td>
+                    <td class="blue">
+                        <div style="@teamStyles[blueAlliance[0].teamNumber]">@blueAlliance[0].teamNumber</div>
+                        <div style="@teamStyles[blueAlliance[1].teamNumber]">@blueAlliance[1].teamNumber</div>
+                        <div style="@teamStyles[blueAlliance[2].teamNumber]">@blueAlliance[2].teamNumber</div>
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+</div>
+
+@*<div class="jumbotron">
+    <h1>ASP.NET</h1>
+    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
+    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Getting started</h2>
+        <p>
+            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
+            enables a clean separation of concerns and gives you full control over markup
+            for enjoyable, agile development.
+        </p>
+        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Get more libraries</h2>
+        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
+        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Web Hosting</h2>
+        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
+        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+    </div>
+</div>*@

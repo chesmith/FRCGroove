@@ -260,3 +260,7 @@ paket-files/
 __pycache__/
 *.pyc
 /FRCGroove.Win/App.config
+/FRCGroove.Web/Views/Web.config
+/FRCGroove.Web/Web.config
+/FRCGroove.Web/Web.Debug.config
+/FRCGroove.Web/Web.Release.config
