@@ -22,3 +22,67 @@ select,
 textarea {
     max-width: 280px;
 }
+
+table {
+    border-collapse: collapse;
+    border: 1px solid #333333;
+}
+
+table td {
+    border: 1px solid #333333;
+}
+
+td {
+    text-align: center;
+}
+
+.blue {
+    color: blue;
+}
+
+.red {
+    color: red;
+}
+
+.teamOfInterest {
+    font-weight: bold;
+}
+
+.redInvert {
+    color: white;
+    background-color: #ff5555;
+}
+
+.blueInvert {
+    color: white;
+    background-color: #5555ff;
+}
+
+.scoreWin {
+    font-weight: bold;
+}
+
+.redWin {
+    border: 3px solid #ff5555;
+    /*box-shadow: inset -2px -2px 1px #ff5555, inset 2px 2px 1px #ff5555;*/
+    font-weight: bold;
+}
+
+.blueWin {
+    border: 3px solid #5555ff;
+    /*box-shadow: inset -2px -2px 1px #5555ff, inset 2px 2px 1px #5555ff;*/
+    font-weight: bold;
+}
+
+.disqualified {
+    text-decoration: line-through;
+}
+
+.surrogate {
+    text-decoration: double underline;
+}
+
+a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoration:active {
+    text-decoration: none;
+    color: inherit;
+}

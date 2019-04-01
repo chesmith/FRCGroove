@@ -16,7 +16,7 @@ namespace FRCGroove.Win
 
         private void btnGo_Click(object sender, EventArgs e)
         {
-            List<Event> districtEvents = FRCEventsAPI.GetEventListing("TX", 3103);
+            List<Event> districtEvents = FRCEventsAPI.GetDistrictEventListing("TX", 3103);
             if (districtEvents != null && districtEvents.Count > 0)
             {
                 foreach (Event districtEvent in districtEvents)

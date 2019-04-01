@@ -1,9 +1,13 @@
-﻿using System;
+﻿#define MOCK
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using RestSharp;
 using RestSharp.Authenticators;
+
+using Newtonsoft.Json;
 
 using FRCGroove.Lib.models;
 using System.Configuration;
@@ -25,17 +29,60 @@ namespace FRCGroove.Lib
             {"TXGRE~Qualification", new DateTime(2019, 3, 22, 11, 00, 00, DateTimeKind.Utc)},
             {"TXGRE~Playoff", new DateTime(2019, 3, 23, 14, 00, 00, DateTimeKind.Utc)}};
 
-        public static List<Event> GetEventListing(string districtCode, int teamNumber = 0)
+        public static List<Event> GetEventListing(int teamNumber = 0)
         {
-            string path = $"events/?districtCode={districtCode}";
-            if (teamNumber > 0) path += $"&teamNumber={teamNumber}";
+            string path = $"events/";
+            if (teamNumber > 0) path += $"?teamNumber={teamNumber}";
 
             var request = new RestRequest(path);
             var response = _client.Execute<EventListing>(request);
 
+            Log($"GetEventListing-{teamNumber}", response.Content);
+
             List<Event> eventListing = response.Data.Events.OrderBy(t => t.dateStart).ToList();
 
             return eventListing;
+        }
+
+        public static List<Event> GetDistrictEventListing(string districtCode, int teamNumber = 0)
+        {
+            string path = $"events/?districtCode={districtCode}";
+            if (teamNumber > 0) path += $"&teamNumber={teamNumber}";
+
+#if MOCK
+            string mockInput = System.IO.File.ReadAllText(@"C:\temp\GetEvent.mock.json");
+            var response = new { Data = JsonConvert.DeserializeObject<EventListing>(mockInput) };
+#else
+            var request = new RestRequest(path);
+            var response = _client.Execute<EventListing>(request);
+
+            Log($"GetDistrictEventListing-{districtCode},{teamNumber}", response.Content);
+#endif
+            List<Event> eventListing = response.Data.Events.OrderBy(t => t.dateStart).ToList();
+
+            return eventListing;
+        }
+
+        public static Event GetEvent(string eventCode)
+        {
+            string path = $"events/{eventCode}";
+#if MOCK
+            string mockInput = System.IO.File.ReadAllText(@"C:\temp\GetEvent.mock.json");
+            var response = new { Data = JsonConvert.DeserializeObject<EventListing>(mockInput) };
+#else
+            var request = new RestRequest(path);
+            var response = _client.Execute<EventListing>(request);
+
+            Log($"GetEvent-{eventCode}", response.Content);
+#endif
+            if (response.Data != null && response.Data.Events.Count > 0)
+            {
+                return response.Data.Events[0];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static List<Match> GetEventSchedule(string eventCode, int teamNumber = 0)
@@ -45,6 +92,8 @@ namespace FRCGroove.Lib
 
             var request = new RestRequest(path);
             var response = _client.Execute<ScheduleListing>(request);
+
+            Log($"GetEventSchedule-{eventCode},{teamNumber}", response.Content);
 
             List<Match> schedule = response.Data.Schedule.OrderByDescending(t => t.tournamentLevel).ThenBy(t => t.matchNumber).ToList();
 
@@ -57,9 +106,20 @@ namespace FRCGroove.Lib
         {
             string path = $"schedule/{eventCode}/{tournamentLevel}/hybrid";
 
+#if MOCK
+            string mockInput;
+            if(tournamentLevel == "Qualification")
+                mockInput = System.IO.File.ReadAllText(@"C:\temp\GetHybridSchedule.Qualification.mock.json");
+            else
+                mockInput = System.IO.File.ReadAllText(@"C:\temp\GetHybridSchedule.Playoff.mock.json");
+
+            var response = new { Data = JsonConvert.DeserializeObject<ScheduleListing>(mockInput) };
+#else
             var request = new RestRequest(path);
             var response = _client.Execute<ScheduleListing>(request);
 
+            Log($"GetHybridSchedule-{eventCode},{tournamentLevel}", response.Content);
+#endif
             List<Match> schedule = response.Data.Schedule.OrderBy(t => t.matchNumber).ToList();
 
             AdjustForTimeZone(eventCode, tournamentLevel, schedule);
@@ -75,6 +135,11 @@ namespace FRCGroove.Lib
             List<Match> schedule = new List<Match>();
             schedule.AddRange(qualifications);
             schedule.AddRange(playoffs);
+
+            foreach(Match match in schedule)
+            {
+                match.eventCode = eventCode;
+            }
 
             return schedule;
         }
@@ -101,9 +166,15 @@ namespace FRCGroove.Lib
             string path = $"rankings/{eventCode}";
             if (teamNumber > 0) path += $"?teamNumber={teamNumber}";
 
+#if MOCK
+            string mockInput = System.IO.File.ReadAllText(@"C:\temp\GetEventRanking.mock.json");
+            var response = new { Data = JsonConvert.DeserializeObject<EventRankListing>(mockInput) };
+#else
             var request = new RestRequest(path);
             var response = _client.Execute<EventRankListing>(request);
 
+            Log($"GetEventRanking-{eventCode},{teamNumber}", response.Content);
+#endif
             List<EventRanking> eventRankings = response.Data.Rankings.OrderBy(t => t.rank).ToList();
 
             return eventRankings;
@@ -117,28 +188,64 @@ namespace FRCGroove.Lib
             else
                 path += $"{districtCode}";
 
+#if MOCK
+            string mockInput = System.IO.File.ReadAllText(@"C:\temp\GetDistrictRankings.mock.json");
+            var response = new { Data = JsonConvert.DeserializeObject<DistrictRankListing>(mockInput) };
+#else
             var request = new RestRequest(path);
             var response = _client.Execute<DistrictRankListing>(request);
 
+            Log($"GetDistrictRankings-{districtCode},{teamNumber}", response.Content);
+#endif
             List<DistrictRank> districtRankings = response.Data.districtRanks.OrderBy(t => t.rank).ToList();
 
             return districtRankings;
         }
 
-        public static List<RegisteredTeam> GetTeamListing(string districtCode, int teamNumber = 0)
+        public static List<RegisteredTeam> GetTeamListing(string districtCode)
         {
-            string path = $"teams/";
-            if (teamNumber > 0)
-                path += $"?teamNumber={teamNumber}";
-            else
-                path += $"?districtCode={districtCode}";
+            string path = $"teams/?districtCode={districtCode}";
 
+#if MOCK
+            string mockInput = System.IO.File.ReadAllText(@"C:\temp\GetDistrictRankings.mock.json");
+            var response = new { Data = JsonConvert.DeserializeObject<RegisteredTeamListing>(mockInput) };
+#else
             var request = new RestRequest(path);
             var response = _client.Execute<RegisteredTeamListing>(request);
 
-            List<RegisteredTeam> registeredTeams = response.Data.teams.OrderBy(t => t.teamNumber).ToList();
+            Log($"GetTeamListing-{districtCode}", response.Content);
+#endif
+            List<RegisteredTeam> registeredTeams = response.Data.teams.OrderBy(t => t.number).ToList();
 
             return registeredTeams;
+        }
+
+        public static RegisteredTeam GetTeam(int teamNumber)
+        {
+            string path = $"teams/?teamNumber={teamNumber}";
+
+#if MOCK
+            string mockInput = System.IO.File.ReadAllText(@"C:\temp\GetTeam.mock.json");
+            var response = new { Data = JsonConvert.DeserializeObject<RegisteredTeamListing>(mockInput) };
+#else
+            var request = new RestRequest(path);
+            var response = _client.Execute<RegisteredTeamListing>(request);
+
+            Log($"GetTeam-{teamNumber}", response.Content);
+#endif
+            if (response.Data !=null && response.Data.teams.Count > 0)
+                return response.Data.teams[0];
+            else
+                return null;
+        }
+
+        private static void Log(string v, string content)
+        {
+#if DEBUG
+            System.IO.StreamWriter sw = new System.IO.StreamWriter($@"C:\temp\FRCGroove.logs\{v}.{DateTime.Now:yyyy-dd-mm-HH-MM-ss}.json");
+            sw.Write(content);
+            sw.Close();
+#endif
         }
     }
 }

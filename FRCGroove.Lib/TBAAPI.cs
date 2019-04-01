@@ -26,9 +26,13 @@ namespace FRCGroove.Lib
             request.AddHeader("X-TBA-Auth-Key", ConfigurationManager.AppSettings["TBAAuthKey"]);
             var resp = _client.Execute(request);
 
-            JObject j = JObject.Parse(resp.Content);
-            TBAStats stats = new TBAStats(j);
-            
+            TBAStats stats = null;
+            if (resp.Content != "null")
+            {
+                JObject j = JObject.Parse(resp.Content);
+                stats = new TBAStats(j);
+            }
+
             return stats;
         }
     }

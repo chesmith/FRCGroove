@@ -57,6 +57,7 @@
     <Compile Include="models\EventRanking.cs" />
     <Compile Include="models\EventRankListing.cs" />
     <Compile Include="models\Match.cs" />
+    <Compile Include="models\PlayoffBracket.cs" />
     <Compile Include="models\RegisteredTeam.cs" />
     <Compile Include="models\RegisteredTeamListing.cs" />
     <Compile Include="models\ScheduleListing.cs" />

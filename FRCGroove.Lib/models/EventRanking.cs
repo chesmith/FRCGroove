@@ -5,11 +5,11 @@
         public int rank { get; set; }
         public int teamNumber { get; set; }
         public double sortOrder1 { get; set; }
-        public int sortOrder2 { get; set; }
-        public int sortOrder3 { get; set; }
-        public int sortOrder4 { get; set; }
-        public int sortOrder5 { get; set; }
-        public int sortOrder6 { get; set; }
+        public double sortOrder2 { get; set; }
+        public double sortOrder3 { get; set; }
+        public double sortOrder4 { get; set; }
+        public double sortOrder5 { get; set; }
+        public double sortOrder6 { get; set; }
         public int wins { get; set; }
         public int losses { get; set; }
         public int ties { get; set; }

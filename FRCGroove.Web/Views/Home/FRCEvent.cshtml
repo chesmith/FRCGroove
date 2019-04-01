@@ -1,0 +1,311 @@
+﻿@using FRCGroove.Lib.models
+@using FRCGroove.Web.Models
+@model FRCGroove.Web.Models.Dashboard
+
+@{
+    ViewBag.Title = "FRC Groove";
+}
+
+<div>
+    @if (Model != null)
+    {
+        Boolean inFuture = false;
+        FRCEventState eventState = Model.EventState;
+
+        if (Model.FrcEvent != null)
+        {
+            ViewBag.Title += " - " + Model.FrcEvent.name;
+            <div>
+                <span style="font-weight:bold">@Model.FrcEvent.name</span>
+                <span style="font-size:x-small">(@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d"))</span>
+            </div>
+        }
+        <br />
+        if (eventState == FRCEventState.Past)
+        {
+            <p>Event appears to be complete - <a href="#Playoff1">jump to playoffs</a></p>
+        }
+        else if (eventState == FRCEventState.Future)
+        {
+            <p>Matches haven't started</p>
+        }
+        else if (eventState == FRCEventState.Invalid)
+        {
+            <p>This appears to be an invalid event code</p>
+        }
+        else
+        {
+            string aheadBehind = (Model.ScheduleOffset < 0) ? "ahead" : "behind";
+            <p><i>Running about @Math.Abs(Math.Round(Model.ScheduleOffset, 0)) minutes @aheadBehind (<a href="#latest">next match</a>)</i></p>
+            if (eventState == FRCEventState.Finals)
+            {
+                <p>Finals have begun (<a href="#Playoff19">go there now</a>)</p>
+            }
+            else if (eventState == FRCEventState.Semifinals)
+            {
+                <p>Semifinals have begun (<a href="#Playoff13">go there now</a>)</p>
+            }
+            else if (eventState == FRCEventState.Quarterfinals)
+            {
+                <p>Quarterfinals have begun (<a href="#Playoff1">go there now</a>)</p>
+            }
+        }
+
+        foreach (RegisteredTeam registeredTeam in Model.TeamsOfInterest)
+        {
+            if (eventState != FRCEventState.Future)
+            {
+                <div>Team @registeredTeam.number @registeredTeam.nameShort (Event #@registeredTeam.eventRank / District #@registeredTeam.districtRank)</div>
+                if (registeredTeam.Stats != null && registeredTeam.Stats.oprs.ContainsKey("frc" + registeredTeam.number))
+                {
+                    <div style="font-size:x-small;">
+                        OPR: @Math.Round(registeredTeam.Stats.oprs["frc" + registeredTeam.number.ToString()], 2),
+                        DPR: @Math.Round(registeredTeam.Stats.dprs["frc" + registeredTeam.number.ToString()], 2),
+                        CCWM: @Math.Round(registeredTeam.Stats.ccwms["frc" + registeredTeam.number.ToString()], 2)
+                    </div>
+                }
+                if (registeredTeam.NextMatch != null)
+                {
+                    Match nextMatch = registeredTeam.NextMatch;
+                    <div style="font-size:x-small;">
+                        Next match: <a href="#@(nextMatch.tournamentLevel + nextMatch.matchNumber)">@nextMatch.title</a>
+                        @nextMatch.startTime.ToString("ddd M/d h:mm") (est. <i>@nextMatch.startTime.AddMinutes(Model.ScheduleOffset).ToString("h:mm")</i>)
+                    </div>
+                }
+            }
+            else
+            {
+                <div>Team @registeredTeam.number @registeredTeam.nameShort (District #@registeredTeam.districtRank)</div>
+            }
+            <br />
+        }
+
+        if (Model.Matches != null)
+        {
+            DateTime currentDate = DateTime.MinValue;
+            <table width="100%">
+                @foreach (Match match in Model.Matches)
+                {
+                    if (match.startTime.Date > currentDate)
+                    {
+                        if (currentDate > DateTime.MinValue)
+                        {
+                            <tr><td colspan="5" style="height: 3px; border-top-style: dashed"></td></tr>
+                        }
+                        currentDate = match.startTime.Date;
+                    }
+
+                    if (match.actualStartTime == null && !inFuture)
+                    {
+                        inFuture = true;
+                        <tr><td colspan="5" style="height: 10px; background-color: black"><a name="latest"></a></td></tr>
+                    }
+                    else if (match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Final 1")
+                    {
+                        <tr><td colspan="5" style="height: 3px; background-color: black"></td></tr>
+                    }
+
+                    List<Team> redAlliance = match.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                    List<Team> blueAlliance = match.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+
+                    Dictionary<int, string> teamClasses = new Dictionary<int, string>();
+                    Dictionary<int, string> teamActions = new Dictionary<int, string>();
+
+                    foreach (Team team in match.teams)
+                    {
+                        List<string> classes = new List<string>();
+                        if (Model.TeamsOfInterest.Where(t => t.number == team.number).Count() > 0)
+                        {
+                            classes.Add("teamOfInterest");
+                            if (team.station.StartsWith("Red"))
+                            { classes.Add("redInvert"); }
+                            else
+                            { classes.Add("blueInvert"); }
+
+                            teamActions[team.number] = "remove";
+                        }
+                        else
+                        {
+                            teamActions[team.number] = "add";
+                        }
+
+                        if (team.dq != null && team.dq.Value) { classes.Add("disqualified"); }
+
+                        if (team.surrogate) { classes.Add("surrogate"); }
+
+                        if (classes.Count > 0)
+                        { teamClasses[team.number] = "class = \"" + String.Join(" ", classes) + "\""; }
+                        else
+                        { teamClasses[team.number] = string.Empty; }
+                    }
+                    <tr>
+                        <td style="text-align: center">
+                            <div><a href="@match.matchDetailsUrl">@match.title</a></div>
+                            <div style="font-size: x-small">
+                                @match.startTime.ToString("ddd M/d h:mm")
+                                @if (match.actualStartTime != null)
+                                {
+                                    <span>(@match.actualStartTime.Value.ToString("h:mm"))</span>
+                                }
+                                else if (eventState != FRCEventState.Future)
+                                {
+                                    <span><i>(est. @match.startTime.AddMinutes(Model.ScheduleOffset).ToString("h:mm"))</i></span>
+                                }
+                            </div>
+                        </td>
+                        <td class="red">
+                            <a name="@(match.tournamentLevel + match.matchNumber)"></a>
+                            <div @Html.Raw(teamClasses[redAlliance[0].number])><a href="@(Model.TeamOfInterestUrl(match.eventCode, redAlliance[0].number, teamActions[redAlliance[0].number]))" style="color:inherit">@redAlliance[0].number</a></div>
+                            <div @Html.Raw(teamClasses[redAlliance[1].number])><a href="@(Model.TeamOfInterestUrl(match.eventCode, redAlliance[1].number, teamActions[redAlliance[1].number]))" style="color:inherit">@redAlliance[1].number</a></div>
+                            <div @Html.Raw(teamClasses[redAlliance[2].number])><a href="@(Model.TeamOfInterestUrl(match.eventCode, redAlliance[2].number, teamActions[redAlliance[2].number]))" style="color:inherit">@redAlliance[2].number</a></div>
+                        </td>
+                        @{
+                            string scoreRed = string.Empty;
+                            string scoreBlue = string.Empty;
+                            if (match.actualStartTime != null)
+                            {
+                                scoreRed = match.scoreRedFinal.ToString();
+                                scoreBlue = match.scoreBlueFinal.ToString();
+                            }
+                            string scoreWin = "Invert scoreWin";
+                        }
+                        <td class="@((match.scoreRedFinal > match.scoreBlueFinal) ? "red" + scoreWin : "red")">@scoreRed</td>
+                        <td class="@((match.scoreRedFinal < match.scoreBlueFinal) ? "blue" + scoreWin : "blue")">@scoreBlue</td>
+                        <td class="blue">
+                            <div @Html.Raw(teamClasses[blueAlliance[0].number])><a href="@(Model.TeamOfInterestUrl(match.eventCode, blueAlliance[0].number, teamActions[blueAlliance[0].number]))" style="color:inherit">@blueAlliance[0].number</a></div>
+                            <div @Html.Raw(teamClasses[blueAlliance[1].number])><a href="@(Model.TeamOfInterestUrl(match.eventCode, blueAlliance[1].number, teamActions[blueAlliance[1].number]))" style="color:inherit">@blueAlliance[1].number</a></div>
+                            <div @Html.Raw(teamClasses[blueAlliance[2].number])><a href="@(Model.TeamOfInterestUrl(match.eventCode, blueAlliance[2].number, teamActions[blueAlliance[2].number]))" style="color:inherit">@blueAlliance[2].number</a></div>
+                        </td>
+                    </tr>
+                }
+            </table>
+                            }
+                            if (eventState == FRCEventState.Quarterfinals || eventState == FRCEventState.Semifinals || eventState == FRCEventState.Finals || eventState == FRCEventState.Past)
+                            {
+                                List<Match> playoffs = Model.Matches.Where(m => m.title.EndsWith("1")).ToList();
+                                Dictionary<int, string> teamClasses = new Dictionary<int, string>();
+                                foreach (Match playoff in playoffs)
+                                {
+                                    foreach (Team team in playoff.teams)
+                                    {
+                                        if (Model.TeamsOfInterest.Where(t => t.number == team.number).Count() > 0)
+                                        {
+                                            teamClasses[team.number] = "teamOfInterest";
+                                        }
+                                        else { teamClasses[team.number] = string.Empty; }
+
+                                        if (team.dq != null && team.dq.Value)
+                                        { teamClasses[team.number] += " disqualified"; }
+
+                                        if (team.surrogate)
+                                        { teamClasses[team.number] += " surrogate"; }
+                                    }
+                                }
+
+                                Match qf1 = Model.Matches.Where(m => m.title == "Quarterfinal 1-1").FirstOrDefault();
+                                List<Team> qf1red = qf1.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                                List<Team> qf1blue = qf1.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+                                Match qf2 = Model.Matches.Where(m => m.title == "Quarterfinal 2-1").FirstOrDefault();
+                                List<Team> qf2red = qf2.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                                List<Team> qf2blue = qf2.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+                                Match qf3 = Model.Matches.Where(m => m.title == "Quarterfinal 3-1").FirstOrDefault();
+                                List<Team> qf3red = qf3.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                                List<Team> qf3blue = qf3.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+                                Match qf4 = Model.Matches.Where(m => m.title == "Quarterfinal 4-1").FirstOrDefault();
+                                List<Team> qf4red = qf4.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                                List<Team> qf4blue = qf4.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+
+                                Match sf1 = Model.Matches.Where(m => m.title == "Semifinal 1-1").FirstOrDefault();
+                                List<Team> sf1red = sf1.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                                List<Team> sf1blue = sf1.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+                                Match sf2 = Model.Matches.Where(m => m.title == "Semifinal 2-1").FirstOrDefault();
+                                List<Team> sf2red = sf2.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                                List<Team> sf2blue = sf2.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+
+                                Match f = Model.Matches.Where(m => m.title == "Final 1").FirstOrDefault();
+                                List<Team> fred = f.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                                List<Team> fblue = f.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+            <br />
+            <table style="width: 100%">
+                <tr>
+                    <td class="red">
+                        <div class="@teamClasses[qf1red[0].number]">@qf1red[0].number</div>
+                        <div class="@teamClasses[qf1red[1].number]">@qf1red[1].number</div>
+                        <div class="@teamClasses[qf1red[2].number]">@qf1red[2].number</div>
+                    </td>
+                    <td rowspan="2" class="red">
+                        <div class="@teamClasses[sf1red[0].number]">@sf1red[0].number</div>
+                        <div class="@teamClasses[sf1red[1].number]">@sf1red[1].number</div>
+                        <div class="@teamClasses[sf1red[2].number]">@sf1red[2].number</div>
+                    </td>
+                    <td rowspan="4" class="red">
+                        <div class="@teamClasses[fred[0].number]">@fred[0].number</div>
+                        <div class="@teamClasses[fred[1].number]">@fred[1].number</div>
+                        <div class="@teamClasses[fred[2].number]">@fred[2].number</div>
+                    </td>
+                    <td rowspan="4" class="blue">
+                        <div class="@teamClasses[fblue[0].number]">@fblue[0].number</div>
+                        <div class="@teamClasses[fblue[1].number]">@fblue[1].number</div>
+                        <div class="@teamClasses[fblue[2].number]">@fblue[2].number</div>
+                    </td>
+                    <td rowspan="2" class="red">
+                        <div class="@teamClasses[sf2red[0].number]">@sf2red[0].number</div>
+                        <div class="@teamClasses[sf2red[1].number]">@sf2red[1].number</div>
+                        <div class="@teamClasses[sf2red[2].number]">@sf2red[2].number</div>
+                    </td>
+                    <td class="red">
+                        <div class="@teamClasses[qf3red[0].number]">@qf3red[0].number</div>
+                        <div class="@teamClasses[qf3red[1].number]">@qf3red[1].number</div>
+                        <div class="@teamClasses[qf3red[2].number]">@qf3red[2].number</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blue">
+                        <div class="@teamClasses[qf1blue[0].number]">@qf1blue[0].number</div>
+                        <div class="@teamClasses[qf1blue[1].number]">@qf1blue[1].number</div>
+                        <div class="@teamClasses[qf1blue[2].number]">@qf1blue[2].number</div>
+                    </td>
+                    <td class="blue">
+                        <div class="@teamClasses[qf3blue[0].number]">@qf3blue[0].number</div>
+                        <div class="@teamClasses[qf3blue[1].number]">@qf3blue[1].number</div>
+                        <div class="@teamClasses[qf3blue[2].number]">@qf3blue[2].number</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="red">
+                        <div class="@teamClasses[qf2red[0].number]">@qf2red[0].number</div>
+                        <div class="@teamClasses[qf2red[1].number]">@qf2red[1].number</div>
+                        <div class="@teamClasses[qf2red[2].number]">@qf2red[2].number</div>
+                    </td>
+                    <td rowspan="2" class="blue">
+                        <div class="@teamClasses[sf1blue[0].number]">@sf1blue[0].number</div>
+                        <div class="@teamClasses[sf1blue[1].number]">@sf1blue[1].number</div>
+                        <div class="@teamClasses[sf1blue[2].number]">@sf1blue[2].number</div>
+                    </td>
+                    <td rowspan="2" class="blue">
+                        <div class="@teamClasses[sf2blue[0].number]">@sf2blue[0].number</div>
+                        <div class="@teamClasses[sf2blue[1].number]">@sf2blue[1].number</div>
+                        <div class="@teamClasses[sf2blue[2].number]">@sf2blue[2].number</div>
+                    </td>
+                    <td class="red">
+                        <div class="@teamClasses[qf4red[0].number]">@qf4red[0].number</div>
+                        <div class="@teamClasses[qf4red[1].number]">@qf4red[1].number</div>
+                        <div class="@teamClasses[qf4red[2].number]">@qf4red[2].number</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blue">
+                        <div class="@teamClasses[qf2blue[0].number]">@qf2blue[0].number</div>
+                        <div class="@teamClasses[qf2blue[1].number]">@qf2blue[1].number</div>
+                        <div class="@teamClasses[qf2blue[2].number]">@qf2blue[2].number</div>
+                    </td>
+                    <td class="blue">
+                        <div class="@teamClasses[qf4blue[0].number]">@qf4blue[0].number</div>
+                        <div class="@teamClasses[qf4blue[1].number]">@qf4blue[1].number</div>
+                        <div class="@teamClasses[qf4blue[2].number]">@qf4blue[2].number</div>
+                    </td>
+                </tr>
+            </table>
+        }
+    }
+</div>
