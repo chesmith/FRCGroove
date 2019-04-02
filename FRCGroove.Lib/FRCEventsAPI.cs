@@ -1,4 +1,4 @@
-﻿#define MOCK
+﻿#define xMOCK
 
 using System;
 using System.Collections.Generic;
@@ -27,7 +27,10 @@ namespace FRCGroove.Lib
             {"TXPAS~Qualification", new DateTime(2019, 3, 29, 11, 00, 00, DateTimeKind.Utc)},
             {"TXPAS~Playoff", new DateTime(2019, 3, 30, 14, 00, 00, DateTimeKind.Utc)},
             {"TXGRE~Qualification", new DateTime(2019, 3, 22, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXGRE~Playoff", new DateTime(2019, 3, 23, 14, 00, 00, DateTimeKind.Utc)}};
+            {"TXGRE~Playoff", new DateTime(2019, 3, 23, 14, 00, 00, DateTimeKind.Utc)},
+            {"FTCMP~Qualification", new DateTime(2019,  4, 4, 13, 30, 00, DateTimeKind.Utc)},
+            {"FTCMP~Playoff", new DateTime(2019, 4, 6, 13, 00, 00, DateTimeKind.Utc)},
+        };
 
         public static List<Event> GetEventListing(int teamNumber = 0)
         {
@@ -123,6 +126,16 @@ namespace FRCGroove.Lib
             List<Match> schedule = response.Data.Schedule.OrderBy(t => t.matchNumber).ToList();
 
             AdjustForTimeZone(eventCode, tournamentLevel, schedule);
+
+            return schedule;
+        }
+
+        public static List<Match> GetHybridSchedule_FromFile(string path)
+        {
+            string mockInput = System.IO.File.ReadAllText(path);
+
+            var response = new { Data = JsonConvert.DeserializeObject<ScheduleListing>(mockInput) };
+            List<Match> schedule = response.Data.Schedule.OrderBy(t => t.matchNumber).ToList();
 
             return schedule;
         }
@@ -241,7 +254,7 @@ namespace FRCGroove.Lib
 
         private static void Log(string v, string content)
         {
-#if DEBUG
+#if xDEBUG
             System.IO.StreamWriter sw = new System.IO.StreamWriter($@"C:\temp\FRCGroove.logs\{v}.{DateTime.Now:yyyy-dd-mm-HH-MM-ss}.json");
             sw.Write(content);
             sw.Close();

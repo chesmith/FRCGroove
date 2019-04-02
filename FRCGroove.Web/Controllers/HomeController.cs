@@ -6,6 +6,7 @@ using FRCGroove.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -16,7 +17,8 @@ namespace FRCGroove.Web.Controllers
         public ActionResult Index(string eventCode = "", string teamList = "")
         {
             FRCEventListing frcEventListing = new FRCEventListing();
-            List<Event> eventListing = FRCEventsAPI.GetDistrictEventListing("TX");
+            //List<Event> eventListing = FRCEventsAPI.GetDistrictEventListing("TX");
+            List<Event> eventListing = FRCEventsAPI.GetEventListing();
 
             frcEventListing.PastEvents = eventListing.Where(e => e.dateEnd < DateTime.Now.Date).ToList();
             frcEventListing.CurrentEvents = eventListing.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).ToList();
@@ -35,7 +37,6 @@ namespace FRCGroove.Web.Controllers
                 if (dashboard.FrcEvent != null)
                 {
                     dashboard.Matches = FRCEventsAPI.GetFullHybridSchedule(eventCode);
-                    //dashboard.Matches = FRCEventsAPI.GetHybridSchedule(eventCode, "Qualification");
 
                     TimeSpan[] rollingDelta = new TimeSpan[3];
                     foreach (Match match in dashboard.Matches)
@@ -69,35 +70,6 @@ namespace FRCGroove.Web.Controllers
             return dashboard;
         }
 
-        //public ActionResult Index()
-        //{
-        //    Dashboard dashboard = new Dashboard();
-
-        //    //TODO: input list of teams
-        //    dashboard.Teams.Add(FRCEventsAPI.GetTeam(5414));
-
-        //    foreach (RegisteredTeam team in dashboard.Teams)
-        //    {
-        //        EnrichTeamData(team);
-        //    }
-
-        //    //TODO: input event code (required)
-        //    dashboard.Matches = FRCEventsAPI.GetFullHybridSchedule("TXGRE");
-
-        //    TimeSpan[] rollingDelta = new TimeSpan[3];
-        //    foreach (Match match in dashboard.Matches)
-        //    {
-        //        if (match.actualStartTime.Year == 1 || match.actualStartTime == null) break;
-
-        //        rollingDelta[0] = rollingDelta[1];
-        //        rollingDelta[1] = rollingDelta[2];
-        //        rollingDelta[2] = (match.actualStartTime - match.startTime);
-        //    }
-        //    dashboard.ScheduleOffset = (rollingDelta[0].TotalMinutes + rollingDelta[1].TotalMinutes + rollingDelta[2].TotalMinutes) / 3;
-
-        //    return View(dashboard);
-        //}
-
         private void EnrichTeamData(RegisteredTeam team, string eventCode, List<Match> matches)
         {
             if (team != null)
@@ -112,7 +84,6 @@ namespace FRCGroove.Web.Controllers
 
                 team.Stats = TBAAPI.GetStats("2019" + eventCode.ToLower());
 
-                //TODO: get team's next match time
                 Match nextMatch = (Match)matches.Where(m => m.teams.Where(t => t.number == team.number).Count() > 0 && m.actualStartTime == null).FirstOrDefault();
                 if(nextMatch != null)
                 {

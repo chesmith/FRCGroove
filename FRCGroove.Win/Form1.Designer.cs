@@ -34,9 +34,10 @@
             // 
             // btnGo
             // 
-            this.btnGo.Location = new System.Drawing.Point(12, 12);
+            this.btnGo.Location = new System.Drawing.Point(24, 23);
+            this.btnGo.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.btnGo.Name = "btnGo";
-            this.btnGo.Size = new System.Drawing.Size(112, 35);
+            this.btnGo.Size = new System.Drawing.Size(224, 67);
             this.btnGo.TabIndex = 0;
             this.btnGo.Text = "Go";
             this.btnGo.UseVisualStyleBackColor = true;
@@ -47,22 +48,25 @@
             this.txtResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtResults.Location = new System.Drawing.Point(12, 53);
+            this.txtResults.Location = new System.Drawing.Point(24, 102);
+            this.txtResults.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtResults.Multiline = true;
             this.txtResults.Name = "txtResults";
             this.txtResults.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtResults.Size = new System.Drawing.Size(776, 385);
+            this.txtResults.Size = new System.Drawing.Size(1548, 737);
             this.txtResults.TabIndex = 1;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1600, 865);
             this.Controls.Add(this.txtResults);
             this.Controls.Add(this.btnGo);
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

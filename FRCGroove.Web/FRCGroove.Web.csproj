@@ -149,7 +149,6 @@
     <Content Include="Example.Web.config" />
     <Content Include="Web.config" />
     <Content Include="Views\Home\FRCEvent.cshtml" />
-    <Content Include="Views\FRCEvent\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

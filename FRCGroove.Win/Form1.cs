@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
+using System.IO;
+
 namespace FRCGroove.Win
 {
     public partial class Form1 : Form
@@ -15,6 +17,30 @@ namespace FRCGroove.Win
         }
 
         private void btnGo_Click(object sender, EventArgs e)
+        {
+            //APITests();
+
+            StreamWriter sw = new StreamWriter(@"C:\temp\playoffs.csv");
+            foreach (string path in Directory.GetFiles(@"C:\temp\FRCGroove.logs\all past events 2"))
+            {
+                txtResults.Text = path;
+                if (path.Contains("GetHybridSchedule") && path.Contains("Playoff"))
+                {
+                    List<Match> matches = FRCEventsAPI.GetHybridSchedule_FromFile(path);
+                    sw.WriteLine(path);
+                    foreach (Match match in matches)
+                    {
+                        sw.WriteLine($"{match.matchNumber}\t{match.description}\t{match.title}");
+                    }
+                }
+                Application.DoEvents();
+            }
+            sw.Close();
+
+            txtResults.Text = "Done";
+        }
+
+        private void APITests()
         {
             List<Event> districtEvents = FRCEventsAPI.GetDistrictEventListing("TX", 3103);
             if (districtEvents != null && districtEvents.Count > 0)
@@ -95,6 +121,11 @@ namespace FRCGroove.Win
             {
                 txtResults.Text = "no events";
             }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
