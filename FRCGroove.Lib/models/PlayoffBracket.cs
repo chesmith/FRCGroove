@@ -8,15 +8,34 @@ namespace FRCGroove.Lib.models
 {
     public class PlayoffBracket
     {
+        public Dictionary<string, int> brackets;
 
-        public PlayoffBracket(List<Match> matches)
+        public PlayoffBracket(List<Alliance> alliances, List<Match> matches)
         {
-            if (matches != null)
+            if (alliances != null && matches != null)
             {
-                List<Match> qf1 = matches.Where(m => m.title.StartsWith("Quarterfinal 1")).ToList();
-                List<Match> qf2 = matches.Where(m => m.title.StartsWith("Quarterfinal 2")).ToList();
-                List<Match> qf3 = matches.Where(m => m.title.StartsWith("Quarterfinal 3")).ToList();
-                List<Match> qf4 = matches.Where(m => m.title.StartsWith("Quarterfinal 4")).ToList();
+                brackets = new Dictionary<string, int>();
+
+                List<Match> sf1 = matches.Where(m => m.title == "Semifinal 1-1").ToList();
+                List<Match> sf2 = matches.Where(m => m.title == "Semifinal 2-1").ToList();
+                List<Match> f = matches.Where(m => m.title == "Final 1").ToList();
+
+                brackets["qf1-red"] = 1;
+                brackets["qf1-blue"] = 8;
+                brackets["qf2-red"] = 4;
+                brackets["qf2-blue"] = 5;
+                brackets["qf3-red"] = 2;
+                brackets["qf3-blue"] = 7;
+                brackets["qf4-red"] = 3;
+                brackets["qf4-blue"] = 6;
+
+                brackets["sf1-red"] = alliances.Where(a => sf1.Exists(m => m.teams.Exists(t => t.number == a.captain && t.station.StartsWith("Red")))).Select(a => a.number).FirstOrDefault();
+                brackets["sf1-blue"] = alliances.Where(a => sf1.Exists(m => m.teams.Exists(t => t.number == a.captain && t.station.StartsWith("Blue")))).Select(a => a.number).FirstOrDefault();
+                brackets["sf2-red"] = alliances.Where(a => sf2.Exists(m => m.teams.Exists(t => t.number == a.captain && t.station.StartsWith("Red")))).Select(a => a.number).FirstOrDefault();
+                brackets["sf2-blue"] = alliances.Where(a => sf2.Exists(m => m.teams.Exists(t => t.number == a.captain && t.station.StartsWith("Blue")))).Select(a => a.number).FirstOrDefault();
+
+                brackets["f-red"] = alliances.Where(a => f.Exists(m => m.teams.Exists(t => t.number == a.captain && t.station.StartsWith("Red")))).Select(a => a.number).FirstOrDefault();
+                brackets["f-blue"] = alliances.Where(a => f.Exists(m => m.teams.Exists(t => t.number == a.captain && t.station.StartsWith("Blue")))).Select(a => a.number).FirstOrDefault();
             }
         }
     }

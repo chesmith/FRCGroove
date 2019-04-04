@@ -252,6 +252,22 @@ namespace FRCGroove.Lib
                 return null;
         }
 
+        public static List<Alliance> GetPlayoffAlliances(string eventCode)
+        {
+            string path = $"alliances/{eventCode}";
+
+            var request = new RestRequest(path);
+            var foo = new { Alliances = new List<Alliance>() };
+            var response = _client.Execute<AllianceListing>(request);
+
+            Log($"GetPlayoffAlliance-{eventCode}", response.Content);
+
+            if (response.Data != null && response.Data.Alliances.Count > 0)
+                return response.Data.Alliances;
+            else
+                return null;
+        }
+
         private static void Log(string v, string content)
         {
 #if xDEBUG

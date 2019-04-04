@@ -25,11 +25,11 @@ textarea {
 
 table {
     border-collapse: collapse;
-    border: 1px solid #333333;
+    border: 1px solid #666666;
 }
 
 table td {
-    border: 1px solid #333333;
+    border: 1px solid #666666;
 }
 
 td {
@@ -85,4 +85,114 @@ td {
 a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoration:active {
     text-decoration: none;
     color: inherit;
+}
+
+/* sticky headers */
+.followMeBar {
+    background: #333399;
+    padding: 5px 10px;
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    font-weight: bold;
+}
+
+.followMeBar.fixed {
+    position: fixed;
+    top: 0;
+    /*width: 100%;*/
+    box-sizing: border-box;
+    z-index: 0;
+}
+
+.followMeBar.fixed.absolute {
+    position: absolute;
+}
+
+.arrowred_right-old {
+    left: 3pt;
+    width: 0.8em;
+    height: 0.8em;
+    border-right: 0.2em solid red;
+    border-top: 0.2em solid red;
+    transform: rotate(45deg);
+    display: inline-block;
+    position: relative;
+}
+
+.arrowblue_right-old {
+    left: 3pt;
+    width: 0.8em;
+    height: 0.8em;
+    border-right: 0.2em solid blue;
+    border-top: 0.2em solid blue;
+    transform: rotate(45deg);
+    display: inline-block;
+    position: relative;
+}
+
+.arrowred_left-old {
+    right: 3pt;
+    width: 0.8em;
+    height: 0.8em;
+    border-right: 0.2em solid red;
+    border-top: 0.2em solid red;
+    transform: rotate(-135deg);
+    display: inline-block;
+    position: relative;
+}
+
+.arrowblue_left-old {
+    right: 3pt;
+    width: 0.8em;
+    height: 0.8em;
+    border-right: 0.2em solid blue;
+    border-top: 0.2em solid blue;
+    transform: rotate(-135deg);
+    display: inline-block;
+    position: relative;
+}
+
+.arrowred_right {
+    left: 5pt;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid red;
+    display: inline-block;
+    position: relative;
+}
+
+.arrowblue_right {
+    left: 5pt;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid blue;
+    display: inline-block;
+    position: relative;
+}
+
+.arrowred_left {
+    right: 5pt;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid red;
+    display: inline-block;
+    position: relative;
+}
+
+.arrowblue_left {
+    right: 5pt;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid blue;
+    display: inline-block;
+    position: relative;
 }

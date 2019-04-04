@@ -24,6 +24,7 @@ namespace FRCGroove.Web.Models
         public List<RegisteredTeam> TeamsOfInterest { get; set; }
         public double ScheduleOffset { get; set; }
         public List<Match> Matches { get; set; }
+        public List<Alliance> Alliances { get; set; }
         public PlayoffBracket Bracket { get; set; }
 
         public FRCEventState EventState

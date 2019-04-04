@@ -5,6 +5,7 @@ using FRCGroove.Web.Models;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -39,13 +40,21 @@ namespace FRCGroove.Web.Controllers
                     dashboard.Matches = FRCEventsAPI.GetFullHybridSchedule(eventCode);
 
                     TimeSpan[] rollingDelta = new TimeSpan[3];
+                    DateTime curdate = DateTime.MinValue;
                     foreach (Match match in dashboard.Matches)
                     {
                         if (match.actualStartTime == null) break;
 
+                        if (match.startTime.Date > curdate)
+                        {
+                            rollingDelta = new TimeSpan[3];
+                        }
+
                         rollingDelta[0] = rollingDelta[1];
                         rollingDelta[1] = rollingDelta[2];
                         rollingDelta[2] = (match.actualStartTime.Value - match.startTime);
+
+                        curdate = match.startTime.Date;
                     }
                     dashboard.ScheduleOffset = (rollingDelta[0].TotalMinutes + rollingDelta[1].TotalMinutes + rollingDelta[2].TotalMinutes) / 3;
                 }
@@ -65,7 +74,21 @@ namespace FRCGroove.Web.Controllers
                 }
             }
 
-            dashboard.Bracket = new PlayoffBracket(dashboard.Matches);
+            FRCEventState eventState = dashboard.EventState;
+            if (eventState == FRCEventState.Quarterfinals || eventState == FRCEventState.Semifinals || eventState == FRCEventState.Finals || eventState == FRCEventState.Past)
+            {
+                dashboard.Alliances = FRCEventsAPI.GetPlayoffAlliances(eventCode);
+                foreach (Alliance alliance in dashboard.Alliances)
+                {
+                    alliance.LoadTeams();
+                    //foreach (RegisteredTeam team in alliance.teams)
+                    //{
+                    //    EnrichTeamData(team, eventCode, dashboard.Matches);
+                    //}
+                }
+            }
+
+            dashboard.Bracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
 
             return dashboard;
         }

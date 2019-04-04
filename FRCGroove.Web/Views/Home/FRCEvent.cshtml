@@ -15,15 +15,14 @@
         if (Model.FrcEvent != null)
         {
             ViewBag.Title += " - " + Model.FrcEvent.name;
-            <div>
-                <span style="font-weight:bold">@Model.FrcEvent.name</span>
+            <p>
+                <span style="font-weight:bold"><a href="/">&#9668;</a> @Model.FrcEvent.name</span>
                 <span style="font-size:x-small">(@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d"))</span>
-            </div>
+            </p>
         }
-        <br />
         if (eventState == FRCEventState.Past)
         {
-            <p>Event appears to be complete - <a href="#Playoff1">jump to playoffs</a></p>
+            <p>Event appears to be complete - <a href="#Quarterfinals">playoffs</a> / <a href="#Brackets">brackets</a></p>
         }
         else if (eventState == FRCEventState.Future)
         {
@@ -35,19 +34,31 @@
         }
         else
         {
-            string aheadBehind = (Model.ScheduleOffset < 0) ? "ahead" : "behind";
-            <p><i>Running about @Math.Abs(Math.Round(Model.ScheduleOffset, 0)) minutes @aheadBehind (<a href="#latest">next match</a>)</i></p>
-            if (eventState == FRCEventState.Finals)
+            int scheduleOffset = (int)Math.Round(Model.ScheduleOffset, 0);
+            if (scheduleOffset < 0)
             {
-                <p>Finals have begun (<a href="#Playoff19">go there now</a>)</p>
+                <p style="font-style:italic"><span style="color:#046705;">Running about @Math.Abs(scheduleOffset) minutes ahead</span> (<a href="#latest">next match</a>)</p>
+            }
+            else if (scheduleOffset > 0)
+            {
+                <p style="font-style: italic"><span style="color:#7c0a0a; font-style:italic">Running about @Math.Abs(scheduleOffset) minutes behind</span> (<a href="#nextmatch">next match</a>)</p>
+            }
+
+            if (eventState == FRCEventState.Qualifications)
+            {
+                <p>Qualification matches are in progress</p>
+            }
+            else if (eventState == FRCEventState.Finals)
+            {
+                <p>Finals have begun (<a href="#Finals">go there now</a>)</p>
             }
             else if (eventState == FRCEventState.Semifinals)
             {
-                <p>Semifinals have begun (<a href="#Playoff13">go there now</a>)</p>
+                <p>Semifinals have begun (<a href="#Semifinals">go there now</a>)</p>
             }
             else if (eventState == FRCEventState.Quarterfinals)
             {
-                <p>Quarterfinals have begun (<a href="#Playoff1">go there now</a>)</p>
+                <p>Quarterfinals have begun (<a href="#Quarterfinals">go there now</a>)</p>
             }
         }
 
@@ -55,7 +66,7 @@
         {
             if (eventState != FRCEventState.Future)
             {
-                <div>Team @registeredTeam.number @registeredTeam.nameShort (Event #@registeredTeam.eventRank / District #@registeredTeam.districtRank)</div>
+                <div>Team @registeredTeam.number @registeredTeam.nameShort (Event #@registeredTeam.eventRank / District <a href="http://frc-districtrankings.firstinspires.org/2019/@registeredTeam.districtCode">#@registeredTeam.districtRank</a>)</div>
                 if (registeredTeam.Stats != null && registeredTeam.Stats.oprs.ContainsKey("frc" + registeredTeam.number))
                 {
                     <div style="font-size:x-small;">
@@ -80,7 +91,7 @@
             <br />
         }
 
-        if (Model.Matches != null)
+        if (Model.Matches != null && Model.Matches.Count > 0)
         {
             DateTime currentDate = DateTime.MinValue;
             <table width="100%">
@@ -95,14 +106,15 @@
                         currentDate = match.startTime.Date;
                     }
 
+                    if (match.title == "Qualification 1" || match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Final 1")
+                    {
+                        <tr><td colspan="5"><a name="@(match.title.Substring(0, match.title.IndexOf(" ")))s"></a><div class="followMeBar">@(match.title.Substring(0, match.title.IndexOf(" ")))s</div></td></tr>
+                    }
+
                     if (match.actualStartTime == null && !inFuture)
                     {
                         inFuture = true;
-                        <tr><td colspan="5" style="height: 10px; background-color: black"><a name="latest"></a></td></tr>
-                    }
-                    else if (match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Final 1")
-                    {
-                        <tr><td colspan="5" style="height: 3px; background-color: black"></td></tr>
+                        <tr><td colspan="5" style="color: white; background-color: #666699; text-align: left; font-size: small;"><a name="nextmatch"></a>&nbsp;next match &#8628;</td></tr>
                     }
 
                     List<Team> redAlliance = match.teams.Where(t => t.station.StartsWith("Red")).ToList();
@@ -117,24 +129,19 @@
                         if (Model.TeamsOfInterest.Where(t => t.number == team.number).Count() > 0)
                         {
                             classes.Add("teamOfInterest");
-                            if (team.station.StartsWith("Red"))
-                            { classes.Add("redInvert"); }
-                            else
-                            { classes.Add("blueInvert"); }
+                            if (team.station.StartsWith("Red")) { classes.Add("redInvert"); }
+                            else { classes.Add("blueInvert"); }
 
                             teamActions[team.number] = "remove";
                         }
-                        else
-                        {
-                            teamActions[team.number] = "add";
-                        }
+                        else { teamActions[team.number] = "add"; }
 
                         if (team.dq != null && team.dq.Value) { classes.Add("disqualified"); }
 
                         if (team.surrogate) { classes.Add("surrogate"); }
 
                         if (classes.Count > 0)
-                        { teamClasses[team.number] = "class = \"" + String.Join(" ", classes) + "\""; }
+                        { teamClasses[team.number] = " class=\"" + String.Join(" ", classes) + "\""; }
                         else
                         { teamClasses[team.number] = string.Empty; }
                     }
@@ -179,130 +186,196 @@
                     </tr>
                 }
             </table>
-                            }
-                            if (eventState == FRCEventState.Quarterfinals || eventState == FRCEventState.Semifinals || eventState == FRCEventState.Finals || eventState == FRCEventState.Past)
-                            {
-                                List<Match> playoffs = Model.Matches.Where(m => m.title.EndsWith("1")).ToList();
-                                Dictionary<int, string> teamClasses = new Dictionary<int, string>();
-                                foreach (Match playoff in playoffs)
-                                {
-                                    foreach (Team team in playoff.teams)
-                                    {
-                                        if (Model.TeamsOfInterest.Where(t => t.number == team.number).Count() > 0)
-                                        {
-                                            teamClasses[team.number] = "teamOfInterest";
-                                        }
-                                        else { teamClasses[team.number] = string.Empty; }
+        }
 
-                                        if (team.dq != null && team.dq.Value)
-                                        { teamClasses[team.number] += " disqualified"; }
+        if (eventState == FRCEventState.Quarterfinals || eventState == FRCEventState.Semifinals || eventState == FRCEventState.Finals || eventState == FRCEventState.Past)
+        {
+            List<Match> playoffs = Model.Matches.Where(m => m.tournamentLevel == "Playoff" && m.title.EndsWith("1")).ToList();
+            Dictionary<int, string> teamClasses = new Dictionary<int, string>();
+            foreach (Match playoff in playoffs)
+            {
+                foreach (Team team in playoff.teams)
+                {
+                    if (Model.TeamsOfInterest.Where(t => t.number == team.number).Count() > 0)
+                    {
+                        teamClasses[team.number] = "teamOfInterest";
+                        if (team.station.StartsWith("Red")) { teamClasses[team.number] += " redInvert"; }
+                        else { teamClasses[team.number] += " blueInvert"; }
+                    }
+                    else { teamClasses[team.number] = string.Empty; }
+                }
+            }
 
-                                        if (team.surrogate)
-                                        { teamClasses[team.number] += " surrogate"; }
-                                    }
-                                }
+            Match qf1 = Model.Matches.Where(m => m.title == "Quarterfinal 1-1").FirstOrDefault();
+            Match qf2 = Model.Matches.Where(m => m.title == "Quarterfinal 2-1").FirstOrDefault();
+            Match qf3 = Model.Matches.Where(m => m.title == "Quarterfinal 3-1").FirstOrDefault();
+            Match qf4 = Model.Matches.Where(m => m.title == "Quarterfinal 4-1").FirstOrDefault();
 
-                                Match qf1 = Model.Matches.Where(m => m.title == "Quarterfinal 1-1").FirstOrDefault();
-                                List<Team> qf1red = qf1.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                                List<Team> qf1blue = qf1.teams.Where(t => t.station.StartsWith("Blue")).ToList();
-                                Match qf2 = Model.Matches.Where(m => m.title == "Quarterfinal 2-1").FirstOrDefault();
-                                List<Team> qf2red = qf2.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                                List<Team> qf2blue = qf2.teams.Where(t => t.station.StartsWith("Blue")).ToList();
-                                Match qf3 = Model.Matches.Where(m => m.title == "Quarterfinal 3-1").FirstOrDefault();
-                                List<Team> qf3red = qf3.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                                List<Team> qf3blue = qf3.teams.Where(t => t.station.StartsWith("Blue")).ToList();
-                                Match qf4 = Model.Matches.Where(m => m.title == "Quarterfinal 4-1").FirstOrDefault();
-                                List<Team> qf4red = qf4.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                                List<Team> qf4blue = qf4.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+            Match sf1 = Model.Matches.Where(m => m.title == "Semifinal 1-1").FirstOrDefault();
+            Match sf2 = Model.Matches.Where(m => m.title == "Semifinal 2-1").FirstOrDefault();
 
-                                Match sf1 = Model.Matches.Where(m => m.title == "Semifinal 1-1").FirstOrDefault();
-                                List<Team> sf1red = sf1.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                                List<Team> sf1blue = sf1.teams.Where(t => t.station.StartsWith("Blue")).ToList();
-                                Match sf2 = Model.Matches.Where(m => m.title == "Semifinal 2-1").FirstOrDefault();
-                                List<Team> sf2red = sf2.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                                List<Team> sf2blue = sf2.teams.Where(t => t.station.StartsWith("Blue")).ToList();
-
-                                Match f = Model.Matches.Where(m => m.title == "Final 1").FirstOrDefault();
-                                List<Team> fred = f.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                                List<Team> fblue = f.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+            Match f = Model.Matches.Where(m => m.title == "Final 1").FirstOrDefault();
             <br />
+            @*<table style="width: 100%">
+                <tr><td colspan="10"><a name="Brackets"></a><div class="followMeBar">Brackets</div></td></tr>
+                <tr>
+                    <td class="red" width="16%" style="border-right:none">
+                        @Html.Raw(qf1.teams.Where(t => t.station.StartsWith("Red")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td style="border-left:none">@if (qf1.teams.Where(t => t.station.StartsWith("Red") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowred_right"></div>}</td>
+
+                    <td rowspan="2" class="red" width="16%" style="border-right:none">
+                        @Html.Raw(sf1.teams.Where(t => t.station.StartsWith("Red")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td rowspan="2" style="border-left:none">@if (sf1.teams.Where(t => t.station.StartsWith("Red") && f.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowred_right"></div>}</td>
+
+                    <td rowspan="4" class="red" width="16%">
+                        @Html.Raw(f.teams.Where(t => t.station.StartsWith("Red")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+
+                    <td rowspan="4" class="blue" width="16%">
+                        @Html.Raw(f.teams.Where(t => t.station.StartsWith("Blue")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+
+                    <td rowspan="2" style="border-right:none">@if (sf2.teams.Where(t => t.station.StartsWith("Red") && f.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowred_left"></div>}</td>
+                    <td rowspan="2" class="red" width="16%" style="border-left:none">
+                        @Html.Raw(sf2.teams.Where(t => t.station.StartsWith("Red")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "&nbsp;</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+
+                    <td style="border-right:none">@if (qf3.teams.Where(t => t.station.StartsWith("Red") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowred_left"></div>}</td>
+                    <td class="red" width="16%" style="border-left:none">
+                        @Html.Raw(qf3.teams.Where(t => t.station.StartsWith("Red")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "&nbsp;</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blue" style="border-right:none">
+                        @Html.Raw(qf1.teams.Where(t => t.station.StartsWith("Blue")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td style="border-left:none">@if (qf1.teams.Where(t => t.station.StartsWith("Blue") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowblue_right"></div>}</td>
+
+                    <td style="border-right:none">@if (qf3.teams.Where(t => t.station.StartsWith("Blue") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowblue_left"></div>}</td>
+                    <td class="blue" style="border-left:none">
+                        @Html.Raw(qf3.teams.Where(t => t.station.StartsWith("Blue")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "&nbsp;</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                </tr>
+                <tr>
+                    <td class="red" style="border-right:none">
+                        @Html.Raw(qf2.teams.Where(t => t.station.StartsWith("Red")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td style="border-left:none">@if (qf2.teams.Where(t => t.station.StartsWith("Red") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowred_right"></div>}</td>
+
+                    <td rowspan="2" class="blue" style="border-right:none">
+                        @Html.Raw(sf1.teams.Where(t => t.station.StartsWith("Blue")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td rowspan="2" style="border-left:none">@if (sf1.teams.Where(t => t.station.StartsWith("Blue") && f.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowblue_right"></div>}</td>
+
+                    <td rowspan="2" style="border-right:none">@if (sf2.teams.Where(t => t.station.StartsWith("Blue") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowblue_left"></div>}</td>
+                    <td rowspan="2" class="blue" style="border-left:none" style="border-left:none">
+                        @Html.Raw(sf2.teams.Where(t => t.station.StartsWith("Blue")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "&nbsp;</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+
+                    <td style="border-right:none">@if (qf4.teams.Where(t => t.station.StartsWith("Red") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowred_left"></div>}</td>
+                    <td class="red" style="border-left:none" style="border-left:none">
+                        @Html.Raw(qf4.teams.Where(t => t.station.StartsWith("Red")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "&nbsp;</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blue" style="border-right:none">
+                        @Html.Raw(qf2.teams.Where(t => t.station.StartsWith("Blue")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td style="border-left:none">@if (qf2.teams.Where(t => t.station.StartsWith("Blue") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowblue_right"></div>}</td>
+
+                    <td style="border-right:none">@if (qf4.teams.Where(t => t.station.StartsWith("Blue") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0)
+                    {<div class="arrowblue_left"></div>}</td>
+                    <td class="blue" style="border-left:none">
+                        @Html.Raw(qf4.teams.Where(t => t.station.StartsWith("Blue")).Select(t => "<div class=\"" + teamClasses[t.number] + "\">" + t.number.ToString("#") + "&nbsp;</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                </tr>
+            </table>
+            <br />*@
             <table style="width: 100%">
+                <tr><td colspan="10"><a name="Brackets"></a><div class="followMeBar">Brackets</div></td></tr>
                 <tr>
-                    <td class="red">
-                        <div class="@teamClasses[qf1red[0].number]">@qf1red[0].number</div>
-                        <div class="@teamClasses[qf1red[1].number]">@qf1red[1].number</div>
-                        <div class="@teamClasses[qf1red[2].number]">@qf1red[2].number</div>
+                    <td class="red" width="16%" style="border-right:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf1-red"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
-                    <td rowspan="2" class="red">
-                        <div class="@teamClasses[sf1red[0].number]">@sf1red[0].number</div>
-                        <div class="@teamClasses[sf1red[1].number]">@sf1red[1].number</div>
-                        <div class="@teamClasses[sf1red[2].number]">@sf1red[2].number</div>
+                    <td style="border-left:none">@if (qf1.teams.Where(t => t.station.StartsWith("Red") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowred_right"></div>}</td>
+
+                    <td rowspan="2" class="red" width="16%" style="border-right:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["sf1-red"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
-                    <td rowspan="4" class="red">
-                        <div class="@teamClasses[fred[0].number]">@fred[0].number</div>
-                        <div class="@teamClasses[fred[1].number]">@fred[1].number</div>
-                        <div class="@teamClasses[fred[2].number]">@fred[2].number</div>
+                    <td rowspan="2" style="border-left:none">@if (sf1.teams.Where(t => t.station.StartsWith("Red") && f.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowred_right"></div>}</td>
+
+                    <td rowspan="4" class="red" width="16%">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["f-red"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
-                    <td rowspan="4" class="blue">
-                        <div class="@teamClasses[fblue[0].number]">@fblue[0].number</div>
-                        <div class="@teamClasses[fblue[1].number]">@fblue[1].number</div>
-                        <div class="@teamClasses[fblue[2].number]">@fblue[2].number</div>
+
+                    <td rowspan="4" class="blue" width="16%">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["f-blue"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
-                    <td rowspan="2" class="red">
-                        <div class="@teamClasses[sf2red[0].number]">@sf2red[0].number</div>
-                        <div class="@teamClasses[sf2red[1].number]">@sf2red[1].number</div>
-                        <div class="@teamClasses[sf2red[2].number]">@sf2red[2].number</div>
+
+                    <td rowspan="2" style="border-right:none">@if (sf2.teams.Where(t => t.station.StartsWith("Red") && f.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowred_left"></div>}</td>
+                    <td rowspan="2" class="red" width="16%" style="border-left:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["sf2-red"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
-                    <td class="red">
-                        <div class="@teamClasses[qf3red[0].number]">@qf3red[0].number</div>
-                        <div class="@teamClasses[qf3red[1].number]">@qf3red[1].number</div>
-                        <div class="@teamClasses[qf3red[2].number]">@qf3red[2].number</div>
+
+                    <td style="border-right:none">@if (qf3.teams.Where(t => t.station.StartsWith("Red") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowred_left"></div>}</td>
+                    <td class="red" width="16%" style="border-left:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf3-red"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
                 </tr>
                 <tr>
-                    <td class="blue">
-                        <div class="@teamClasses[qf1blue[0].number]">@qf1blue[0].number</div>
-                        <div class="@teamClasses[qf1blue[1].number]">@qf1blue[1].number</div>
-                        <div class="@teamClasses[qf1blue[2].number]">@qf1blue[2].number</div>
+                    <td class="blue" style="border-right:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf1-blue"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
-                    <td class="blue">
-                        <div class="@teamClasses[qf3blue[0].number]">@qf3blue[0].number</div>
-                        <div class="@teamClasses[qf3blue[1].number]">@qf3blue[1].number</div>
-                        <div class="@teamClasses[qf3blue[2].number]">@qf3blue[2].number</div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="red">
-                        <div class="@teamClasses[qf2red[0].number]">@qf2red[0].number</div>
-                        <div class="@teamClasses[qf2red[1].number]">@qf2red[1].number</div>
-                        <div class="@teamClasses[qf2red[2].number]">@qf2red[2].number</div>
-                    </td>
-                    <td rowspan="2" class="blue">
-                        <div class="@teamClasses[sf1blue[0].number]">@sf1blue[0].number</div>
-                        <div class="@teamClasses[sf1blue[1].number]">@sf1blue[1].number</div>
-                        <div class="@teamClasses[sf1blue[2].number]">@sf1blue[2].number</div>
-                    </td>
-                    <td rowspan="2" class="blue">
-                        <div class="@teamClasses[sf2blue[0].number]">@sf2blue[0].number</div>
-                        <div class="@teamClasses[sf2blue[1].number]">@sf2blue[1].number</div>
-                        <div class="@teamClasses[sf2blue[2].number]">@sf2blue[2].number</div>
-                    </td>
-                    <td class="red">
-                        <div class="@teamClasses[qf4red[0].number]">@qf4red[0].number</div>
-                        <div class="@teamClasses[qf4red[1].number]">@qf4red[1].number</div>
-                        <div class="@teamClasses[qf4red[2].number]">@qf4red[2].number</div>
+                    <td style="border-left:none">@if (qf1.teams.Where(t => t.station.StartsWith("Blue") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowblue_right"></div>}</td>
+
+                    <td style="border-right:none">@if (qf3.teams.Where(t => t.station.StartsWith("Blue") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowblue_left"></div>}</td>
+                    <td class="blue" style="border-left:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf3-blue"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
                 </tr>
                 <tr>
-                    <td class="blue">
-                        <div class="@teamClasses[qf2blue[0].number]">@qf2blue[0].number</div>
-                        <div class="@teamClasses[qf2blue[1].number]">@qf2blue[1].number</div>
-                        <div class="@teamClasses[qf2blue[2].number]">@qf2blue[2].number</div>
+                    <td class="red" style="border-right:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf2-red"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
-                    <td class="blue">
-                        <div class="@teamClasses[qf4blue[0].number]">@qf4blue[0].number</div>
-                        <div class="@teamClasses[qf4blue[1].number]">@qf4blue[1].number</div>
-                        <div class="@teamClasses[qf4blue[2].number]">@qf4blue[2].number</div>
+                    <td style="border-left:none">@if (qf2.teams.Where(t => t.station.StartsWith("Red") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowred_right"></div>}</td>
+
+                    <td rowspan="2" class="blue" style="border-right:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["sf1-blue"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td rowspan="2" style="border-left:none">@if (sf1.teams.Where(t => t.station.StartsWith("Blue") && f.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowblue_right"></div>}</td>
+
+                    <td rowspan="2" style="border-right:none">@if (sf2.teams.Where(t => t.station.StartsWith("Blue") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowblue_left"></div>}</td>
+                    <td rowspan="2" class="blue" style="border-left:none" style="border-left:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["sf2-blue"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+
+                    <td style="border-right:none">@if (qf4.teams.Where(t => t.station.StartsWith("Red") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowred_left"></div>}</td>
+                    <td class="red" style="border-left:none" style="border-left:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf4-red"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blue" style="border-right:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf2-blue"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
+                    </td>
+                    <td style="border-left:none">@if (qf2.teams.Where(t => t.station.StartsWith("Blue") && sf1.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowblue_right"></div>}</td>
+
+                    <td style="border-right:none">@if (qf4.teams.Where(t => t.station.StartsWith("Blue") && sf2.teams.Where(s => s.number == t.number).Count() > 0).Count() > 0) {<div class="arrowblue_left"></div>}</td>
+                    <td class="blue" style="border-left:none">
+                        @Html.Raw(Model.Alliances.Where(t => t.number == Model.Bracket.brackets["qf4-blue"]).FirstOrDefault().teams.Select(t => "<div class=\"" + teamClasses[t.number] + "\">&nbsp;" + t.number.ToString("#") + "</div>").Aggregate((html, cell) => html + cell))
                     </td>
                 </tr>
             </table>
