@@ -5,14 +5,29 @@
     ViewBag.Title = "FRC Groove";
 }
 
+<style>
+    td {
+        padding: 0px 5px 0px 5px
+    }
+    
+    tr:nth-child(odd) {
+        background-color: none;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dae7f8;
+    }
+</style>
 <div>
-    @if (Model.CurrentEvents != null)
+    <p>@Html.DropDownList("districtCode", new SelectList(Model.Districts, "code", "name"), new { onchange = "location = '?districtCode=' + this.value;" })</p>
+
+    @if (Model.CurrentEvents != null && Model.CurrentEvents.Count > 0)
     {
-        <p style="font-weight: bold;">Current Events</p>
-        <table width="100%">
+        <div style="font-weight: bold; background-color: #333399; color: white; text-align: center" data-toggle="collapse" data-target="#currentEvents">Current Events</div>
+        <table width="100%" id="currentEvents">
             @foreach (Event frcEvent in Model.CurrentEvents)
             {
-                <tr>
+                <tr style="background-color: none">
                     @*<td>@frcEvent.districtCode</td>*@
                     <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code })</td>
                     <td>@frcEvent.name</td>
@@ -24,9 +39,9 @@
         <br />
     }
 
-    @if (Model.PastEvents != null)
+    @if (Model.PastEvents != null && Model.PastEvents.Count > 0)
     {
-        <p style="font-weight: bold;">Past Events</p>
+        <div style="font-weight: bold; background-color: #333399; color: white; text-align: center">Past Events</div>
         <table width="100%">
             @foreach (Event frcEvent in Model.PastEvents)
             {
@@ -42,9 +57,9 @@
         <br />
     }
 
-    @if (Model.CurrentEvents != null)
+    @if (Model.FutureEvents != null && Model.FutureEvents.Count > 0)
     {
-        <p style="font-weight: bold;">Future Events</p>
+        <div style="font-weight: bold; background-color: #333399; color: white; text-align: center">Future Events</div>
         <table width="100%">
             @foreach (Event frcEvent in Model.FutureEvents)
             {

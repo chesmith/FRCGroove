@@ -32,6 +32,20 @@ namespace FRCGroove.Lib
             {"FTCMP~Playoff", new DateTime(2019, 4, 6, 13, 00, 00, DateTimeKind.Utc)},
         };
 
+        public static List<District> GetDistrictListing()
+        {
+            string path = $"districts";
+
+            var request = new RestRequest(path);
+            var response = _client.Execute<DistrictListing>(request);
+
+            Log($"GetDistrictListing", response.Content);
+
+            List<District> districtListing = response.Data.districts;
+
+            return districtListing;
+        }
+
         public static List<Event> GetEventListing(int teamNumber = 0)
         {
             string path = $"events/";
@@ -172,6 +186,22 @@ namespace FRCGroove.Lib
                     }
                 }
             }
+
+            //TODO: check the first match's actual time - if it's off by > 50 minutes, assume the timezone is messed up and adjust to match the scheduled time
+            if (schedule.Exists(m => m.actualStartTime != null))
+            {
+                Match firstMatch = schedule[0];
+                double delta = (schedule[0].startTime - schedule[0].actualStartTime.Value).TotalMinutes;
+                if (Math.Abs(delta) > 50)
+                {
+                    foreach(Match match in schedule)
+                    {
+                        if (match.actualStartTime == null) break;
+
+                        match.actualStartTime = match.actualStartTime.Value.AddMinutes(delta);
+                    }
+                }
+            }
         }
 
         public static List<EventRanking> GetEventRankings(string eventCode, int teamNumber = 0)
@@ -256,12 +286,15 @@ namespace FRCGroove.Lib
         {
             string path = $"alliances/{eventCode}";
 
+#if MOCK
+            string mockInput = System.IO.File.ReadAllText(@"C:\temp\GetPlayoffAlliance.mock.json");
+            var response = new { Data = JsonConvert.DeserializeObject<AllianceListing>(mockInput) };
+#else
             var request = new RestRequest(path);
-            var foo = new { Alliances = new List<Alliance>() };
             var response = _client.Execute<AllianceListing>(request);
 
             Log($"GetPlayoffAlliance-{eventCode}", response.Content);
-
+#endif
             if (response.Data != null && response.Data.Alliances.Count > 0)
                 return response.Data.Alliances;
             else

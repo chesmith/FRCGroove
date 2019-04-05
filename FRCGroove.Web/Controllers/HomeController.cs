@@ -15,11 +15,24 @@ namespace FRCGroove.Web.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index(string eventCode = "", string teamList = "")
+        public ActionResult Index(string districtCode = "")
         {
             FRCEventListing frcEventListing = new FRCEventListing();
-            //List<Event> eventListing = FRCEventsAPI.GetDistrictEventListing("TX");
-            List<Event> eventListing = FRCEventsAPI.GetEventListing();
+
+            frcEventListing.Districts = FRCEventsAPI.GetDistrictListing();
+            frcEventListing.Districts.Insert(0, new District() { code = "", name = "All Districts" });
+            frcEventListing.Districts.Insert(1, new District() { code = "World", name = "World Championship" });
+
+            List<Event> eventListing;
+            if (districtCode.Length > 0 && districtCode != "World")
+                eventListing = FRCEventsAPI.GetDistrictEventListing(districtCode);
+            else
+                eventListing = FRCEventsAPI.GetEventListing();
+
+            if (districtCode == "World")
+            {
+                eventListing = eventListing.Where(e => e.name.StartsWith("FIRST Championship")).ToList();
+            }
 
             frcEventListing.PastEvents = eventListing.Where(e => e.dateEnd < DateTime.Now.Date).ToList();
             frcEventListing.CurrentEvents = eventListing.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).ToList();

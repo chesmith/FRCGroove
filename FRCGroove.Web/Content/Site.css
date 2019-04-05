@@ -153,46 +153,34 @@ a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoratio
     position: relative;
 }
 
-.arrowred_right {
-    left: 5pt;
+.arrow_right {
+    left: 0.5em;
     width: 0;
     height: 0;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
-    border-left: 10px solid red;
+    border-left: 10px solid green;
     display: inline-block;
     position: relative;
 }
 
-.arrowblue_right {
-    left: 5pt;
+.arrow_left {
+    right: 0.5em;
     width: 0;
     height: 0;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
-    border-left: 10px solid blue;
+    border-right: 10px solid green;
     display: inline-block;
     position: relative;
 }
 
-.arrowred_left {
-    right: 5pt;
-    width: 0;
-    height: 0;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    border-right: 10px solid red;
+.eliminated {
+    left: 0em;
+    color: red;
+    font-weight: bold;
+    font-size: large;
     display: inline-block;
     position: relative;
-}
-
-.arrowblue_left {
-    right: 5pt;
-    width: 0;
-    height: 0;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    border-right: 10px solid blue;
-    display: inline-block;
-    position: relative;
+    visibility: hidden;
 }

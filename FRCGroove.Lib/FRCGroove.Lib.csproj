@@ -52,6 +52,8 @@
     <Compile Include="FRCEventsAPI.cs" />
     <Compile Include="models\Alliance.cs" />
     <Compile Include="models\AllianceListing.cs" />
+    <Compile Include="models\District.cs" />
+    <Compile Include="models\DistrictListing.cs" />
     <Compile Include="models\DistrictRank.cs" />
     <Compile Include="models\DistrictRankListing.cs" />
     <Compile Include="models\Event.cs" />
