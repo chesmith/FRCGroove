@@ -184,3 +184,40 @@ a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoratio
     position: relative;
     visibility: hidden;
 }
+
+div#backToTop {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    display: none
+}
+
+.up {
+    width: 0px;
+    height: 0px;
+    border-style: inset;
+    border-width: 0 40px 30px 40px;
+    border-color: transparent transparent #337ab7 transparent;
+    float: left;
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    opacity: 0.60
+}
+
+.up p {
+    text-align: center;
+    top: 8px;
+    left: -47px;
+    position: relative;
+    width: 93px;
+    height: 93px;
+    margin: 0px;
+    color: white;
+    font-weight: bold;
+}

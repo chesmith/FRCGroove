@@ -11,6 +11,8 @@ namespace FRCGroove.Web.Models
     {
         public List<District> Districts { get; set; }
 
+        public string districtCode { get; set; }
+
         public List<Event> PastEvents { get; set; }
         public List<Event> CurrentEvents { get; set; }
         public List<Event> FutureEvents { get; set; }

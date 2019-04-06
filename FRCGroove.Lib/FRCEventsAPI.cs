@@ -173,7 +173,7 @@ namespace FRCGroove.Lib
 
         private static void AdjustForTimeZone(string eventCode, string tournamentLevel, List<Match> schedule)
         {
-            //checks to see if the start times are listed inaccurately for the timezone and adjust
+            //checks to see if the scheduled start times are listed inaccurately for the timezone and adjust
             if (schedule.Count > 0 && _knownStartTimes.ContainsKey($"{eventCode}~{tournamentLevel}"))
             {
                 DateTime knownStartTime = _knownStartTimes[$"{eventCode}~{tournamentLevel}"];
@@ -187,12 +187,12 @@ namespace FRCGroove.Lib
                 }
             }
 
-            //TODO: check the first match's actual time - if it's off by > 50 minutes, assume the timezone is messed up and adjust to match the scheduled time
+            //check the each match's actual time - if it's off by > 59 minutes, assume the API is misrepoting and adjust to match the scheduled time
             if (schedule.Exists(m => m.actualStartTime != null))
             {
                 Match firstMatch = schedule[0];
                 double delta = (schedule[0].startTime - schedule[0].actualStartTime.Value).TotalMinutes;
-                if (Math.Abs(delta) > 50)
+                if (Math.Abs(delta) > 59)
                 {
                     foreach(Match match in schedule)
                     {
@@ -218,7 +218,11 @@ namespace FRCGroove.Lib
 
             Log($"GetEventRanking-{eventCode},{teamNumber}", response.Content);
 #endif
-            List<EventRanking> eventRankings = response.Data.Rankings.OrderBy(t => t.rank).ToList();
+            List<EventRanking> eventRankings = new List<EventRanking>();
+            if (response.Data != null)
+            {
+                eventRankings = response.Data.Rankings.OrderBy(t => t.rank).ToList();
+            }
 
             return eventRankings;
         }

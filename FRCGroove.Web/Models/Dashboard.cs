@@ -20,6 +20,7 @@ namespace FRCGroove.Web.Models
 
     public class Dashboard
     {
+        public string districtCode { get; set; }
         public Event FrcEvent { get; set; }
         public List<RegisteredTeam> TeamsOfInterest { get; set; }
         public double ScheduleOffset { get; set; }
@@ -87,15 +88,14 @@ namespace FRCGroove.Web.Models
                 }
                 else if (action == "remove")
                 {
-                    if (TeamsOfInterest.Count() > 1)
+                    if (TeamsOfInterest.Count() > 0)
                     {
                         string teamList = string.Join(",", TeamsOfInterest.Where(t => t.number != teamNumber).Select(t => t.number));
-                        url = $"/{eventCode}/{teamList}";
+                        url = $"/{eventCode}/x{teamNumber},{teamList}";
                     }
                     else
                         url = $"/{eventCode}";
                 }
-
             }
             return url;
         }

@@ -14,6 +14,11 @@ namespace FRCGroove.Lib.models
         {
             if (alliances != null && matches != null)
             {
+                foreach (Alliance alliance in alliances)
+                {
+                    alliance.LoadTeams();
+                }
+
                 brackets = new Dictionary<string, int>();
 
                 List<Match> sf1 = matches.Where(m => m.title == "Semifinal 1-1").ToList();
