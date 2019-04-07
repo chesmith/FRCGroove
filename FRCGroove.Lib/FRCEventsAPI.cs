@@ -190,15 +190,14 @@ namespace FRCGroove.Lib
             //check the each match's actual time - if it's off by > 59 minutes, assume the API is misrepoting and adjust to match the scheduled time
             if (schedule.Exists(m => m.actualStartTime != null))
             {
-                Match firstMatch = schedule[0];
-                double delta = (schedule[0].startTime - schedule[0].actualStartTime.Value).TotalMinutes;
-                if (Math.Abs(delta) > 59)
+                foreach (Match match in schedule)
                 {
-                    foreach(Match match in schedule)
-                    {
-                        if (match.actualStartTime == null) break;
+                    if (match.actualStartTime == null) break;
 
-                        match.actualStartTime = match.actualStartTime.Value.AddMinutes(delta);
+                    double delta = (match.startTime - match.actualStartTime.Value).TotalMinutes;
+                    if (Math.Abs(delta) > 59)
+                    {
+                            match.actualStartTime = match.actualStartTime.Value.AddMinutes(delta);
                     }
                 }
             }
