@@ -28,41 +28,51 @@ namespace FRCGroove.Web.Models
         public List<Alliance> Alliances { get; set; }
         public PlayoffBracket Bracket { get; set; }
 
+        private FRCEventState _eventState = FRCEventState.Invalid;
+
         public FRCEventState EventState
         {
             get
             {
-                if (Matches == null)
-                    return FRCEventState.Invalid;
-                if (Matches.Count() == 0 || Matches.Where(t => t.actualStartTime != null).Count() == 0)
-                    return FRCEventState.Future;
-
-                List<Match> finals = Matches.Where(m => m.title.StartsWith("Final") && m.teams.Where(t => t.number == 0).Count() == 0).ToList();
-                if (finals.Count > 0)
+                if (_eventState == FRCEventState.Invalid)
                 {
-                    bool redWin = (finals.Where(t => t.scoreRedFinal > t.scoreBlueFinal).Count() == 2);
-                    bool blueWin = (finals.Where(t => t.scoreRedFinal < t.scoreBlueFinal).Count() == 2);
-                    if (redWin || blueWin)
-                        return FRCEventState.Past;
-                    else
-                        return FRCEventState.Finals;
-                }
-                else
-                {
-                    List<Match> semifinals = Matches.Where(m => m.title.StartsWith("Semifinal") && m.teams.Where(t => t.number == 0).Count() == 0).ToList();
-                    if (semifinals.Count > 0)
+                    if (Matches != null)
                     {
-                        return FRCEventState.Semifinals;
-                    }
-                    else
-                    {
-                        List<Match> quarterfinals = Matches.Where(m => m.title.StartsWith("Quarterfinal") && m.teams.Where(t => t.number == 0).Count() == 0).ToList();
-                        if (quarterfinals.Count > 0)
-                            return FRCEventState.Quarterfinals;
+                        if (Matches.Count() == 0)
+                            _eventState = FRCEventState.Future;
                         else
-                            return FRCEventState.Qualifications;
+                        {
+                            List<Match> finals = Matches.Where(m => m.title.StartsWith("Final") && m.teams.Count(t => t.number == 0) == 0).ToList();
+                            if (finals.Count > 0)
+                            {
+                                bool redWin = (finals.Count(t => t.scoreRedFinal > t.scoreBlueFinal) == 2);
+                                bool blueWin = (finals.Count(t => t.scoreRedFinal < t.scoreBlueFinal) == 2);
+                                if (redWin || blueWin)
+                                    _eventState = FRCEventState.Past;
+                                else
+                                    _eventState = FRCEventState.Finals;
+                            }
+                            else
+                            {
+                                List<Match> semifinals = Matches.Where(m => m.title.StartsWith("Semifinal") && m.teams.Count(t => t.number == 0) == 0).ToList();
+                                if (semifinals.Count > 0)
+                                {
+                                    _eventState = FRCEventState.Semifinals;
+                                }
+                                else
+                                {
+                                    List<Match> quarterfinals = Matches.Where(m => m.title.StartsWith("Quarterfinal") && m.teams.Count(t => t.number == 0) == 0).ToList();
+                                    if (quarterfinals.Count > 0)
+                                        _eventState = FRCEventState.Quarterfinals;
+                                    else
+                                        _eventState = FRCEventState.Qualifications;
+                                }
+                            }
+                        }
                     }
                 }
+
+                return _eventState;
             }
         }
 
@@ -81,20 +91,20 @@ namespace FRCGroove.Web.Models
                     if (TeamsOfInterest.Count() > 0)
                     {
                         string teamList = string.Join(",", TeamsOfInterest.Select(t => t.number));
-                        url = $"/{eventCode}/{teamList},{teamNumber}";
+                        url = $"/FRCEvent/{eventCode}/{teamList},{teamNumber}";
                     }
                     else
-                        url = $"/{eventCode}/{teamNumber}";
+                        url = $"/FRCEvent/{eventCode}/{teamNumber}";
                 }
                 else if (action == "remove")
                 {
                     if (TeamsOfInterest.Count() > 0)
                     {
                         string teamList = string.Join(",", TeamsOfInterest.Where(t => t.number != teamNumber).Select(t => t.number));
-                        url = $"/{eventCode}/x{teamNumber},{teamList}";
+                        url = $"/FRCEvent/{eventCode}/x{teamNumber},{teamList}";
                     }
                     else
-                        url = $"/{eventCode}";
+                        url = $"/FRCEvent/{eventCode}";
                 }
             }
             return url;

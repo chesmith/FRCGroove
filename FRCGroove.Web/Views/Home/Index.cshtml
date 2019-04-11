@@ -35,7 +35,7 @@
                             {
                                 <tr style="background-color: none">
                                     @*<td>@frcEvent.districtCode</td>*@
-                                    <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code, districtCode = Model.districtCode })</td>
+                                    <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code })</td>
                                     <td>@frcEvent.name</td>
                                     <td>@frcEvent.dateStart.ToString("ddd M/d")</td>
                                     <td>@frcEvent.dateEnd.ToString("ddd M/d")</td>
@@ -59,7 +59,7 @@
                             {
                                 <tr>
                                     @*<td>@frcEvent.districtCode</td>*@
-                                    <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code, districtCode = Model.districtCode })</td>
+                                    <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code })</td>
                                     <td>@frcEvent.name</td>
                                     <td>@frcEvent.dateStart.ToString("ddd M/d")</td>
                                     <td>@frcEvent.dateEnd.ToString("ddd M/d")</td>

@@ -69,24 +69,22 @@ namespace FRCGroove.Web.Controllers
                 {
                     dashboard.Matches = FRCEventsAPI.GetFullHybridSchedule(eventCode);
 
-                    TimeSpan[] rollingDelta = new TimeSpan[3];
-                    DateTime curdate = DateTime.MinValue;
-                    foreach (Match match in dashboard.Matches)
+                    if (dashboard.Matches != null && (dashboard.EventState == FRCEventState.Past || dashboard.EventState == FRCEventState.Qualifications || dashboard.EventState == FRCEventState.Quarterfinals || dashboard.EventState == FRCEventState.Semifinals || dashboard.EventState == FRCEventState.Finals))
                     {
-                        if (match.actualStartTime == null) break;
-
-                        if (match.startTime.Date > curdate)
+                        if (dashboard.EventState != FRCEventState.Qualifications)
                         {
-                            rollingDelta = new TimeSpan[3];
+                            dashboard.Alliances = FRCEventsAPI.GetPlayoffAlliances(eventCode);
+                            dashboard.Bracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
                         }
 
-                        rollingDelta[0] = rollingDelta[1];
-                        rollingDelta[1] = rollingDelta[2];
-                        rollingDelta[2] = (match.actualStartTime.Value - match.startTime);
-
-                        curdate = match.startTime.Date;
+                        if (dashboard.EventState != FRCEventState.Past)
+                        {
+                            List<Match> matchesForOffsetCalc = dashboard.Matches;
+                            if (dashboard.EventState != FRCEventState.Qualifications)
+                                matchesForOffsetCalc = dashboard.Matches.Where(m => m.tournamentLevel == "Playoff").ToList();
+                            dashboard.ScheduleOffset = CalculateScheduleOffset(matchesForOffsetCalc);
+                        }
                     }
-                    dashboard.ScheduleOffset = (rollingDelta[0].TotalMinutes + rollingDelta[1].TotalMinutes + rollingDelta[2].TotalMinutes) / 3;
                 }
             }
 
@@ -101,13 +99,6 @@ namespace FRCGroove.Web.Controllers
                     }
                     dashboard.TeamsOfInterest.Add(team);
                 }
-            }
-
-            FRCEventState eventState = dashboard.EventState;
-            if (eventState == FRCEventState.Quarterfinals || eventState == FRCEventState.Semifinals || eventState == FRCEventState.Finals || eventState == FRCEventState.Past)
-            {
-                dashboard.Alliances = FRCEventsAPI.GetPlayoffAlliances(eventCode);
-                dashboard.Bracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
             }
 
             return dashboard;
@@ -129,13 +120,25 @@ namespace FRCGroove.Web.Controllers
 
                 if (matches != null)
                 {
-                    Match nextMatch = (Match)matches.Where(m => m.teams.Where(t => t.number == team.number).Count() > 0 && m.actualStartTime == null).FirstOrDefault();
+                    Match nextMatch = (Match)matches.Where(m => m.teams.Count(t => t.number == team.number) > 0 && m.actualStartTime == null).FirstOrDefault();
                     if (nextMatch != null)
                     {
                         team.NextMatch = nextMatch;
                     }
                 }
             }
+        }
+
+        private double CalculateScheduleOffset(List<Match> matches)
+        {
+            DateTime today = DateTime.Now.Date;
+            List<Match> todaysMatches = matches.Where(m => m.startTime.Date == today && m.actualStartTime != null).Reverse().Take(3).ToList();
+            double sum = todaysMatches.Select(m => (m.actualStartTime.Value - m.startTime).TotalMinutes).Sum();
+            double average = 0.0;
+            if (Math.Abs(sum) > 0)
+                average = sum / todaysMatches.Count();
+
+            return average;
         }
 
         public ActionResult About()

@@ -100,9 +100,9 @@ a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoratio
 .followMeBar.fixed {
     position: fixed;
     top: 0;
-    /*width: 100%;*/
     box-sizing: border-box;
     z-index: 0;
+    border-radius: 4px 4px 4px 4px;
 }
 
 .followMeBar.fixed.absolute {
@@ -196,27 +196,24 @@ div#backToTop {
 }
 
 .up {
-    width: 0px;
-    height: 0px;
-    border-style: inset;
-    border-width: 0 40px 30px 40px;
-    border-color: transparent transparent #337ab7 transparent;
-    float: left;
-    transform: rotate(360deg);
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    opacity: 0.60
+    background-color: #337ab7;
+    border-radius: 8px 8px 8px 8px;
+    height: 40px;
+    position: fixed;
+    width: 50px;
+    opacity: 0.75;
+    z-index: 10000;
+    line-height: 45px;
+}
+
+.up p:hover {
+    cursor: pointer
 }
 
 .up p {
     text-align: center;
-    top: 8px;
-    left: -47px;
     position: relative;
-    width: 93px;
-    height: 93px;
+    bottom: 3px;
     margin: 0px;
     color: white;
     font-weight: bold;
