@@ -9,7 +9,7 @@
     td {
         padding: 0px 5px 0px 5px
     }
-    
+
     tr:nth-child(odd) {
         background-color: none;
     }
@@ -18,24 +18,34 @@
         background-color: #dae7f8;
     }
 </style>
+
+<nav class="nav nav-pills nav-justified" style="margin-bottom: 10px">
+    <a class="nav-item nav-link active" href="/"><i class="fas fa-calendar-alt"></i><br /><span style="font-size:12px">Events</span></a>
+    <a class="nav-item nav-link disabled" href="/"><i class="fas fa-calendar-day"></i><br /><span style="font-size:12px">Match</span></a>
+    <a class="nav-item nav-link" href="/Teams"><i class="fas fa-users"></i><br /><span style="font-size:12px">Teams</span></a>
+    <a class="nav-item nav-link" href="/About"><i class="fas fa-info-circle"></i><br /><span style="font-size:12px">About</span></a>
+</nav>
+
 <div>
     <p>@Html.DropDownList("districtCode", new SelectList(Model.Districts, "code", "name"), new { onchange = "location = '?districtCode=' + this.value;" })</p>
 
-    <div class="panel-group" id="accordion">
+    <div id="accordion">
         @if (Model.CurrentEvents != null && Model.CurrentEvents.Count > 0)
         {
-            <div class="panel panel-default">
-                <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapseOne">
-                    <a class="accordion-toggle" style="text-decoration: none; color: black" href="#accordion-toggle"><h4 class="panel-title">Current Events</h4></a>
-                </div>
-                <div id="collapseOne" class="panel-collapse collapse in">
-                    <div class="panel-body">
-                        <table width="100%" id="currentEvents">
+            <div class="card" style="margin-bottom: 5px">
+                <a data-toggle="collapse" data-target="#collapseOne" style="cursor:pointer">
+                    <h5 class="card-header" id="headingOne">
+                        Current Events
+                    </h5>
+                </a>
+                <div id="collapseOne" class="collapse show" data-parent="#accordion">
+                    <div class="card-body">
+                        <table style="width:100%" id="currentEvents">
                             @foreach (Event frcEvent in Model.CurrentEvents)
                             {
                                 <tr style="background-color: none">
                                     @*<td>@frcEvent.districtCode</td>*@
-                                    <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code })</td>
+                                    <td>@Html.ActionLink(frcEvent.code, "Index", "FRCEvent", new { eventCode = frcEvent.code }, null)</td>
                                     <td>@frcEvent.name</td>
                                     <td>@frcEvent.dateStart.ToString("ddd M/d")</td>
                                     <td>@frcEvent.dateEnd.ToString("ddd M/d")</td>
@@ -48,18 +58,20 @@
         }
         @if (Model.PastEvents != null && Model.PastEvents.Count > 0)
         {
-            <div class="panel panel-default">
-                <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapseTwo">
-                    <a class="accordion-toggle" style="text-decoration: none; color: black" href="#accordion-toggle"><h4 class="panel-title">Past Events</h4></a>
-                </div>
-                <div id="collapseTwo" class="panel-collapse collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) ? "in" : "")">
-                    <div class="panel-body">
-                        <table width="100%">
+            <div class="card" style="margin-bottom: 5px">
+                <a data-toggle="collapse" data-target="#collapseTwo" style="cursor:pointer">
+                    <h5 class="card-header" id="headingTwo">
+                        Past Events
+                    </h5>
+                </a>
+                <div id="collapseTwo" class="collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) ? "show" : "")" data-parent="#accordion">
+                    <div class="card-body">
+                        <table style="width:100%">
                             @foreach (Event frcEvent in Model.PastEvents)
                             {
                                 <tr>
                                     @*<td>@frcEvent.districtCode</td>*@
-                                    <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code })</td>
+                                    <td>@Html.ActionLink(frcEvent.code, "Index", "FRCEvent", new { eventCode = frcEvent.code }, null)</td>
                                     <td>@frcEvent.name</td>
                                     <td>@frcEvent.dateStart.ToString("ddd M/d")</td>
                                     <td>@frcEvent.dateEnd.ToString("ddd M/d")</td>
@@ -73,18 +85,20 @@
 
         @if (Model.FutureEvents != null && Model.FutureEvents.Count > 0)
         {
-            <div class="panel panel-default">
-                <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapseThree">
-                    <a class="accordion-toggle" style="text-decoration: none; color: black" href="#accordion-toggle"><h4 class="panel-title">Future Events</h4></a>
-                </div>
-                <div id="collapseThree" class="panel-collapse collapse@((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) && (Model.PastEvents == null || Model.PastEvents.Count == 0)? "in" : "")">
-                    <div class="panel-body">
-                        <table width="100%">
+            <div class="card">
+                <a data-toggle="collapse" data-target="#collapseThree" style="cursor:pointer">
+                    <h5 class="card-header" id="headingThree">
+                        Future Events
+                    </h5>
+                </a>
+                <div id="collapseThree" class="collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) && (Model.PastEvents == null || Model.PastEvents.Count == 0)? "show" : "")" data-parent="#accordion">
+                    <div class="card-body">
+                        <table style="width:100%">
                             @foreach (Event frcEvent in Model.FutureEvents)
                             {
                                 <tr>
                                     @*<td>@frcEvent.districtCode</td>*@
-                                    <td>@Html.ActionLink(frcEvent.code, "FRCEvent", new { eventCode = frcEvent.code })</td>
+                                    <td>@Html.ActionLink(frcEvent.code, "Index", "FRCEvent", new { eventCode = frcEvent.code }, null)</td>
                                     <td>@frcEvent.name</td>
                                     <td>@frcEvent.dateStart.ToString("ddd M/d")</td>
                                     <td>@frcEvent.dateEnd.ToString("ddd M/d")</td>

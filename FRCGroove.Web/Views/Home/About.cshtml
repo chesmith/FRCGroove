@@ -1,7 +1,32 @@
-﻿@{
-    ViewBag.Title = "About";
+﻿
+@{
+    ViewBag.Title = "FRCGroove - About";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h2>@ViewBag.Title.</h2>
-<h3>@ViewBag.Message</h3>
 
-<p>Use this area to provide additional information.</p>
+<nav class="nav nav-pills nav-justified" style="margin-bottom: 10px">
+    <a class="nav-item nav-link" href="/"><i class="fas fa-calendar-alt"></i><br /><span style="font-size:12px">Events</span></a>
+    <a class="nav-item nav-link disabled" href="/"><i class="fas fa-calendar-day"></i><br /><span style="font-size:12px">Match</span></a>
+    <a class="nav-item nav-link" href="/Teams"><i class="fas fa-users"></i><br /><span style="font-size:12px">Teams</span></a>
+    <a class="nav-item nav-link active" href="/About"><i class="fas fa-info-circle"></i><br /><span style="font-size:12px">About</span></a>
+</nav>
+
+<p>FRC Groove was born out of a frustration with existing tools and websites, notably during an event itself.  Other tools out there do a fantastic and comprehensive job, but didn't suit my specific needs without a lot of jumping back and forth within and between each.  I found myself using at least two apps and one website to find what I wanted.  Even then, one specific item was never quite right - the schedule.  During one event, the FIRST schedule itself was off by an hour and TBA was just off overall.  I really wanted to know when the next match would likely be for my teams of interest, and while I love math, I really didn't want to do this all in my head.  So, that was my first objective were all around time - intelligently correct for bad time data from the sources, display an overall estimate of how ahead or behind matches are running, and with each match display a projected start time.  Other tools do this, but I lacked confidence in their calculations.</p>
+
+<p>Full transparency, here's what I do with time:</p>
+<ul>
+    <li>I collect publicized start times for the qualification matches for each event.</li>
+    <li>If the first qual match's planned start time in data is more than 50 minutes off from the publicized start time, then I assume a time zone mistake and adjust all planned start times by the delta.</li>
+    <li>If the first qual match's actual start time in data is more than 50 minutes off of the planned start time, I adjust all actual start times by the delta.</li>
+    <li>The average delta between planned and actual start times for the last 3 completed matches is used to determine the ahead/behind amount and to calculate project match start times.</li>
+</ul>
+
+<p>FRC Groove uses data directly from the FRC event APIs, except for OPR/DPR/CCWM states, which are pulled from the TBA API.  Nothing terribly magical here - just a nice single-page presentation that suited my needs.  I hope it suits yours.  <a href="/Contact">Suggestions</a> are always welcome (I just may not choose to do em).</p>
+
+@*<nav class="navbar navbar-dark fixed-bottom navbar-expand justify-content-center" style="background-color:#333399;">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" style="font-size:32px; text-align:center; padding-top:0" href="/"><i class="far fa-calendar-alt"></i></a>
+            <a class="nav-item nav-link" style="font-size:32px; text-align:center; padding-top:0" href="/Teams"><i class="fas fa-users"></i></a>
+            <a class="nav-item nav-link active" style="font-size:32px; text-align:center; padding-top:0" href="/About"><i class="fas fa-info-circle"></i></a>
+        </div>
+    </nav>*@

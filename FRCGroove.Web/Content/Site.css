@@ -1,5 +1,5 @@
 ﻿body {
-    padding-top: 15px;
+    padding-top: 10px;
     padding-bottom: 20px;
 }
 
@@ -30,9 +30,7 @@ table {
 
 table td {
     border: 1px solid #666666;
-}
-
-td {
+    padding: 0;
     text-align: center;
 }
 
@@ -187,8 +185,8 @@ a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoratio
 
 div#backToTop {
     position: fixed;
-    bottom: 10px;
-    left: 10px;
+    top: 5px;
+    right: 10px;
     text-align: center;
     color: white;
     font-weight: bold;
@@ -196,7 +194,7 @@ div#backToTop {
 }
 
 .up {
-    background-color: #337ab7;
+    background-color: #333399;
     border-radius: 8px 8px 8px 8px;
     height: 40px;
     position: fixed;
@@ -217,4 +215,16 @@ div#backToTop {
     margin: 0px;
     color: white;
     font-weight: bold;
+}
+
+.nav-link {
+    color: #333399;
+    line-height: 1.0;
+    text-align: center;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #333399;
+    text-align: center;
 }

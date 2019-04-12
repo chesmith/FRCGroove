@@ -18,24 +18,24 @@ namespace FRCGroove.Win
 
         private void btnGo_Click(object sender, EventArgs e)
         {
-            //APITests();
+            APITests2();
 
-            StreamWriter sw = new StreamWriter(@"C:\temp\playoffs.csv");
-            foreach (string path in Directory.GetFiles(@"C:\temp\FRCGroove.logs\all past events 2"))
-            {
-                txtResults.Text = path;
-                if (path.Contains("GetHybridSchedule") && path.Contains("Playoff"))
-                {
-                    List<Match> matches = FRCEventsAPI.GetHybridSchedule_FromFile(path);
-                    sw.WriteLine(path);
-                    foreach (Match match in matches)
-                    {
-                        sw.WriteLine($"{match.matchNumber}\t{match.description}\t{match.title}");
-                    }
-                }
-                Application.DoEvents();
-            }
-            sw.Close();
+            //StreamWriter sw = new StreamWriter(@"C:\temp\playoffs.csv");
+            //foreach (string path in Directory.GetFiles(@"C:\temp\FRCGroove.logs\all past events 2"))
+            //{
+            //    txtResults.Text = path;
+            //    if (path.Contains("GetHybridSchedule") && path.Contains("Playoff"))
+            //    {
+            //        List<Match> matches = FRCEventsAPI.GetHybridSchedule_FromFile(path);
+            //        sw.WriteLine(path);
+            //        foreach (Match match in matches)
+            //        {
+            //            sw.WriteLine($"{match.matchNumber}\t{match.description}\t{match.title}");
+            //        }
+            //    }
+            //    Application.DoEvents();
+            //}
+            //sw.Close();
 
             txtResults.Text = "Done";
         }
@@ -121,6 +121,11 @@ namespace FRCGroove.Win
             {
                 txtResults.Text = "no events";
             }
+        }
+
+        private void APITests2()
+        {
+            List<Match> matches = FRCEventsAPI.GetHybridSchedule("TXCHA", "Qualification");
         }
 
         private void Form1_Load(object sender, EventArgs e)

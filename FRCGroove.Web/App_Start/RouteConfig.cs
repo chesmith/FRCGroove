@@ -28,13 +28,19 @@ namespace FRCGroove.Web
             routes.MapRoute(
                 name: "About",
                 url: "About",
-                defaults: new { controller = "About", action = "Index" }
+                defaults: new { controller = "Home", action = "About" }
             );
 
             routes.MapRoute(
                 name: "FRCEvent",
                 url: "FRCEvent/{eventCode}/{teamList}",
-                defaults: new { controller = "Home", action = "FRCEvent", teamList = UrlParameter.Optional }
+                defaults: new { controller = "FRCEvent", action = "Index", teamList = UrlParameter.Optional }
+            );
+
+            routes.MapRoute(
+                name: "Teams",
+                url: "Teams",
+                defaults: new { controller = "Teams", action = "Index" }
             );
         }
     }
