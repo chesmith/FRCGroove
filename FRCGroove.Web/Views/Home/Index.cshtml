@@ -19,12 +19,7 @@
     }
 </style>
 
-<nav class="nav nav-pills nav-justified" style="margin-bottom: 10px">
-    <a class="nav-item nav-link active" href="/"><i class="fas fa-calendar-alt"></i><br /><span style="font-size:12px">Events</span></a>
-    <a class="nav-item nav-link disabled" href="/"><i class="fas fa-calendar-day"></i><br /><span style="font-size:12px">Match</span></a>
-    <a class="nav-item nav-link" href="/Teams"><i class="fas fa-users"></i><br /><span style="font-size:12px">Teams</span></a>
-    <a class="nav-item nav-link" href="/About"><i class="fas fa-info-circle"></i><br /><span style="font-size:12px">About</span></a>
-</nav>
+@Html.Partial("Navigation", "Events")
 
 <div>
     <p>@Html.DropDownList("districtCode", new SelectList(Model.Districts, "code", "name"), new { onchange = "location = '?districtCode=' + this.value;" })</p>

@@ -196,6 +196,13 @@
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="Views\Teams\Index.cshtml" />
+    <Content Include="Views\Shared\Navigation.cshtml" />
+    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.CARVER.json" />
+    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.GALILEO.json" />
+    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.HOPPER.json" />
+    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.NEWTON.json" />
+    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.ROEBLING.json" />
+    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.TURING.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -222,9 +229,7 @@
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.map" />

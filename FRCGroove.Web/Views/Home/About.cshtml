@@ -4,14 +4,9 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<nav class="nav nav-pills nav-justified" style="margin-bottom: 10px">
-    <a class="nav-item nav-link" href="/"><i class="fas fa-calendar-alt"></i><br /><span style="font-size:12px">Events</span></a>
-    <a class="nav-item nav-link disabled" href="/"><i class="fas fa-calendar-day"></i><br /><span style="font-size:12px">Match</span></a>
-    <a class="nav-item nav-link" href="/Teams"><i class="fas fa-users"></i><br /><span style="font-size:12px">Teams</span></a>
-    <a class="nav-item nav-link active" href="/About"><i class="fas fa-info-circle"></i><br /><span style="font-size:12px">About</span></a>
-</nav>
+@Html.Partial("Navigation", "About")
 
-<p>FRC Groove was born out of a frustration with existing tools and websites, notably during an event itself.  Other tools out there do a fantastic and comprehensive job, but didn't suit my specific needs without a lot of jumping back and forth within and between each.  I found myself using at least two apps and one website to find what I wanted.  Even then, one specific item was never quite right - the schedule.  During one event, the FIRST schedule itself was off by an hour and TBA was just off overall.  I really wanted to know when the next match would likely be for my teams of interest, and while I love math, I really didn't want to do this all in my head.  So, that was my first objective were all around time - intelligently correct for bad time data from the sources, display an overall estimate of how ahead or behind matches are running, and with each match display a projected start time.  Other tools do this, but I lacked confidence in their calculations.</p>
+<p>FRC Groove was born out of a frustration with existing tools and websites, notably during an event itself.  Other tools out there do a fantastic and comprehensive job, but didn't suit my specific needs without a lot of jumping back and forth within and between each.  I found myself using at least two apps and one website to find what I wanted.  Even then, one specific item was never quite right - the schedule.  During one event, the FIRST schedule itself was off by an hour and TBA was just off overall.  I really wanted to know when the next match would likely be for my teams of interest, and while I love math, I really didn't want to do this all in my head.  So, my first objectives were all about time - intelligently correct for bad time data from the sources, display an overall estimate of how ahead or behind matches are running, and with each match display a projected start time.  Other tools do this, but I lacked confidence in their calculations.</p>
 
 <p>Full transparency, here's what I do with time:</p>
 <ul>

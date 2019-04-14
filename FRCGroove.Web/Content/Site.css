@@ -221,10 +221,32 @@ div#backToTop {
     color: #333399;
     line-height: 1.0;
     text-align: center;
+    padding-bottom: 18px
 }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
     color: #fff;
     background-color: #333399;
     text-align: center;
+}
+
+.teamName {
+    display:none
+}
+
+@media (min-width: 576px) {
+    .teamName {
+        font-size: 0.75rem;
+        display:inline;
+    }
+
+    .container {
+        max-width:unset
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: unset
+    }
 }

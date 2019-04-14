@@ -1,0 +1,18 @@
+﻿@model string
+
+@{
+    string activePage = Model;
+
+    string eventCode = string.Empty;
+    if (Request.Cookies.AllKeys.Contains("eventCode"))
+    {
+        eventCode = "FRCEvent/" + Request.Cookies["eventCode"].Value;
+    }
+}
+
+<nav class="nav nav-pills nav-justified fixed-bottom" style="background-color:white">
+    <a class="nav-item nav-link @(activePage == "Events" ? "active" : "")" href="/"><i class="fas fa-calendar-alt"></i><br /><span style="font-size:12px">Events</span></a>
+    <a class="nav-item nav-link @(activePage == "Schedule" ? "active" : "")" href="/@eventCode"><i class="fas fa-clock"></i><br /><span style="font-size:12px">Schedule</span></a>
+    <a class="nav-item nav-link @(activePage == "Teams" ? "active" : "")" href="/Teams"><i class="fas fa-users"></i><br /><span style="font-size:12px">Teams</span></a>
+    <a class="nav-item nav-link @(activePage == "About" ? "active" : "")" href="/About"><i class="fas fa-info-circle"></i><br /><span style="font-size:12px">About</span></a>
+</nav>

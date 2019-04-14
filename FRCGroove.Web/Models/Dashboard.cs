@@ -27,6 +27,7 @@ namespace FRCGroove.Web.Models
         public List<Match> Matches { get; set; }
         public List<Alliance> Alliances { get; set; }
         public PlayoffBracket Bracket { get; set; }
+        public List<RegisteredTeam> RegisteredTeams { get; set; }
 
         private FRCEventState _eventState = FRCEventState.Invalid;
 

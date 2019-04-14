@@ -6,13 +6,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Mvc;
 
 namespace FRCGroove.Web.Controllers
 {
     public class FRCEventController : Controller
     {
+        public FRCEventController()
+        {
+            FRCEventsAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
+        }
+
         public ActionResult Index(string districtCode = "", string eventCode = "", string teamList = "")
+        {
+            List<string> teams = BuildTeamsOfInterest(teamList);
+
+            Dashboard dashboard = BuildEventDashboard(districtCode, eventCode, teams);
+
+            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams) });
+            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("eventCode") { Value = eventCode });
+
+            //TODO: if we added teams from the cookie that weren't there in the input list, do a redirect with the full URL instead of just showing the dashboard (update the cookie first?)
+
+            return View(dashboard);
+        }
+
+        private List<string> BuildTeamsOfInterest(string teamList)
         {
             string[] teamsFromQuerystring = teamList.Split(',');
             List<string> teams = new List<string>(teamsFromQuerystring);
@@ -30,20 +50,10 @@ namespace FRCGroove.Web.Controllers
             List<string> teamsToKeep = teams.Where(t => t.Length > 0 && t.IndexOf("x") < 0 && !teamsToRemove.Contains(t)).ToList();
 
             teams = teamsToKeep.Distinct().ToList();
-
-            Dashboard dashboard = BuildEventDashboard(districtCode, eventCode, teams);
-
-            HttpCookie cookie = new HttpCookie("teamList");
-            cookie.Value = string.Join(",", teams);
-            this.ControllerContext.HttpContext.Response.Cookies.Add(cookie);
-
-            //TODO: if we added teams from the cookie that weren't there in the input list, do a redirect with the full URL instead of just showing the dashboard (update the cookie first?)
-
-            return View(dashboard);
+            return teams;
         }
 
-
-        private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamList)
+        private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamsOfInterest)
         {
             Dashboard dashboard = new Dashboard();
 
@@ -73,9 +83,11 @@ namespace FRCGroove.Web.Controllers
                         }
                     }
                 }
+
+                dashboard.RegisteredTeams = FRCEventsAPI.GetEventTeamListing(eventCode);
             }
 
-            AddTeamsOfInterest(eventCode, teamList, dashboard);
+            AddTeamsOfInterest(eventCode, teamsOfInterest, dashboard);
 
             return dashboard;
         }
