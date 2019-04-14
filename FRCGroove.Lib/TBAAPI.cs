@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Authenticators;
 
-using FRCGroove.Lib.models;
+using FRCGroove.Lib.Models;
 using System.Configuration;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
@@ -18,7 +18,7 @@ namespace FRCGroove.Lib
     {
         private static RestClient _client = new RestClient("https://www.thebluealliance.com/api/v3");
 
-        public static TBAStats GetStats(string eventCode)
+        public static TBAStatsCollection GetStats(string eventCode)
         {
             string path = $"event/{eventCode}/oprs";
 
@@ -26,11 +26,11 @@ namespace FRCGroove.Lib
             request.AddHeader("X-TBA-Auth-Key", ConfigurationManager.AppSettings["TBAAuthKey"]);
             var resp = _client.Execute(request);
 
-            TBAStats stats = null;
+            TBAStatsCollection stats = null;
             if (resp.Content != "null")
             {
                 JObject j = JObject.Parse(resp.Content);
-                stats = new TBAStats(j);
+                stats = new TBAStatsCollection(j);
             }
 
             return stats;

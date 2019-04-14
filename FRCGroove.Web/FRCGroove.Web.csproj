@@ -203,6 +203,7 @@
     <Content Include="App_Data\cache\GetHybridSchedule.Qualification.NEWTON.json" />
     <Content Include="App_Data\cache\GetHybridSchedule.Qualification.ROEBLING.json" />
     <Content Include="App_Data\cache\GetHybridSchedule.Qualification.TURING.json" />
+    <Content Include="App_Data\cache\GetFullTeamListing.2019.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -1,4 +1,4 @@
-﻿@using FRCGroove.Lib.models
+﻿@using FRCGroove.Lib.Models
 @using FRCGroove.Web.Models
 @model FRCGroove.Web.Models.Dashboard
 
@@ -21,95 +21,145 @@
             <div class="card-header" style="margin-bottom:0;padding: 0.5rem"><h6 style="margin-bottom:0">@Model.FrcEvent.name</h6>
             <span style="font-size:11px; margin-bottom:10px">@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d")</span></div>
         }
-        <div class="card-body" style="padding:0.5rem 1rem 0.5rem 1rem">
-            @{
-                if (Model.EventState == FRCEventState.Past)
+
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item" style="padding:0.5rem 0.75rem 0.5rem 0.75rem">
+                @if (Model.EventState == FRCEventState.Past)
                 {
-                    <p>Event appears to be complete<br /><a href="#Quarterfinals">playoffs</a> / <a href="#Brackets">brackets</a></p>
+                    <span>Event is complete (<a href="#Quarterfinals">playoffs</a> / <a href="#Brackets">brackets</a>)</span>
                 }
                 else if (Model.EventState == FRCEventState.Future)
                 {
-                    <p>Match schedule not yet available</p>
+                    <span>Match schedule not yet available</span>
                 }
                 else if (Model.EventState == FRCEventState.Invalid)
                 {
-                    <p>This appears to be an invalid event code<br />(<a href="/">return to event listing</a>)</p>
+                    <span>This appears to be an invalid event code<br />(<a href="/">return to event listing</a>)</span>
                 }
                 else
                 {
-                    if(Model.EventState == FRCEventState.Qualifications && Model.Matches != null && Model.Matches.Count(m => m.tournamentLevel == "Qualification" && m.actualStartTime != null) == 0)
+                    if (Model.EventState == FRCEventState.Qualifications && Model.Matches != null && Model.Matches.Count(m => m.tournamentLevel == "Qualification" && m.actualStartTime != null) == 0)
                     {
-                        <p>Qualifications haven't started</p>
+                        <span>Qualifications haven't started</span>
                     }
                     else if ((Model.EventState == FRCEventState.Qualifications && Model.Matches != null && Model.Matches.Count(m => m.tournamentLevel == "Qualification" && m.actualStartTime == null) == 0) || (Model.EventState == FRCEventState.Quarterfinals && Model.Matches.Count(m => m.tournamentLevel == "Playoff" && m.actualStartTime != null) == 0))
                     {
-                        <p>Qualifications have completed - waiting for playoffs to begin
-                            @if(Model.Matches.Count(m => m.tournamentLevel == "Playoff") > 0) {<span>(<a href="#nextmatch">next match</a>)</span>}
-                        </p>
+                        <span>
+                            Qualifications have completed - waiting for playoffs to begin
+                            @if (Model.Matches.Count(m => m.tournamentLevel == "Playoff") > 0)
+                            {<span>(<a href="#nextmatch">next match</a>)</span>}
+                        </span>
                     }
                     else if (Model.EventState == FRCEventState.Qualifications || Model.EventState == FRCEventState.Quarterfinals || Model.EventState == FRCEventState.Semifinals || Model.EventState == FRCEventState.Finals)
                     {
                         int scheduleOffset = (int)Math.Round(Model.ScheduleOffset, 0);
                         if (scheduleOffset < 0)
                         {
-                            <p style="font-style:italic; color:#046705;">@Model.EventState.ToString() are running about @Math.Abs(scheduleOffset) minute@(Math.Abs(scheduleOffset) > 1 ? "s" : "") ahead (<a href="#nextmatch">next match</a>)</p>
+                            <span style="font-style:italic; color:#046705;">@Model.EventState.ToString() are running about @Math.Abs(scheduleOffset) minute@(Math.Abs(scheduleOffset) > 1 ? "s" : "") ahead (<a href="#nextmatch">next match</a>)</span>
                         }
                         else if (scheduleOffset > 0)
                         {
-                            <p style="font-style: italic"><span style="color:#7c0a0a; font-style:italic">@Model.EventState.ToString() are running about @Math.Abs(scheduleOffset) minute@(Math.Abs(scheduleOffset) > 1 ? "s" : "") behind</span> (<a href="#nextmatch">next match</a>)</p>
+                            <span style="font-style: italic"><span style="color:#7c0a0a; font-style:italic">@Model.EventState.ToString() are running about @Math.Abs(scheduleOffset) minute@(Math.Abs(scheduleOffset) > 1 ? "s" : "") behind</span> (<a href="#nextmatch">next match</a>)</span>
                         }
                         else
                         {
-                            <p>@Model.EventState.ToString() are running on time (<a href="#nextmatch">next match</a>)</p>
+                            <span>@Model.EventState.ToString() are running on time (<a href="#nextmatch">next match</a>)</span>
                         }
                     }
                 }
+            </li>
+            @if (Model.TeamsOfInterest != null && Model.TeamsOfInterest.Count > 0 && Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid && Model.TeamsOfInterest.Count(t => t.eventRank > 0) > 0)
+            {
+                <li class="list-group-item" style="padding:0.5rem 0.75rem 0.5rem 0.75rem">
+                    <div id="teamSort">
+                        <a href="javascript:;">Rank</a> <i id="sortRank" class="fas fa-sort-up" style="display:inline"></i> | 
+                        <a href="javascript:;">OPR</a> <i id="sortOPR" style="display:none"></i> | 
+                        <a href="javascript:;">DPR</a> <i id="sortDPR" style="display:none"></i> | 
+                        <a href="javascript:;">CCWM</a> <i id="sortCCWM" style="display:none"></i>
+                    </div>
 
-                if (Model.TeamsOfInterest != null && Model.TeamsOfInterest.Count > 0 && Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid && Model.TeamsOfInterest.Count(t => t.eventRank > 0) > 0)
-                {
-                    @* TODO: <div>Sort by: <a href="">rank</a> | <a href="">CCWM</a></div>*@
-                    foreach (RegisteredTeam registeredTeam in Model.TeamsOfInterest.Where(t => t.eventRank > 0).OrderBy(t => t.eventRank))
-                    {
-                        <div style="margin-top:0.5rem">
-                            @if (Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid)
-                            {
-                                <div>
-                                    @registeredTeam.number @registeredTeam.nameShort
-                                    (<span><a href="https://frc-events.firstinspires.org/2019/@(Model.FrcEvent.code)/rankings">#@registeredTeam.eventRank</a></span>)
-                                    <sup style="font-size:small">[<a href="@(Model.TeamOfInterestUrl(Model.FrcEvent.code, registeredTeam.number, "remove"))" style="color:red">x</a>]</sup>
-                                </div>
+                    <div id="watchlist" style="height:@(Model.TeamsOfInterest.Count * 47)px"></div>
 
-                                if (registeredTeam.Stats != null && registeredTeam.Stats.oprs != null && registeredTeam.Stats.oprs.ContainsKey("frc" + registeredTeam.number))
-                                {
-                                    <div style="font-size:11px;">
-                                        OPR: @Math.Round(registeredTeam.Stats.oprs["frc" + registeredTeam.number.ToString()], 2),
-                                        DPR: @Math.Round(registeredTeam.Stats.dprs["frc" + registeredTeam.number.ToString()], 2),
-                                        CCWM: @Math.Round(registeredTeam.Stats.ccwms["frc" + registeredTeam.number.ToString()], 2)
-                                    </div>
-                                }
-
-                                if (registeredTeam.NextMatch != null)
-                                {
-                                    Match nextMatch = registeredTeam.NextMatch;
-                                    <div style="font-size:11px;">
-                                        Next match: <a href="#@(nextMatch.tournamentLevel + nextMatch.matchNumber)">@nextMatch.title</a>
-                                        (@nextMatch.startTime.ToString("ddd M/d h:mm"), <i>est. @nextMatch.startTime.AddMinutes(Model.ScheduleOffset).ToString("h:mm")</i>)
-                                    </div>
-                                }
-                            }
+                    <script type="text/javascript">
+                        var sortName = "Rank";
+                        var prevSortName = "Rank";
+                        var sortDirection = "ASC";
+                        $(function () {
+                            GetTeams();
+                        });
+                        $("body").on("click", "#teamSort a", function () {
+                            sortName = $(this).html();
+                            console.log(sortName + " / " + prevSortName);
+                            if (sortName == prevSortName)
+                                sortDirection = sortDirection == "ASC" ? "DESC" : "ASC";
+                            else if (sortName == "Rank")
+                                sortDirection = "ASC";
                             else
-                            {
-                                <div>Team @registeredTeam.number @registeredTeam.nameShort (District #@registeredTeam.districtRank)</div>
-                            }
-                        </div>
-                    }
-                }
-                else if (Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid)
-                {
-                    <p><i>Tap team numbers to watch/unwatch</i></p>
-                }
+                                sortDirection = "DESC";
+                            GetTeams();
+                            prevSortName = sortName;
+                        });
+                        function GetTeams() {
+                            $.ajax({
+                                type: "POST",
+                                url: "/FRCEvent/TeamsOfInterestAjax",
+                                data: '{"eventCode": "@Model.FrcEvent.code", "teamList": "@string.Join(",", Model.TeamsOfInterest.Select(t => t.number))", "sortName": "' + sortName + '", "sortDirection": "' + sortDirection + '"}',
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: OnSuccess,
+                                failure: function (response) {
+                                    OnFailure();
+                                    console.log("failed to get teams: " + response.d);
+                                },
+                                error: function (response) {
+                                    OnFailure();
+                                    console.log("error getting teams: " + response.d);
+                                }
+                            });
+                        };
+                        function OnSuccess(response) {
+                            var model = response;
+                            $("#watchlist").empty();
+                            $("#watchlist").removeAttr("style");
+                            $.each(model, function () {
+                                var team = this;
+                                if (team.eventRank > -1) {
+                                    var teamListing = '<div style="margin-top:0.5rem">';
+                                    teamListing += '<div>' + team.number + ' ' + team.nameShort;
+                                    teamListing += ' (<span><a href="https://frc-events.firstinspires.org/2019/@Model.FrcEvent.code/rankings">#' + team.eventRank + '</a></span>) ';
+                                    teamListing += '<sup style="font-size:small">[<a href="/FRCEvent/@Model.FrcEvent.code/x' + team.number + '" style="color:red">x</a>]</sup></div>';
+                                    if (team.Stats != null) {
+                                        teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
+                                    }
+                                    $("#watchlist").append(teamListing);
+                                }
+                            });
+
+                            $("[id^=sort]").each(function () { $(this).removeAttr("class") });
+                            $("[id^=sort]").each(function () { $(this).attr("style", "display:none") });
+
+                            console.log(sortName + sortDirection);
+                            if (sortDirection == "ASC")
+                                $("#sort" + sortName).attr("class", "fas fa-sort-up");
+                            else
+                                $("#sort" + sortName).attr("class", "fas fa-sort-down");
+                            $("#sort" + sortName).attr("style", "display:inline");
+
+                            stickyHeaders.load($(".followMeBar"));
+                        };
+                        function OnFailure() {
+                            $("#watchlist").empty();
+                            $("#watchlist").removeAttr("style");
+                            $("#watchlist").append('<span style="color:darkred;font-style:italic">Unable to retrive watchlist</span>');
+                        };
+                    </script>
+                </li>
             }
-        </div>
+            else if (Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid)
+            {
+                <li class="list-group-item" style="font-size:0.75rem"><i>Tap team numbers to watch/unwatch - stats will display here once matches have started</i></li>
+            }
+        </ul>
     </div>
 }
 
@@ -221,13 +271,22 @@
         </div>
     }
 
-    <p style="font-size: 11px; font-style:italic; margin-top: 15px">Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
+    <p style="font-size: 0.75rem; font-style:italic; margin-top: 0.5rem">Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
 }
 
 @helper TeamListing(int teamNumber, string eventCode, Dictionary<int, string> classes, Dictionary<int, string> actions)
 {
     if (teamNumber > 0)
     {
-        <div @Html.Raw(classes[teamNumber])><a href="@(Model.TeamOfInterestUrl(eventCode, teamNumber, actions[teamNumber]))" style="color:inherit">@teamNumber<span class="teamName"> @Model.RegisteredTeams.Where(t => t.number == teamNumber).FirstOrDefault().nameShort</span></a></div>
+        <div @Html.Raw(classes[teamNumber])>
+            <a href="@(Model.TeamOfInterestUrl(eventCode, teamNumber, actions[teamNumber]))" style="color:inherit">
+                <span>@teamNumber</span>
+                @if (Model.EventRankings.ContainsKey(teamNumber))
+                {
+                    <span class="teamRank"> (#@Model.EventRankings[teamNumber].rank)</span>
+                }
+                <span class="teamName"> @Model.RegisteredTeams[teamNumber].nameShort</span>
+            </a>
+        </div>
     }
 }

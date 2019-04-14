@@ -9,6 +9,10 @@
     padding-right: 15px;
 }
 
+p {
+    margin-bottom: 0.5rem;
+}
+
 /* Override the default bootstrap behavior where horizontal description lists 
    will truncate terms that are too long to fit in the left column 
 */
@@ -174,7 +178,7 @@ a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoratio
 }
 
 .eliminated {
-    left: 0em;
+    left: 0;
     color: red;
     font-weight: bold;
     font-size: large;
@@ -212,7 +216,7 @@ div#backToTop {
     text-align: center;
     position: relative;
     bottom: 3px;
-    margin: 0px;
+    margin: 0;
     color: white;
     font-weight: bold;
 }
@@ -230,13 +234,18 @@ div#backToTop {
     text-align: center;
 }
 
+.teamRank {
+    font-size: 0.75rem;
+}
+
 .teamName {
-    display:none
+    font-size: 0.75rem;
+    text-decoration: none;
+    display: none
 }
 
 @media (min-width: 576px) {
     .teamName {
-        font-size: 0.75rem;
         display:inline;
     }
 

@@ -32,6 +32,12 @@ namespace FRCGroove.Web
             );
 
             routes.MapRoute(
+                name: "TeamsOfInterestAjax",
+                url: "FRCEvent/TeamsOfInterestAjax",
+                defaults: new { controller = "FRCEvent", action = "TeamsOfInterestAjax" }
+            );
+
+            routes.MapRoute(
                 name: "FRCEvent",
                 url: "FRCEvent/{eventCode}/{teamList}",
                 defaults: new { controller = "FRCEvent", action = "Index", teamList = UrlParameter.Optional }

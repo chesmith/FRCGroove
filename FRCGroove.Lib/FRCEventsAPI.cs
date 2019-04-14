@@ -9,7 +9,7 @@ using RestSharp.Authenticators;
 
 using Newtonsoft.Json;
 
-using FRCGroove.Lib.models;
+using FRCGroove.Lib.Models;
 using System.Configuration;
 using System.IO;
 
@@ -23,6 +23,8 @@ namespace FRCGroove.Lib
         };
 
         public static string CacheFolder { get; set; }
+
+        public static Dictionary<int, RegisteredTeam> TeamListingCache { get; set; }
 
         private static Dictionary<string, DateTime> _knownStartTimes = new Dictionary<string, DateTime>()
         {   {"TXCHA~Qualification", new DateTime(2019, 3, 15, 11, 00, 00, DateTimeKind.Utc)},
@@ -144,8 +146,8 @@ namespace FRCGroove.Lib
                 string cachePath = $@"{CacheFolder}\GetHybridSchedule.Qualification.{eventCode}.json";
                 if (File.Exists(cachePath))
                 {
-                    string mockInput = File.ReadAllText(cachePath);
-                    response = new RestResponse<ScheduleListing>() { Data = JsonConvert.DeserializeObject<ScheduleListing>(mockInput) };
+                    string cachedData = File.ReadAllText(cachePath);
+                    response = new RestResponse<ScheduleListing>() { Data = JsonConvert.DeserializeObject<ScheduleListing>(cachedData) };
                 }
             }
 
@@ -287,8 +289,9 @@ namespace FRCGroove.Lib
             var request = new RestRequest(path);
             var response = _client.Execute<RegisteredTeamListing>(request);
 
-            Log($"GetTeamListing-{eventCode}", response.Content);
+            Log($"GetEventTeamListing-{eventCode}", response.Content);
 #endif
+            //TODO: this multipage code probably works funky if I'm using mock data
             if (response.Data != null)
             {
                 List<RegisteredTeam> teams = response.Data.teams;
@@ -298,7 +301,7 @@ namespace FRCGroove.Lib
                     {
                         var subpageRequest = new RestRequest($"{path}&page={page}");
                         var subpageResponse = _client.Execute<RegisteredTeamListing>(subpageRequest);
-                        Log($"GetTeamListing-{eventCode}-{page}", subpageResponse.Content);
+                        Log($"GetEventTeamListing-{eventCode}-{page}", subpageResponse.Content);
                         if(subpageResponse.Data != null)
                         {
                             teams.AddRange(subpageResponse.Data.teams);
@@ -311,7 +314,7 @@ namespace FRCGroove.Lib
                 return null;
         }
 
-        public static List<RegisteredTeam> GetTeamListing(string districtCode)
+        public static List<RegisteredTeam> GetDistrictTeamListing(string districtCode)
         {
             string path = $"teams/?districtCode={districtCode}";
 
@@ -322,11 +325,63 @@ namespace FRCGroove.Lib
             var request = new RestRequest(path);
             var response = _client.Execute<RegisteredTeamListing>(request);
 
-            Log($"GetTeamListing-{districtCode}", response.Content);
+            Log($"GetDistrictTeamListing-{districtCode}", response.Content);
 #endif
+            //TODO: Multi-page responses
             List<RegisteredTeam> registeredTeams = response.Data.teams.OrderBy(t => t.number).ToList();
 
             return registeredTeams;
+        }
+
+        public static List<RegisteredTeam> GetFullTeamListing(/*TODO: int year*/)
+        {
+            string path = $"teams";
+
+            var request = new RestRequest(path);
+            var response = _client.Execute<RegisteredTeamListing>(request);
+
+            //var response = new RestResponse<RegisteredTeamListing>();
+            //string cachePath = $@"{CacheFolder}\GetFullTeamListing.2019.json";
+            //if (File.Exists(cachePath))
+            //{
+            //    string cachedData = File.ReadAllText(cachePath);
+            //    response = new RestResponse<RegisteredTeamListing>() { Data = JsonConvert.DeserializeObject<RegisteredTeamListing>(cachedData) };
+            //}
+
+            if (response.Data != null)
+            {
+                List<RegisteredTeam> teams = response.Data.teams;
+                if (response.Data.teamCountPage > 1)
+                {
+                    for (int page = 2; page <= response.Data.pageTotal; page++)
+                    {
+                        var subpageRequest = new RestRequest($"{path}?page={page}");
+                        var subpageResponse = _client.Execute<RegisteredTeamListing>(subpageRequest);
+                        Log($"GetFullTeamListing-{page}", subpageResponse.Content);
+                        if (subpageResponse.Data != null)
+                        {
+                            teams.AddRange(subpageResponse.Data.teams);
+                        }
+                    }
+                }
+                return teams;
+            }
+            else
+                return null;
+        }
+
+        public static void InitializeTeamListingCache()
+        {
+            if (CacheFolder.Length > 0)
+            {
+                string cachePath = $@"{CacheFolder}\GetFullTeamListing.2019.json";
+                if (File.Exists(cachePath))
+                {
+                    string cachedData = File.ReadAllText(cachePath);
+                    List<RegisteredTeam> teams = JsonConvert.DeserializeObject<RegisteredTeamListing>(cachedData).teams;
+                    TeamListingCache = teams.ToDictionary(t => t.teamNumber, t => t);
+                }
+            }
         }
 
         public static RegisteredTeam GetTeam(int teamNumber)
@@ -337,15 +392,24 @@ namespace FRCGroove.Lib
             string mockInput = File.ReadAllText(@"C:\temp\GetTeam.mock.json");
             var response = new { Data = JsonConvert.DeserializeObject<RegisteredTeamListing>(mockInput) };
 #else
-            var request = new RestRequest(path);
-            var response = _client.Execute<RegisteredTeamListing>(request);
+            RegisteredTeam team = null;
+            if (TeamListingCache != null && TeamListingCache.ContainsKey(teamNumber))
+            {
+                team = TeamListingCache[teamNumber];
+            }
 
-            Log($"GetTeam-{teamNumber}", response.Content);
+            if(team == null)
+            {
+                var request = new RestRequest(path);
+                var response = _client.Execute<RegisteredTeamListing>(request);
+
+                Log($"GetTeam-{teamNumber}", response.Content);
 #endif
-            if (response.Data !=null && response.Data.teams.Count > 0)
-                return response.Data.teams[0];
-            else
-                return null;
+                if (response.Data != null && response.Data.teams.Count > 0)
+                    team = response.Data.teams[0];
+            }
+
+            return team;
         }
 
         public static List<Alliance> GetPlayoffAlliances(string eventCode)

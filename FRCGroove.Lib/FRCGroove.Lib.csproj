@@ -50,23 +50,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FRCEventsAPI.cs" />
-    <Compile Include="models\Alliance.cs" />
-    <Compile Include="models\AllianceListing.cs" />
-    <Compile Include="models\District.cs" />
-    <Compile Include="models\DistrictListing.cs" />
-    <Compile Include="models\DistrictRank.cs" />
-    <Compile Include="models\DistrictRankListing.cs" />
-    <Compile Include="models\Event.cs" />
-    <Compile Include="models\EventListing.cs" />
-    <Compile Include="models\EventRanking.cs" />
-    <Compile Include="models\EventRankListing.cs" />
-    <Compile Include="models\Match.cs" />
-    <Compile Include="models\PlayoffBracket.cs" />
-    <Compile Include="models\RegisteredTeam.cs" />
-    <Compile Include="models\RegisteredTeamListing.cs" />
-    <Compile Include="models\ScheduleListing.cs" />
-    <Compile Include="models\TBAStats.cs" />
-    <Compile Include="models\Team.cs" />
+    <Compile Include="Models\Alliance.cs" />
+    <Compile Include="Models\AllianceListing.cs" />
+    <Compile Include="Models\District.cs" />
+    <Compile Include="Models\DistrictListing.cs" />
+    <Compile Include="Models\DistrictRank.cs" />
+    <Compile Include="Models\DistrictRankListing.cs" />
+    <Compile Include="Models\Event.cs" />
+    <Compile Include="Models\EventListing.cs" />
+    <Compile Include="Models\EventRanking.cs" />
+    <Compile Include="Models\EventRankListing.cs" />
+    <Compile Include="Models\Match.cs" />
+    <Compile Include="Models\PlayoffBracket.cs" />
+    <Compile Include="Models\RegisteredTeam.cs" />
+    <Compile Include="Models\RegisteredTeamListing.cs" />
+    <Compile Include="Models\ScheduleListing.cs" />
+    <Compile Include="Models\TBAStats.cs" />
+    <Compile Include="Models\TBAStatsCollection.cs" />
+    <Compile Include="Models\Team.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TBAAPI.cs" />
   </ItemGroup>

@@ -1,5 +1,5 @@
 ﻿using FRCGroove.Lib;
-using FRCGroove.Lib.models;
+using FRCGroove.Lib.Models;
 
 using FRCGroove.Web.Models;
 

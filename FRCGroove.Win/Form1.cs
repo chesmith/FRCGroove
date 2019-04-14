@@ -1,11 +1,12 @@
 ﻿using FRCGroove.Lib;
-using FRCGroove.Lib.models;
+using FRCGroove.Lib.Models;
 
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
 using System.IO;
+using Newtonsoft.Json;
 
 namespace FRCGroove.Win
 {
@@ -18,7 +19,9 @@ namespace FRCGroove.Win
 
         private void btnGo_Click(object sender, EventArgs e)
         {
-            APITests2();
+            //APITests2();
+
+            BuildTeamListingCache();
 
             //StreamWriter sw = new StreamWriter(@"C:\temp\playoffs.csv");
             //foreach (string path in Directory.GetFiles(@"C:\temp\FRCGroove.logs\all past events 2"))
@@ -126,6 +129,18 @@ namespace FRCGroove.Win
         private void APITests2()
         {
             List<Match> matches = FRCEventsAPI.GetHybridSchedule("TXCHA", "Qualification");
+        }
+
+        private void BuildTeamListingCache()
+        {
+            List<RegisteredTeam> teams = FRCEventsAPI.GetFullTeamListing();
+
+            string json = JsonConvert.SerializeObject(teams);
+            using (StreamWriter sw = new StreamWriter($@"C:\temp\FRCGroove.Logs\GetFullTeamListing.2019.{DateTime.Now:yyyy-dd-mm-HH-MM-ss}.json"))
+            {
+                sw.Write(json);
+                sw.Close();
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)

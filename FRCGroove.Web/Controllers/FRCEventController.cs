@@ -1,23 +1,17 @@
 ﻿using FRCGroove.Web.Models;
 using FRCGroove.Lib;
-using FRCGroove.Lib.models;
+using FRCGroove.Lib.Models;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Web.Hosting;
 using System.Web.Mvc;
 
 namespace FRCGroove.Web.Controllers
 {
     public class FRCEventController : Controller
     {
-        public FRCEventController()
-        {
-            FRCEventsAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
-        }
-
         public ActionResult Index(string districtCode = "", string eventCode = "", string teamList = "")
         {
             List<string> teams = BuildTeamsOfInterest(teamList);
@@ -84,53 +78,43 @@ namespace FRCGroove.Web.Controllers
                     }
                 }
 
-                dashboard.RegisteredTeams = FRCEventsAPI.GetEventTeamListing(eventCode);
+                dashboard.RegisteredTeams = FRCEventsAPI.TeamListingCache;
+                List<EventRanking> eventRankings = FRCEventsAPI.GetEventRankings(eventCode);
+                if(eventRankings != null)
+                    dashboard.EventRankings = eventRankings.ToDictionary(e => e.teamNumber, e => e);
             }
 
-            AddTeamsOfInterest(eventCode, teamsOfInterest, dashboard);
+            dashboard.TeamsOfInterest.AddRange(GatherTeamsOfInterest(eventCode, teamsOfInterest, dashboard.EventRankings));
 
             return dashboard;
         }
 
-        private void AddTeamsOfInterest(string eventCode, List<string> teamList, Dashboard dashboard)
+        private List<RegisteredTeam> GatherTeamsOfInterest(string eventCode, List<string> teamList, Dictionary<int, EventRanking> eventRankings = null)
         {
+            List<RegisteredTeam> teamsOfInterest = new List<RegisteredTeam>();
             if (teamList != null && teamList.Count > 0)
             {
+                TBAStatsCollection stats = TBAAPI.GetStats("2019" + eventCode.ToLower());
+                if (eventRankings == null)
+                    eventRankings = FRCEventsAPI.GetEventRankings(eventCode).ToDictionary(e => e.teamNumber, e => e);
+
                 foreach (string teamNumber in teamList)
                 {
                     RegisteredTeam team = FRCEventsAPI.GetTeam(Int32.Parse(teamNumber));
-                    if (eventCode.Length > 0)
-                    {
-                        EnrichTeamData(team, eventCode, dashboard.Matches);
-                    }
-                    dashboard.TeamsOfInterest.Add(team);
+                    if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.teamNumber))
+                        team.Stats = new TBAStats(stats, team.teamNumber);
+                    else
+                        team.Stats = null;
+
+                    if (eventRankings.Count > 0 && eventRankings.ContainsKey(team.teamNumber))
+                        team.eventRank = eventRankings[team.teamNumber].rank;
+                    else
+                        team.eventRank = -1;
+
+                    teamsOfInterest.Add(team);
                 }
             }
-        }
-
-        private void EnrichTeamData(RegisteredTeam team, string eventCode, List<Match> matches)
-        {
-            if (team != null)
-            {
-                List<DistrictRank> districtRankings = FRCEventsAPI.GetDistrictRankings(team.districtCode, team.number);
-                if (districtRankings.Count > 0)
-                    team.districtRank = districtRankings[0].rank;
-
-                List<EventRanking> eventRankings = FRCEventsAPI.GetEventRankings(eventCode, team.number);
-                if (eventRankings.Count > 0)
-                    team.eventRank = eventRankings[0].rank;
-
-                team.Stats = TBAAPI.GetStats("2019" + eventCode.ToLower());
-
-                if (matches != null)
-                {
-                    Match nextMatch = (Match)matches.Where(m => m.teams.Count(t => t.number == team.number) > 0 && m.actualStartTime == null).FirstOrDefault();
-                    if (nextMatch != null)
-                    {
-                        team.NextMatch = nextMatch;
-                    }
-                }
-            }
+            return teamsOfInterest;
         }
 
         private double CalculateScheduleOffset(List<Match> matches)
@@ -143,6 +127,30 @@ namespace FRCGroove.Web.Controllers
                 average = sum / todaysMatches.Count();
 
             return average;
+        }
+
+        [HttpPost]
+        public JsonResult TeamsOfInterestAjax(string eventCode, string teamList, string sortName, string sortDirection)
+        {
+            List<string> teams = new List<string>(teamList.Split(','));
+            List<RegisteredTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
+
+            if (sortName.Length == 0) sortName = "Rank";
+
+            if (sortName == "Number")
+                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.teamNumber).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.teamNumber).ToList()));
+            else if (sortName == "Name")
+                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.nameShort).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.nameShort).ToList()));
+            else if (sortName == "Rank")
+                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.eventRank).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.eventRank).ToList()));
+            else if (sortName == "OPR")
+                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.OPR).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.OPR).ToList()));
+            else if (sortName == "DPR")
+                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.DPR).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.DPR).ToList()));
+            else if (sortName == "CCWM")
+                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.CCWM).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.CCWM).ToList()));
+            else
+                return null;
         }
     }
 }

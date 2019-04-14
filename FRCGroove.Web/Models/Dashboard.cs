@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-using FRCGroove.Lib.models;
+using FRCGroove.Lib.Models;
 
 namespace FRCGroove.Web.Models
 {
@@ -25,9 +25,12 @@ namespace FRCGroove.Web.Models
         public List<RegisteredTeam> TeamsOfInterest { get; set; }
         public double ScheduleOffset { get; set; }
         public List<Match> Matches { get; set; }
+
         public List<Alliance> Alliances { get; set; }
         public PlayoffBracket Bracket { get; set; }
-        public List<RegisteredTeam> RegisteredTeams { get; set; }
+
+        public Dictionary<int, RegisteredTeam> RegisteredTeams { get; set; }
+        public Dictionary<int, EventRanking> EventRankings { get; set; }
 
         private FRCEventState _eventState = FRCEventState.Invalid;
 
@@ -99,13 +102,7 @@ namespace FRCGroove.Web.Models
                 }
                 else if (action == "remove")
                 {
-                    if (TeamsOfInterest.Count() > 0)
-                    {
-                        string teamList = string.Join(",", TeamsOfInterest.Where(t => t.number != teamNumber).Select(t => t.number));
-                        url = $"/FRCEvent/{eventCode}/x{teamNumber},{teamList}";
-                    }
-                    else
-                        url = $"/FRCEvent/{eventCode}";
+                    url = $"/FRCEvent/{eventCode}/x{teamNumber}";
                 }
             }
             return url;

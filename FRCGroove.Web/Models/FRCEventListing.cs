@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-using FRCGroove.Lib.models;
+using FRCGroove.Lib.Models;
 
 namespace FRCGroove.Web.Models
 {
