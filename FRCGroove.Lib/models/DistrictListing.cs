@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FRCGroove.Lib.models
+namespace FRCGroove.Lib.Models
 {
     class DistrictListing
     {

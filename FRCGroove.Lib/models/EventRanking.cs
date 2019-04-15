@@ -1,4 +1,4 @@
-﻿namespace FRCGroove.Lib.models
+﻿namespace FRCGroove.Lib.Models
 {
     public class EventRanking
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FRCGroove.Lib.models
+namespace FRCGroove.Lib.Models
 {
     public class ScheduleListing
     {

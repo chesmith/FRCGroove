@@ -1,26 +1,25 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FRCGroove.Lib.models
+namespace FRCGroove.Lib.Models
 {
     public class TBAStats
     {
-        public Dictionary<string, double> ccwms { get; set; }
-        public Dictionary<string, double> dprs { get; set; }
-        public Dictionary<string, double> oprs { get; set; }
+        public double OPR { get; set; }
+        public double DPR { get; set; }
+        public double CCWM { get; set; }
 
-        public TBAStats(JObject j)
+        public TBAStats(TBAStatsCollection statsCollection, int teamNumber)
         {
-            if(j.ContainsKey("oprs"))
-                oprs = j["oprs"].ToObject<Dictionary<string, double>>();
-            if(j.ContainsKey("dprs"))
-                dprs = j["dprs"].ToObject<Dictionary<string, double>>();
-            if(j.ContainsKey("ccwms"))
-                ccwms = j["ccwms"].ToObject<Dictionary<string, double>>();
+            if (statsCollection.oprs.ContainsKey("frc" + teamNumber))
+            {
+                OPR = @Math.Round(statsCollection.oprs["frc" + teamNumber.ToString()], 2);
+                DPR = @Math.Round(statsCollection.dprs["frc" + teamNumber.ToString()], 2);
+                CCWM = @Math.Round(statsCollection.ccwms["frc" + teamNumber.ToString()], 2);
+            }
         }
     }
 }

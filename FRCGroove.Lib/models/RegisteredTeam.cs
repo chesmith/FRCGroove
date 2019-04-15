@@ -1,12 +1,12 @@
 ﻿using RestSharp.Deserializers;
 
-namespace FRCGroove.Lib.models
+namespace FRCGroove.Lib.Models
 {
     public class RegisteredTeam
     {
         public int teamNumber { get; set; }
 
-        public string nameFull { get; set; }
+        //public string nameFull { get; set; }
         public string nameShort { get; set; }
         public string schoolName { get; set; }
         public string city { get; set; }
@@ -22,7 +22,6 @@ namespace FRCGroove.Lib.models
         public int districtRank { get; set; } = -1;
 
         public TBAStats Stats { get; set; }
-        public Match NextMatch { get; set; }
 
         public int number { get { return teamNumber; } }
     }
