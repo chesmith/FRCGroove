@@ -85,7 +85,7 @@ a.nodecoration:link, a.nodecoration:visited, a.nodecoration:hover, a.nodecoratio
 
 /* sticky headers */
 .followMeBar {
-    background: #333399;
+    background: #5151a8;
     padding: 5px 10px;
     position: relative;
     z-index: 1;
@@ -279,4 +279,9 @@ div#backToTop {
    -moz-animation: flickerAnimation 2s infinite;
    -o-animation: flickerAnimation 2s infinite;
     animation: flickerAnimation 2s infinite;
+}
+
+.card-header {
+    color: white;
+    background-color: rgba(51, 51, 153, 1)
 }
