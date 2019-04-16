@@ -11,6 +11,18 @@
     ViewBag.Title = $"FRC Groove{eventName}";
 }
 
+@{
+    var eventCode = "Invalid";
+    if (Model != null && Model.FrcEvent != null && Model.EventState != FRCEventState.Invalid)
+    {
+        eventCode = Model.FrcEvent.code;
+    }
+}
+
+<script>
+    gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'view', 'event_label': '@eventCode' });
+</script>
+
 @Html.Partial("Navigation", "Schedule")
 
 @if (Model != null)
@@ -20,8 +32,10 @@
         {
             <div class="card-header" style="margin-bottom:0;padding: 0.5rem">
                 <h6 style="margin-bottom:0">@Model.FrcEvent.name</h6>
-                <div style="width:100%;font-size:0.75rem"><span style="float:left">@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d")</span>
-                <span id="refresh" style="float:right"><a class="fas fa-redo" style="color:white" href="javascript:window.location.href=window.location.href"></a></span></div>
+                <div style="width:100%;font-size:0.75rem">
+                    <span style="float:left">@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d")</span>
+                    <span id="refresh" style="float:right"><a class="fas fa-redo" style="color:white" href="javascript:window.location.href=window.location.href"></a></span>
+                </div>
             </div>
         }
 
@@ -118,7 +132,7 @@
                         $.ajax({
                         type: "POST",
                             url: "/FRCEvent/TeamsOfInterestAjax",
-                            data: '{"eventCode": "@(Model.FrcEvent != null ? Model.FrcEvent.code : "")", "teamList": "' + teamList + '", "sortName": "' + sortName + '", "sortDirection": "' + sortDirection + '"}',
+                            data: '{"eventCode": "@eventCode", "teamList": "' + teamList + '", "sortName": "' + sortName + '", "sortDirection": "' + sortDirection + '"}',
                             contentType: "application/json; charset=utf-8",
                             dataType: "json",
                             success: OnSuccess,
@@ -142,8 +156,8 @@
                             {
                                 var teamListing = '<div style="margin-top:0.5rem">';
                                 teamListing += '<div>' + team.number + ' ' + team.nameShort;
-                                teamListing += ' (<span><a href="https://frc-events.firstinspires.org/2019/@(Model.FrcEvent != null ? Model.FrcEvent.code : "")/rankings">#' + team.eventRank + '</a></span>) ';
-                                teamListing += '<sup style="font-size:small">[<a href="/FRCEvent/@(Model.FrcEvent != null ? Model.FrcEvent.code : "")/x' + team.number + '" style="color:red">x</a>]</sup></div>';
+                                teamListing += ' (<span><a href="https://frc-events.firstinspires.org/2019/@eventCode/rankings">#' + team.eventRank + '</a></span>) ';
+                                teamListing += '<sup style="font-size:small">[<a href="/FRCEvent/@eventCode/x' + team.number + '" style="color:red">x</a>]</sup></div>';
                                 if (team.Stats != null) {
                                     teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
                                 }
@@ -181,6 +195,7 @@
                                 $("#tapHint").css("display", "inline");
                             }
                         }
+                        gtag('event', 'stats', { 'event_category': 'Team', 'event_action': 'stats', 'event_label': teamList });
                     };
                     function OnFailure() {
                         $("#watchlist").empty();
@@ -360,8 +375,10 @@
                 action = 'remove';
             }
         });
+        gtag('event', 'watch', { 'event_category': 'Team', 'event_action': action, 'event_label': teamNumber });
         if (action == 'add') {
-            teamList += "," + teamNumber;
+            if (teamList.length > 0) teamList += ",";
+            teamList += teamNumber;
             if (eventState != "Future" && matches > 0) {
                 var h = $("#watchlist").height();
                 $("#watchlist").height(h + 47);

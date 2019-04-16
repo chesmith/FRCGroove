@@ -1,6 +1,21 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    @if (System.Configuration.ConfigurationManager.AppSettings["gakey"] != null && System.Configuration.ConfigurationManager.AppSettings["gakey"].Length > 0)
+    {
+        //https://developers.google.com/analytics/devguides/collection/gtagjs/
+        //https://developers.google.com/analytics/devguides/collection/gtagjs/migration
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@System.Configuration.ConfigurationManager.AppSettings["gakey"]"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '@System.Configuration.ConfigurationManager.AppSettings["gakey"]');
+        </script>
+    }
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
@@ -14,31 +29,15 @@
     @Styles.Render("~/Content/css")
 
     @Scripts.Render("~/Scripts/stickyheader.js")
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    @if (System.Configuration.ConfigurationManager.AppSettings["gakey"] != null && System.Configuration.ConfigurationManager.AppSettings["gakey"].Length > 0)
-    {
-        <script async src="https://www.googletagmanager.com/gtag/js?id=@System.Configuration.ConfigurationManager.AppSettings["gakey"]"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', '@System.Configuration.ConfigurationManager.AppSettings["gakey"]');
-        </script>
-    }
 </head>
 <body style="margin-bottom:40px">
     @*https://jsfiddle.net/fxvtaw60/*@
     <div ID="backToTop" class="up"><p>top</p></div>
-
-    <div class="container body-content">
-        @RenderBody()
-    </div>
-
-    @RenderSection("scripts", required: false)
-
     <script>
         $(document).ready(function () {
+            if ($(window).scrollTop() > 200) {
+                $('#backToTop').fadeIn('fast');
+            }
             $(window).scroll(function () {
                 if ($(this).scrollTop() > 200) {
                     $('#backToTop').fadeIn('slow');
@@ -53,5 +52,10 @@
         });
     </script>
 
+    <div class="container body-content">
+        @RenderBody()
+    </div>
+
+    @RenderSection("scripts", required: false)
 </body>
 </html>
