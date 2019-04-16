@@ -18,8 +18,22 @@
     <div class="card" style="border-bottom-left-radius:0;border-bottom-right-radius:0">
         @if (Model.FrcEvent != null)
         {
-            <div class="card-header" style="margin-bottom:0;padding: 0.5rem"><h6 style="margin-bottom:0">@Model.FrcEvent.name</h6>
-            <span style="font-size:11px; margin-bottom:10px">@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d")</span></div>
+            <div class="card-header" style="margin-bottom:0;padding: 0.5rem">
+                <h6 style="margin-bottom:0">@Model.FrcEvent.name</h6>
+                <div style="width:100%;font-size:0.75rem"><span style="float:left">@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d")</span>
+                <span id="refresh" style="float:right"><a class="fas fa-redo" href="javascript:window.location.href=window.location.href"></a></span></div>
+                @*<span id="elapsedTime" style="text-align:right;"></span>*@
+            </div>
+
+            @*<script type="text/javascript">
+                var initialTime = new Date();
+                function startTime() {
+                    var now = new Date();
+                    $("#elapsedTime").text(((now - initialTime) / 1000 / 60) + " min since last refresh");
+                    var t = setTimeout(startTime, 500);
+                };
+                startTime();
+            </script>*@
         }
 
         <ul class="list-group list-group-flush">
@@ -68,97 +82,134 @@
                     }
                 }
             </li>
-            @if (Model.TeamsOfInterest != null && Model.TeamsOfInterest.Count > 0 && Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid && Model.TeamsOfInterest.Count(t => t.eventRank > 0) > 0)
-            {
-                <li class="list-group-item" style="padding:0.5rem 0.75rem 0.5rem 0.75rem">
-                    <div id="teamSort">
-                        <a href="javascript:;">Rank</a> <i id="sortRank" class="fas fa-sort-up" style="display:inline"></i> | 
-                        <a href="javascript:;">OPR</a> <i id="sortOPR" style="display:none"></i> | 
-                        <a href="javascript:;">DPR</a> <i id="sortDPR" style="display:none"></i> | 
-                        <a href="javascript:;">CCWM</a> <i id="sortCCWM" style="display:none"></i>
-                    </div>
+            <li class="list-group-item" style="padding:0.5rem 0.75rem 0.5rem 0.75rem">
+                @{
+                    bool tapHint = true;
+                    if (Model.EventState != FRCEventState.Future && !(Model.EventState == FRCEventState.Qualifications && Model.Matches.Count(m => m.actualStartTime != null) == 0))
+                    {
+                        tapHint = (Model.TeamsOfInterest.Count == 0 && Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid);
+                    }
+                }
 
-                    <div id="watchlist" style="height:@(Model.TeamsOfInterest.Count * 47)px"></div>
+                <span id="tapHint" style="font-size:0.75rem; display:@(tapHint ? "inline": "none")"><i>Tap team numbers to watch/unwatch - stats will display here once matches have started</i></span>
 
-                    <script type="text/javascript">
-                        var sortName = "Rank";
-                        var prevSortName = "Rank";
-                        var sortDirection = "ASC";
-                        $(function () {
-                            GetTeams();
+                <div id="teamSort" style="display:none">
+                    <a href="javascript:;">Rank</a> <i id="sortRank" class="fas fa-sort-up" style="display:inline"></i> |
+                    <a href="javascript:;">OPR</a> <i id="sortOPR" style="display:none"></i> |
+                    <a href="javascript:;">DPR</a> <i id="sortDPR" style="display:none"></i> |
+                    <a href="javascript:;">CCWM</a> <i id="sortCCWM" style="display:none"></i>
+                </div>
+
+                <div id="watchlist" style="height:@(Model.EventState != FRCEventState.Future && !(Model.Matches != null && Model.Matches.Count(m => m.actualStartTime != null) == 0) ? Model.TeamsOfInterest.Count * 47 : 0)px"></div>
+
+                <script type="text/javascript">
+                    var eventState = "@Model.EventState";
+                    var matches = @(Model.Matches == null ? 0 : Model.Matches.Count(m => m.actualStartTime != null));
+                    setTimeout(function () { $("#refresh").attr("class", "animate-flicker"); setTimeout(function () { $("#refresh a").css("color", "red"); }, 300000); }, 300000);
+                    var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.number))";
+                    console.log("'" + teamList + "'");
+                    var sortName = "Rank";
+                    var prevSortName = "Rank";
+                    var sortDirection = "ASC";
+                    $(function () {
+                        RefreshTeams();
+                    });
+                    $("body").on("click", "#teamSort a", function () {
+                        sortName = $(this).html();
+                        if (sortName == prevSortName)
+                            sortDirection = sortDirection == "ASC" ? "DESC" : "ASC";
+                        else if (sortName == "Rank")
+                            sortDirection = "ASC";
+                        else
+                            sortDirection = "DESC";
+                        RefreshTeams();
+                        prevSortName = sortName;
+                    });
+                    function RefreshTeams() {
+                        $.ajax({
+                        type: "POST",
+                            url: "/FRCEvent/TeamsOfInterestAjax",
+                            data: '{"eventCode": "@(Model.FrcEvent != null ? Model.FrcEvent.code : "")", "teamList": "' + teamList + '", "sortName": "' + sortName + '", "sortDirection": "' + sortDirection + '"}',
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: OnSuccess,
+                            failure: function (response) {
+                                OnFailure();
+                                console.log("failed to get teams: " + response.d);
+                            },
+                            error: function (response) {
+                                OnFailure();
+                                console.log("error getting teams: " + response.d);
+                            }
                         });
-                        $("body").on("click", "#teamSort a", function () {
-                            sortName = $(this).html();
-                            console.log(sortName + " / " + prevSortName);
-                            if (sortName == prevSortName)
-                                sortDirection = sortDirection == "ASC" ? "DESC" : "ASC";
-                            else if (sortName == "Rank")
-                                sortDirection = "ASC";
-                            else
-                                sortDirection = "DESC";
-                            GetTeams();
-                            prevSortName = sortName;
+                    };
+                    function OnSuccess(response) {
+                        var model = response;
+                        $("#watchlist").empty();
+                        $("#watchlist").removeAttr("style");
+                        $.each(model, function () {
+                            var team = this;
+                            if (team.eventRank > -1)
+                            {
+                                var teamListing = '<div style="margin-top:0.5rem">';
+                                teamListing += '<div>' + team.number + ' ' + team.nameShort;
+                                teamListing += ' (<span><a href="https://frc-events.firstinspires.org/2019/@(Model.FrcEvent != null ? Model.FrcEvent.code : "")/rankings">#' + team.eventRank + '</a></span>) ';
+                                teamListing += '<sup style="font-size:small">[<a href="/FRCEvent/@(Model.FrcEvent != null ? Model.FrcEvent.code : "")/x' + team.number + '" style="color:red">x</a>]</sup></div>';
+                                if (team.Stats != null) {
+                                    teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
+                                }
+                                $("#watchlist").append(teamListing);
+                            }
                         });
-                        function GetTeams() {
-                            $.ajax({
-                                type: "POST",
-                                url: "/FRCEvent/TeamsOfInterestAjax",
-                                data: '{"eventCode": "@Model.FrcEvent.code", "teamList": "@string.Join(",", Model.TeamsOfInterest.Select(t => t.number))", "sortName": "' + sortName + '", "sortDirection": "' + sortDirection + '"}',
-                                contentType: "application/json; charset=utf-8",
-                                dataType: "json",
-                                success: OnSuccess,
-                                failure: function (response) {
-                                    OnFailure();
-                                    console.log("failed to get teams: " + response.d);
-                                },
-                                error: function (response) {
-                                    OnFailure();
-                                    console.log("error getting teams: " + response.d);
-                                }
-                            });
-                        };
-                        function OnSuccess(response) {
-                            var model = response;
-                            $("#watchlist").empty();
-                            $("#watchlist").removeAttr("style");
-                            $.each(model, function () {
-                                var team = this;
-                                if (team.eventRank > -1) {
-                                    var teamListing = '<div style="margin-top:0.5rem">';
-                                    teamListing += '<div>' + team.number + ' ' + team.nameShort;
-                                    teamListing += ' (<span><a href="https://frc-events.firstinspires.org/2019/@Model.FrcEvent.code/rankings">#' + team.eventRank + '</a></span>) ';
-                                    teamListing += '<sup style="font-size:small">[<a href="/FRCEvent/@Model.FrcEvent.code/x' + team.number + '" style="color:red">x</a>]</sup></div>';
-                                    if (team.Stats != null) {
-                                        teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
-                                    }
-                                    $("#watchlist").append(teamListing);
-                                }
-                            });
 
-                            $("[id^=sort]").each(function () { $(this).removeAttr("class") });
-                            $("[id^=sort]").each(function () { $(this).attr("style", "display:none") });
+                        $("[id^=sort]").each(function () { $(this).removeAttr("class") });
+                        $("[id^=sort]").each(function () { $(this).attr("style", "display:none") });
 
-                            console.log(sortName + sortDirection);
-                            if (sortDirection == "ASC")
-                                $("#sort" + sortName).attr("class", "fas fa-sort-up");
-                            else
-                                $("#sort" + sortName).attr("class", "fas fa-sort-down");
-                            $("#sort" + sortName).attr("style", "display:inline");
+                        if (sortDirection == "ASC")
+                            $("#sort" + sortName).attr("class", "fas fa-sort-up");
+                        else
+                            $("#sort" + sortName).attr("class", "fas fa-sort-down");
+                        $("#sort" + sortName).attr("style", "display:inline");
 
-                            stickyHeaders.load($(".followMeBar"));
-                        };
-                        function OnFailure() {
-                            $("#watchlist").empty();
-                            $("#watchlist").removeAttr("style");
-                            $("#watchlist").append('<span style="color:darkred;font-style:italic">Unable to retrive watchlist</span>');
-                        };
-                    </script>
-                </li>
-            }
-            else if (Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid)
-            {
-                <li class="list-group-item" style="font-size:0.75rem"><i>Tap team numbers to watch/unwatch - stats will display here once matches have started</i></li>
-            }
+                        stickyHeaders.load($(".followMeBar"));
+
+                        var teams = teamList.split(",");
+                        var teamsToKeep = [];
+                        $.each(teams, function (index, value) {
+                            if (value.indexOf("x") == -1) {
+                                teamsToKeep.push(value);
+                            }
+                        });
+                        teamList = teamsToKeep.join(",");
+
+                        if (eventState != "Future" && !(eventState == "Qualifications" && matches == 0)) {
+                            if (teamList.length > 0 && TeamsInThisEvent(teamList) > 0) {
+                                $("#teamSort").css("display", "inline");
+                                $("#tapHint").css("display", "none");
+                            }
+                            else {
+                                $("#teamSort").css("display", "none");
+                                $("#tapHint").css("display", "inline");
+                            }
+                        }
+                    };
+                    function OnFailure() {
+                        $("#watchlist").empty();
+                        $("#watchlist").removeAttr("style");
+                        $("#watchlist").append('<span style="color:darkred;font-style:italic">Unable to retrive watchlist</span>');
+                    };
+                    function TeamsInThisEvent(list) {
+                        var teams = list.split(',');
+                        var count = 0;
+                        $.each(teams, function (index, teamNumber) {
+                            if ($("[id^=tm" + teamNumber + "]").length > 0) {
+                                count++;
+                            }
+                        });
+                        return count;
+                    };
+                </script>
+            </li>
         </ul>
     </div>
 }
@@ -169,98 +220,97 @@
         @{
             Boolean inFuture = false;
             DateTime currentDate = DateTime.MinValue;
-        <table style="width: 100%">
-            @foreach (Match match in Model.Matches)
-            {
-                if (match.title == "Qualification 1" || match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Final 1")
+            <table style="width: 100%">
+                @foreach (Match match in Model.Matches)
                 {
-                    <tr><td colspan="5" style="padding:0"><a name="@(match.title.Substring(0, match.title.IndexOf(" ")))s"></a><div class="followMeBar">@(match.title.Substring(0, match.title.IndexOf(" ")))s</div></td></tr>
-                }
-
-                if (match.startTime.Date > currentDate)
-                {
-                    if (currentDate > DateTime.MinValue)
+                    if (match.title == "Qualification 1" || match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Final 1")
                     {
-                        <tr><td colspan="5" style="height: 3px; border-top-style: dashed"></td></tr>
+                        <tr><td colspan="5" style="padding:0"><a name="@(match.title.Substring(0, match.title.IndexOf(" ")))s"></a><div class="followMeBar">@(match.title.Substring(0, match.title.IndexOf(" ")))s</div></td></tr>
                     }
-                    currentDate = match.startTime.Date;
-                }
 
-                if (match.actualStartTime == null && !inFuture)
-                {
-                    inFuture = true;
-                    <tr><td colspan="5" style="color: white; background-color: #666699; text-align: left; font-size: small;"><a name="nextmatch"></a>&nbsp;next match &#8628;</td></tr>
-                }
-
-                List<Team> redAlliance = match.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                List<Team> blueAlliance = match.teams.Where(t => t.station.StartsWith("Blue")).ToList();
-
-                Dictionary<int, string> teamClasses = new Dictionary<int, string>();
-                Dictionary<int, string> teamActions = new Dictionary<int, string>();
-
-                foreach (Team team in match.teams)
-                {
-                    List<string> classes = new List<string>();
-                    if (Model.TeamsOfInterest.Count(t => t.number == team.number) > 0)
+                    if (match.startTime.Date > currentDate)
                     {
-                        classes.Add("teamOfInterest");
-                        if (team.station.StartsWith("Red")) { classes.Add("redInvert"); }
-                        else { classes.Add("blueInvert"); }
-
-                        teamActions[team.number] = "remove";
-                    }
-                    else { teamActions[team.number] = "add"; }
-
-                    if (team.dq != null && team.dq.Value) { classes.Add("disqualified"); }
-
-                    if (team.surrogate) { classes.Add("surrogate"); }
-
-                    if (classes.Count > 0)
-                    { teamClasses[team.number] = " class=\"" + String.Join(" ", classes) + "\""; }
-                    else
-                    { teamClasses[team.number] = string.Empty; }
-                }
-                <tr>
-                    <td style="text-align: center">
-                        <div><a href="@match.matchDetailsUrl">@match.title</a></div>
-                        <div style="font-size: x-small">
-                            @match.startTime.ToString("ddd M/d h:mm")
-                            @if (match.actualStartTime != null)
-                            {
-                                <span>(@match.actualStartTime.Value.ToString("h:mm"))</span>
-                            }
-                            else if (Model.EventState != FRCEventState.Future)
-                            {
-                                <span><i>(est. @match.startTime.AddMinutes(Model.ScheduleOffset).ToString("h:mm"))</i></span>
-                            }
-                        </div>
-                    </td>
-                    <td class="red">
-                        <a name="@(match.tournamentLevel + match.matchNumber)"></a>
-                        @TeamListing(redAlliance[0].number, match.eventCode, teamClasses, teamActions)
-                        @TeamListing(redAlliance[1].number, match.eventCode, teamClasses, teamActions)
-                        @TeamListing(redAlliance[2].number, match.eventCode, teamClasses, teamActions)
-                    </td>
-                    @{
-                        string scoreRed = "&nbsp;&nbsp;&nbsp;";
-                        string scoreBlue = "&nbsp;&nbsp;&nbsp;";
-                        if (match.actualStartTime != null)
+                        if (currentDate > DateTime.MinValue)
                         {
-                            scoreRed = match.scoreRedFinal.ToString();
-                            scoreBlue = match.scoreBlueFinal.ToString();
+                            <tr><td colspan="5" style="height: 3px; border-top-style: dashed"></td></tr>
                         }
-                        string scoreWin = "Invert scoreWin";
+                        currentDate = match.startTime.Date;
                     }
-                    <td class="@((match.scoreRedFinal > match.scoreBlueFinal) ? "red" + scoreWin : "red")">@Html.Raw(scoreRed)</td>
-                    <td class="@((match.scoreRedFinal < match.scoreBlueFinal) ? "blue" + scoreWin : "blue")">@Html.Raw(scoreBlue)</td>
-                    <td class="blue">
-                        @TeamListing(blueAlliance[0].number, match.eventCode, teamClasses, teamActions)
-                        @TeamListing(blueAlliance[1].number, match.eventCode, teamClasses, teamActions)
-                        @TeamListing(blueAlliance[2].number, match.eventCode, teamClasses, teamActions)
-                    </td>
-                </tr>
-            }
-        </table>
+
+                    if (match.actualStartTime == null && !inFuture)
+                    {
+                        inFuture = true;
+                        <tr><td colspan="5" style="color: white; background-color: #666699; text-align: left; font-size: small;"><a name="nextmatch"></a>&nbsp;next match &#8628;</td></tr>
+                    }
+
+                    List<Team> redAlliance = match.teams.Where(t => t.station.StartsWith("Red")).ToList();
+                    List<Team> blueAlliance = match.teams.Where(t => t.station.StartsWith("Blue")).ToList();
+
+                    Dictionary<int, string> teamClasses = new Dictionary<int, string>();
+                    Dictionary<int, string> teamActions = new Dictionary<int, string>();
+
+                    foreach (Team team in match.teams)
+                    {
+                        List<string> classes = new List<string>();
+                        if (Model.TeamsOfInterest.Count(t => t.number == team.number) > 0)
+                        {
+                            if (team.station.StartsWith("Red")) { classes.Add("redHighlight"); }
+                            else { classes.Add("blueHighlight"); }
+
+                            teamActions[team.number] = "remove";
+                        }
+                        else { teamActions[team.number] = "add"; }
+
+                        if (team.dq != null && team.dq.Value) { classes.Add("disqualified"); }
+
+                        if (team.surrogate) { classes.Add("surrogate"); }
+
+                        if (classes.Count > 0)
+                        { teamClasses[team.number] = " class=\"" + String.Join(" ", classes) + "\""; }
+                        else
+                        { teamClasses[team.number] = string.Empty; }
+                    }
+                    <tr>
+                        <td style="text-align: center">
+                            <div><a href="@match.matchDetailsUrl">@match.title</a></div>
+                            <div style="font-size: x-small">
+                                @match.startTime.ToString("ddd M/d h:mm")
+                                @if (match.actualStartTime != null)
+                                {
+                                    <span>(@match.actualStartTime.Value.ToString("h:mm"))</span>
+                                }
+                                else if (Model.EventState != FRCEventState.Future)
+                                {
+                                    <span><i>(est. @match.startTime.AddMinutes(Model.ScheduleOffset).ToString("h:mm"))</i></span>
+                                }
+                            </div>
+                        </td>
+                        <td class="red">
+                            <a name="@(match.tournamentLevel + match.matchNumber)"></a>
+                            @TeamListing(redAlliance[0].number, match, teamClasses, teamActions)
+                            @TeamListing(redAlliance[1].number, match, teamClasses, teamActions)
+                            @TeamListing(redAlliance[2].number, match, teamClasses, teamActions)
+                        </td>
+                        @{
+                            string scoreRed = "&nbsp;&nbsp;&nbsp;";
+                            string scoreBlue = "&nbsp;&nbsp;&nbsp;";
+                            if (match.actualStartTime != null)
+                            {
+                                scoreRed = match.scoreRedFinal.ToString();
+                                scoreBlue = match.scoreBlueFinal.ToString();
+                            }
+                            string scoreWin = "Highlight";
+                        }
+                        <td class="@((match.scoreRedFinal > match.scoreBlueFinal) ? "red" + scoreWin : "red")">@Html.Raw(scoreRed)</td>
+                        <td class="@((match.scoreRedFinal < match.scoreBlueFinal) ? "blue" + scoreWin : "blue")">@Html.Raw(scoreBlue)</td>
+                        <td class="blue">
+                            @TeamListing(blueAlliance[0].number, match, teamClasses, teamActions)
+                            @TeamListing(blueAlliance[1].number, match, teamClasses, teamActions)
+                            @TeamListing(blueAlliance[2].number, match, teamClasses, teamActions)
+                        </td>
+                    </tr>
+                }
+            </table>
         }
     </div>
 
@@ -274,19 +324,75 @@
     <p style="font-size: 0.75rem; font-style:italic; margin-top: 0.5rem">Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
 }
 
-@helper TeamListing(int teamNumber, string eventCode, Dictionary<int, string> classes, Dictionary<int, string> actions)
+@helper TeamListing(int teamNumber, Match match, Dictionary<int, string> classes, Dictionary<int, string> actions)
 {
     if (teamNumber > 0)
     {
-        <div @Html.Raw(classes[teamNumber])>
-            <a href="@(Model.TeamOfInterestUrl(eventCode, teamNumber, actions[teamNumber]))" style="color:inherit">
-                <span>@teamNumber</span>
-                @if (Model.EventRankings.ContainsKey(teamNumber))
-                {
-                    <span class="teamRank"> (#@Model.EventRankings[teamNumber].rank)</span>
-                }
-                <span class="teamName"> @Model.RegisteredTeams[teamNumber].nameShort</span>
-            </a>
+        <div id="tm@(teamNumber)-@(match.tournamentLevel.Substring(0,1))-@(match.matchNumber)" @Html.Raw(classes[teamNumber])>
+            <span>@teamNumber</span>
+            @if (Model.EventRankings.ContainsKey(teamNumber))
+            {
+                <span class="teamRank"> (#@Model.EventRankings[teamNumber].rank)</span>
+            }
+            <span class="teamName"> @Model.RegisteredTeams[teamNumber].nameShort</span>
         </div>
     }
 }
+
+<script type="text/javascript">
+    $("[id^=tm]").click(function () {
+        var id = $(this).attr('id');
+        var teamNumber = id.substring(2, id.indexOf('-'));
+        WatchTeam(teamNumber)
+    });
+    function WatchTeam(teamNumber) {
+        var entries = $("[id^=tm" + teamNumber + "]");
+        var action = '';
+        $.each(entries, function () {
+            var weight = $(this).css('font-weight');
+            if (weight == 400) {
+                var color = $(this).css('color');
+                if (color.startsWith('rgb(255'))
+                    color = 'red';
+                else
+                    color = 'blue';
+                $(this).addClass(color + 'Highlight');
+                $(this).css('font-weight', '700');
+                action = 'add';
+            }
+            else {
+                var color = $(this).css('background-color');
+                if (color.startsWith('rgb(255'))
+                    color = 'red';
+                else
+                    color = 'blue';
+                $(this).removeClass(color + 'Highlight');
+                $(this).css('font-weight', '400');
+                action = 'remove';
+            }
+        });
+        if (action == 'add') {
+            teamList += "," + teamNumber;
+            if (eventState != "Future" && matches > 0) {
+                var h = $("#watchlist").height();
+                $("#watchlist").height(h + 47);
+            }
+        }
+        else
+            teamList = teamList.replace(teamNumber, "x" + teamNumber);
+
+        //var teams = teamList.split(",");
+        //var distinctTeams = [];
+        //$.each(teams, function () {
+        //    if ($.inArray($(this), distinctTeams) > -1) {
+        //        // do nothing
+        //        alert("already exists " + $(this));
+        //    } else {
+        //        distinctTeams.push($(this));
+        //    }
+        //});
+        //alert(distinctTeams.join(","));
+
+        RefreshTeams();
+    }
+</script>

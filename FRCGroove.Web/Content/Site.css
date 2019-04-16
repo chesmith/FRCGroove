@@ -46,21 +46,15 @@ table td {
     color: red;
 }
 
-.teamOfInterest {
+.redHighlight {
+    color: white;
+    background-color: #ff5555;
     font-weight: bold;
 }
 
-.redInvert {
-    color: white;
-    background-color: #ff5555;
-}
-
-.blueInvert {
+.blueHighlight {
     color: white;
     background-color: #5555ff;
-}
-
-.scoreWin {
     font-weight: bold;
 }
 
@@ -258,4 +252,31 @@ div#backToTop {
     .container {
         max-width: unset
     }
+}
+
+@keyframes flickerAnimation {
+  0%   { opacity:1; }
+  50%  { opacity:0.05; }
+  100% { opacity:1; color:red }
+}
+@-o-keyframes flickerAnimation{
+  0%   { opacity:1; }
+  50%  { opacity:0.05; }
+  100% { opacity:1; color:red}
+}
+@-moz-keyframes flickerAnimation{
+  0%   { opacity:1; }
+  50%  { opacity:0.05; }
+  100% { opacity:1; color:red }
+}
+@-webkit-keyframes flickerAnimation{
+  0%   { opacity:1; }
+  50%  { opacity:0.05; }
+  100% { opacity:1; color:red }
+}
+.animate-flicker {
+   -webkit-animation: flickerAnimation 2s infinite;
+   -moz-animation: flickerAnimation 2s infinite;
+   -o-animation: flickerAnimation 2s infinite;
+    animation: flickerAnimation 2s infinite;
 }

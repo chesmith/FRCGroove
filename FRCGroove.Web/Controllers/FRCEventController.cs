@@ -132,23 +132,31 @@ namespace FRCGroove.Web.Controllers
         [HttpPost]
         public JsonResult TeamsOfInterestAjax(string eventCode, string teamList, string sortName, string sortDirection)
         {
-            List<string> teams = new List<string>(teamList.Split(','));
-            List<RegisteredTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
+            if (eventCode.Length > 0)
+            {
+                List<string> teams = BuildTeamsOfInterest(teamList);
 
-            if (sortName.Length == 0) sortName = "Rank";
+                List<RegisteredTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
 
-            if (sortName == "Number")
-                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.teamNumber).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.teamNumber).ToList()));
-            else if (sortName == "Name")
-                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.nameShort).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.nameShort).ToList()));
-            else if (sortName == "Rank")
-                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.eventRank).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.eventRank).ToList()));
-            else if (sortName == "OPR")
-                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.OPR).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.OPR).ToList()));
-            else if (sortName == "DPR")
-                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.DPR).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.DPR).ToList()));
-            else if (sortName == "CCWM")
-                return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.CCWM).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.CCWM).ToList()));
+                this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams) });
+
+                if (sortName.Length == 0) sortName = "Rank";
+
+                if (sortName == "Number")
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.teamNumber).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.teamNumber).ToList()));
+                else if (sortName == "Name")
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.nameShort).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.nameShort).ToList()));
+                else if (sortName == "Rank")
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.eventRank).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.eventRank).ToList()));
+                else if (sortName == "OPR")
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.OPR).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.OPR).ToList()));
+                else if (sortName == "DPR")
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.DPR).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.DPR).ToList()));
+                else if (sortName == "CCWM")
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.Stats.CCWM).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.Stats.CCWM).ToList()));
+                else
+                    return null;
+            }
             else
                 return null;
         }
