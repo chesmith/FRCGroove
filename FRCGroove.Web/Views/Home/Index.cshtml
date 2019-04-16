@@ -6,7 +6,7 @@
 }
 
 <script>
-    gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'list', 'event_label': '@Model.districtCode' });
+    if (typeof gtag != "undefined") gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'list', 'event_label': '@Model.districtCode' });
 </script>
 
 <style>

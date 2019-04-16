@@ -136,9 +136,10 @@ namespace FRCGroove.Web.Controllers
             {
                 List<string> teams = BuildTeamsOfInterest(teamList);
 
-                List<RegisteredTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
-
                 this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams) });
+
+                List<RegisteredTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
+                teamsOfInterest = teamsOfInterest.Where(t => t.Stats != null).ToList();
 
                 if (sortName.Length == 0) sortName = "Rank";
 

@@ -20,7 +20,7 @@
 }
 
 <script>
-    gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'view', 'event_label': '@eventCode' });
+    if (typeof gtag != "undefined") gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'view', 'event_label': '@eventCode' });
 </script>
 
 @Html.Partial("Navigation", "Schedule")
@@ -195,7 +195,7 @@
                                 $("#tapHint").css("display", "inline");
                             }
                         }
-                        gtag('event', 'stats', { 'event_category': 'Team', 'event_action': 'stats', 'event_label': teamList });
+                        if (typeof gtag != "undefined") gtag('event', 'stats', { 'event_category': 'Team', 'event_action': 'stats', 'event_label': teamList });
                     };
                     function OnFailure() {
                         $("#watchlist").empty();
@@ -375,7 +375,7 @@
                 action = 'remove';
             }
         });
-        gtag('event', 'watch', { 'event_category': 'Team', 'event_action': action, 'event_label': teamNumber });
+        if (typeof gtag != "undefined") gtag('event', 'watch', { 'event_category': 'Team', 'event_action': action, 'event_label': teamNumber });
         if (action == 'add') {
             if (teamList.length > 0) teamList += ",";
             teamList += teamNumber;
