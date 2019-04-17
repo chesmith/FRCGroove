@@ -43,8 +43,7 @@ namespace FRCGroove.Web.Controllers
             List<string> teamsToRemove = teams.Where(t => t.IndexOf("x") == 0).Select(t => t.Substring(1)).ToList();
             List<string> teamsToKeep = teams.Where(t => t.Length > 0 && t.IndexOf("x") < 0 && !teamsToRemove.Contains(t)).ToList();
 
-            teams = teamsToKeep.Distinct().ToList();
-            return teams;
+            return teamsToKeep.Distinct().OrderBy(t => Int32.Parse(t)).ToList();
         }
 
         private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamsOfInterest)

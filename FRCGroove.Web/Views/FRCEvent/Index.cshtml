@@ -157,7 +157,7 @@
                                 var teamListing = '<div style="margin-top:0.5rem">';
                                 teamListing += '<div>' + team.number + ' ' + team.nameShort;
                                 teamListing += ' (<span><a href="https://frc-events.firstinspires.org/2019/@eventCode/rankings">#' + team.eventRank + '</a></span>) ';
-                                teamListing += '<sup style="font-size:small">[<a href="/FRCEvent/@eventCode/x' + team.number + '" style="color:red">x</a>]</sup></div>';
+                                teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.number + ');">[<span style="color:red">x</span>]</sup></div>';
                                 if (team.Stats != null) {
                                     teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
                                 }
@@ -183,6 +183,7 @@
                                 teamsToKeep.push(value);
                             }
                         });
+                        teamsToKeep.sort((a, b) => parseInt(a) - parseInt(b));
                         teamList = teamsToKeep.join(",");
 
                         if (eventState != "Future" && !(eventState == "Qualifications" && matches == 0)) {
@@ -347,9 +348,9 @@
     $("[id^=tm]").click(function () {
         var id = $(this).attr('id');
         var teamNumber = id.substring(2, id.indexOf('-'));
-        WatchTeam(teamNumber)
+        ToggleWatch(teamNumber)
     });
-    function WatchTeam(teamNumber) {
+    function ToggleWatch(teamNumber) {
         var entries = $("[id^=tm" + teamNumber + "]");
         var action = '';
         $.each(entries, function () {
