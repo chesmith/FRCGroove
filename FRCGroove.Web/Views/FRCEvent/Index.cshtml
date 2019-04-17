@@ -106,9 +106,12 @@
                 <div id="watchlist" style="height:@(Model.EventState != FRCEventState.Future && !(Model.Matches != null && Model.Matches.Count(m => m.actualStartTime != null) == 0) ? Model.TeamsOfInterest.Count * 47 : 0)px"></div>
 
                 <script type="text/javascript">
+                    var loadTime = new Date();
+                    var refreshPrompt = setInterval(PromptForRefresh, 1000);
+
                     var eventState = "@Model.EventState";
                     var matches = @(Model.Matches == null ? 0 : Model.Matches.Count(m => m.actualStartTime != null));
-                    setTimeout(function () { $("#refresh").attr("class", "animate-flicker"); setTimeout(function () { $("#refresh a").css("font-size", "1.25rem").css("color", "red"); }, 300000); }, 300000);
+
                     var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.number))";
                     console.log("'" + teamList + "'");
                     var sortName = "Rank";
@@ -213,6 +216,15 @@
                         });
                         return count;
                     };
+                    function PromptForRefresh() {
+                        var elapsed = new Date() - loadTime;
+                        if (elapsed > 600000) {
+                            $("#refresh a").css("font-size", "1.25rem").css("color", "red");
+                            clearInterval(refreshPrompt);
+                        } else if (elapsed > 300000) {
+                            $("#refresh").attr("class", "animate-flicker");
+                        }
+                    }
                 </script>
             </li>
         </ul>
