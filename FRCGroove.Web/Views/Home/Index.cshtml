@@ -32,6 +32,15 @@
 <div>
     <p>@Html.DropDownList("districtCode", new SelectList(Model.Districts, "code", "name"), new { onchange = "location = '?districtCode=' + this.value;" })</p>
 
+    @if (Model.CurrentEvents == null && Model.PastEvents == null && Model.FutureEvents == null)
+    {
+        List<string> _champs = new List<string>() { { "CARVER" }, { "GALILEO" }, { "HOPPER" }, { "NEWTON" }, { "ROEBLING" }, { "TURING" } };
+        foreach (string _eventCode in _champs)
+        {
+            <div>@Html.ActionLink(_eventCode, "Index", "FRCEvent", new { eventCode = _eventCode }, null)</div>
+        }
+    }
+
     <div id="accordion">
         @if (Model.CurrentEvents != null && Model.CurrentEvents.Count > 0)
         {

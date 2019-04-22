@@ -137,6 +137,7 @@
     </Compile>
     <Compile Include="Models\Dashboard.cs" />
     <Compile Include="Models\FRCEventListing.cs" />
+    <Compile Include="Models\TeamListing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -197,13 +198,8 @@
     <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="Views\Teams\Index.cshtml" />
     <Content Include="Views\Shared\Navigation.cshtml" />
-    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.CARVER.json" />
-    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.GALILEO.json" />
-    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.HOPPER.json" />
-    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.NEWTON.json" />
-    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.ROEBLING.json" />
-    <Content Include="App_Data\cache\GetHybridSchedule.Qualification.TURING.json" />
     <Content Include="App_Data\cache\GetFullTeamListing.2019.json" />
+    <Content Include="App_Data\cache\Galileo.Pits.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

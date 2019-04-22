@@ -1,13 +1,133 @@
-﻿
+﻿@using FRCGroove.Lib.Models
+@using FRCGroove.Web.Models
+@model TeamListing
+
 @{
     ViewBag.Title = "Teams";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @Html.Partial("Navigation", "Teams")
 
-<h2>Coming soon</h2>
-<ul>
-    <li>add/remove teams from watch list</li>
-    <li>link to team details (external site)</li>
-</ul>
+<script type="text/javascript">
+    var teamList = '@(Model.Watchlist != null ? string.Join(",", Model.Watchlist) : "")';
+    //$("body").on("click", "#teamSort th", function () {
+    //    sort = $(this).html();
+    //    setTimeout(function () { document.location.href = "/Teams?sort=" + sort; }, 250);
+    //});
+    if (typeof gtag != "undefined") gtag('event', 'list', { 'event_category': 'Team', 'event_action': 'list', 'event_label': teamList });
+</script>
+
+<h2>Team Watchlist</h2>
+<i>For now, this is a quick and dirty mechanism for you to view all the teams competing in the Houston Championship.  Click colums to sort.  Tap a team to add/remove from your watchlist.</i>
+
+<style>
+    table tr td {
+        padding: 0.1rem 0.25rem 0.1rem 0.25rem;
+    }
+</style>
+
+    <table class="teamListing">
+        <thead>
+            <tr id="teamSort">
+                <th><a href="/Teams?sort=Number">#</a></th>
+                <th><a href="/Teams?sort=Name">Name</a></th>
+                <th><a href="/Teams?sort=Division">Division</a></th>
+                <th><a href="/Teams?sort=Pit">Pit</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Teams != null)
+            {
+                foreach (RegisteredTeam team in Model.Teams)
+                {
+                    if (Model.Watchlist.Contains(team.teamNumber))
+                    {
+                        <tr>
+                            <td id="tm@(team.teamNumber)-a" style="background-color: yellow; font-weight: 600">@team.teamNumber</td>
+                            <td id="tm@(team.teamNumber)-b" style="background-color: yellow; font-weight: 600">@team.nameShort</td>
+                            <td id="tm@(team.teamNumber)-d" style="background-color: yellow; font-weight: 600">@team.champsDivision</td>
+                            <td id="tm@(team.teamNumber)-p" style="background-color: yellow; font-weight: 600">@team.pitLocation</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td id="tm@(team.teamNumber)-a">@team.teamNumber</td>
+                            <td id="tm@(team.teamNumber)-b">@team.nameShort</td>
+                            <td id="tm@(team.teamNumber)-d">@team.champsDivision</td>
+                            <td id="tm@(team.teamNumber)-d">@team.pitLocation</td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr><td colspan="4" style="color:darkred">Error retrieving team listing</td></tr>
+            }
+        </tbody>
+    </table>
+
+    @*int page = 0;
+        Int32.TryParse(Request.QueryString["page"], out page);
+        if (page == 0) { page = 1; }
+
+        @Html.ActionLink("next page", "Index", new { page = page + 1 });*@
+}
+
+<script type="text/javascript">
+    $("[id^=tm]").click(function () {
+        var id = $(this).attr('id');
+        var teamNumber = id.substring(2, id.indexOf('-'));
+        WatchTeam(teamNumber)
+    });
+
+    function WatchTeam(teamNumber) {
+        var entries = $("[id^=tm" + teamNumber + "-]");
+        var action = '';
+        $.each(entries, function () {
+            var weight = $(this).css('font-weight');
+            if (weight == 400) {
+                $(this).css('background-color', 'yellow');
+                $(this).css('font-weight', '600');
+                action = 'add';
+            }
+            else {
+                $(this).css('background-color', 'unset');
+                $(this).css('font-weight', '400');
+                action = 'remove';
+            }
+        });
+        if (typeof gtag != "undefined") gtag('event', 'watch', { 'event_category': 'Team', 'event_action': action, 'event_label': teamNumber });
+        if (action == 'add') {
+            if (teamList.length > 0) teamList += ",";
+            teamList += teamNumber;
+        }
+        else
+            teamList = teamList.replace(teamNumber, "x" + teamNumber);
+
+        UpdateWatchlist(teamNumber, action);
+    }
+
+    function UpdateWatchlist(teamNumber, action) {
+        $.ajax({
+            type: "POST",
+            url: "/Teams/UpdateWatchlist",
+            data: '{"teamList": "' + teamList + '"}',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: OnSuccess,
+            failure: function (response) {
+                OnFailure();
+                console.log("failed to update teams: " + response.d);
+            },
+            error: function (response) {
+                OnFailure();
+                console.log("error updating teams: " + response.d);
+            }
+        });
+    }
+
+    function OnSuccess() {
+        console.log("successfully updated watchlist");
+    };
+</script>

@@ -34,7 +34,19 @@ namespace FRCGroove.Lib
             {"TXGRE~Qualification", new DateTime(2019, 3, 22, 11, 00, 00, DateTimeKind.Utc)},
             {"TXGRE~Playoff", new DateTime(2019, 3, 23, 14, 00, 00, DateTimeKind.Utc)},
             {"FTCMP~Qualification", new DateTime(2019,  4, 4, 13, 30, 00, DateTimeKind.Utc)},
-            {"FTCMP~Playoff", new DateTime(2019, 4, 6, 13, 00, 00, DateTimeKind.Utc)}
+            {"FTCMP~Playoff", new DateTime(2019, 4, 6, 13, 00, 00, DateTimeKind.Utc)},
+            {"CARVER~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+            {"CARVER~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+            {"GALILEO~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+            {"GALILEO~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+            {"HOPPER~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+            {"HOPPER~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+            {"NEWTON~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+            {"NEWTON~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+            {"ROEBLING~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+            {"ROEBLING~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+            {"TURING~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+            {"TURING~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)}
         };
 
         public static List<District> GetDistrictListing()
@@ -61,7 +73,9 @@ namespace FRCGroove.Lib
 
             Log($"GetEventListing-{teamNumber}", response.Content);
 
-            List<Event> eventListing = response.Data.Events.OrderBy(t => t.dateStart).ToList();
+            List<Event> eventListing = null;
+            if (response.Data != null)
+                eventListing = response.Data.Events.OrderBy(t => t.dateStart).ToList();
 
             return eventListing;
         }
@@ -161,6 +175,27 @@ namespace FRCGroove.Lib
             }
 
             return schedule;
+        }
+
+        public static Dictionary<int, string> GetPitLocations(string eventCode)
+        {
+            List<string> _champs = new List<string>() { { "CARVER" }, { "GALILEO" }, { "HOPPER" }, { "NEWTON" }, { "ROEBLING" }, { "TURING" } };
+            RestResponse<PitLocationListing> response = new RestResponse<PitLocationListing>();
+
+            string cachePath = $@"{CacheFolder}\{eventCode}.Pits.json";
+            if (File.Exists(cachePath))
+            {
+                string cachedData = File.ReadAllText(cachePath);
+                response = new RestResponse<PitLocationListing>() { Data = JsonConvert.DeserializeObject<PitLocationListing>(cachedData) };
+            }
+
+            Dictionary<int, string> pitLocations = null;
+            if (response.Data != null)
+            {
+                pitLocations = response.Data.teams.ToDictionary(t => t.teamNumber, t => t.pitLocation);
+            }
+
+            return pitLocations;
         }
 
         private static DateTime? CacheCheck(string source, string key)

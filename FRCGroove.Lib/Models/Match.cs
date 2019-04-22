@@ -79,11 +79,23 @@ namespace FRCGroove.Lib.Models
         {
             get
             {
-                if(tournamentLevel == "Playoff")
+                if (description.StartsWith("Einstein"))
                 {
-                    return playoffTitles[this.matchNumber];
+                    if (matchNumber <= 15)
+                    {
+                        return $"Semifinal {matchNumber}";
+                    }
+                    else
+                        return $"Final {matchNumber - 15}";
                 }
-                return $"{tournamentLevel} {matchNumber}";
+                else
+                {
+                    if (tournamentLevel == "Playoff")
+                    {
+                        return playoffTitles[this.matchNumber];
+                    }
+                    return $"{tournamentLevel} {matchNumber}";
+                }
             }
         }
 

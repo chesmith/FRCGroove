@@ -18,8 +18,8 @@ namespace FRCGroove.Web.Controllers
 
             Dashboard dashboard = BuildEventDashboard(districtCode, eventCode, teams);
 
-            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams) });
-            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("eventCode") { Value = eventCode });
+            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(1) });
+            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("eventCode") { Value = eventCode, Expires = DateTime.Now.AddYears(1) });
 
             //TODO: if we added teams from the cookie that weren't there in the input list, do a redirect with the full URL instead of just showing the dashboard (update the cookie first?)
 
@@ -93,7 +93,7 @@ namespace FRCGroove.Web.Controllers
             List<RegisteredTeam> teamsOfInterest = new List<RegisteredTeam>();
             if (teamList != null && teamList.Count > 0)
             {
-                TBAStatsCollection stats = TBAAPI.GetStats("2019" + eventCode.ToLower());
+                TBAStatsCollection stats = TBAAPI.GetStats("2019" + ConvertToTBACode(eventCode));
                 if (eventRankings == null)
                     eventRankings = FRCEventsAPI.GetEventRankings(eventCode).ToDictionary(e => e.teamNumber, e => e);
 
@@ -116,6 +116,18 @@ namespace FRCGroove.Web.Controllers
             return teamsOfInterest;
         }
 
+        private string ConvertToTBACode(string eventCode)
+        {
+            List<string> champs = new List<string>() { { "CARVER" }, { "GALILEO" }, { "HOPPER" }, { "NEWTON" }, { "ROEBLING" }, { "TURING" } };
+            Dictionary<string, string> champsMap = new Dictionary<string, string>() { { "CARVER", "carv" }, { "GALILEO", "gal" }, { "HOPPER", "hop" }, { "NEWTON", "new" }, { "ROEBLING", "roe" }, { "TURING", "tur" } };
+            if (champs.Contains(eventCode))
+            {
+                return champsMap[eventCode];
+            }
+            return eventCode.ToLower();
+
+        }
+
         private double CalculateScheduleOffset(List<Match> matches)
         {
             DateTime today = DateTime.Now.Date;
@@ -135,7 +147,7 @@ namespace FRCGroove.Web.Controllers
             {
                 List<string> teams = BuildTeamsOfInterest(teamList);
 
-                this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams) });
+                this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(1) });
 
                 List<RegisteredTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
                 teamsOfInterest = teamsOfInterest.Where(t => t.Stats != null).ToList();

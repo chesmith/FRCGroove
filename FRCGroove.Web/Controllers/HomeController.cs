@@ -40,17 +40,22 @@ namespace FRCGroove.Web.Controllers
             else
                 eventListing = FRCEventsAPI.GetEventListing();
 
-            if (districtCode == "World")
-            {
-                eventListing = eventListing.Where(e => e.name.StartsWith("FIRST Championship")).ToList();
-            }
 
-            frcEventListing.PastEvents = eventListing.Where(e => e.dateEnd < DateTime.Now.Date).ToList();
-            frcEventListing.CurrentEvents = eventListing.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).ToList();
-            frcEventListing.FutureEvents = eventListing.Where(e => e.dateStart > DateTime.Now.Date).ToList();
+            if (eventListing != null)
+            {
+                if (districtCode == "World")
+                {
+                    eventListing = eventListing.Where(e => e.name.StartsWith("FIRST Championship")).ToList();
+                }
+
+                frcEventListing.PastEvents = eventListing.Where(e => e.dateEnd < DateTime.Now.Date).ToList();
+                frcEventListing.CurrentEvents = eventListing.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).ToList();
+                frcEventListing.FutureEvents = eventListing.Where(e => e.dateStart > DateTime.Now.Date).ToList();
+            }
 
             HttpCookie cookie = new HttpCookie("districtCode");
             cookie.Value = string.Join(",", districtCode);
+            cookie.Expires = DateTime.Now.AddYears(1);
             this.ControllerContext.HttpContext.Response.Cookies.Add(cookie);
 
             return View(frcEventListing);

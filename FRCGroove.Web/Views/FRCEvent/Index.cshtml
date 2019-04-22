@@ -34,7 +34,7 @@
                 <h6 style="margin-bottom:0">@Model.FrcEvent.name</h6>
                 <div style="width:100%;font-size:0.75rem">
                     <span style="float:left">@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d")</span>
-                    <span id="refresh" style="float:right"><a class="fas fa-redo" style="color:white" href="javascript:window.location.href=window.location.href"></a></span>
+                    <span id="refresh" style="float:right"><a class="fas fa-redo" style="color:white" href="javascript:window.location.reload(true);"></a></span>
                 </div>
             </div>
         }
@@ -240,7 +240,7 @@
             <table style="width: 100%">
                 @foreach (Match match in Model.Matches)
                 {
-                    if (match.title == "Qualification 1" || match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Final 1")
+                    if (match.title == "Qualification 1" || match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Semifinal 1" || match.title == "Final 1")
                     {
                         <tr><td colspan="5" style="padding:0"><a name="@(match.title.Substring(0, match.title.IndexOf(" ")))s"></a><div class="followMeBar">@(match.title.Substring(0, match.title.IndexOf(" ")))s</div></td></tr>
                     }
@@ -331,12 +331,12 @@
         }
     </div>
 
-    if (Model.Bracket != null && (Model.EventState == FRCEventState.Quarterfinals || Model.EventState == FRCEventState.Semifinals || Model.EventState == FRCEventState.Finals || Model.EventState == FRCEventState.Past))
+    @*if (Model.Bracket != null && (Model.EventState == FRCEventState.Quarterfinals || Model.EventState == FRCEventState.Semifinals || Model.EventState == FRCEventState.Finals || Model.EventState == FRCEventState.Past) && eventCode != "CMPTX")
     {
         <div style="margin-top: 15px">
             @Html.Partial("PlayoffBrackets", Model)
         </div>
-    }
+    }*@
 
     <p style="font-size: 0.75rem; font-style:italic; margin-top: 0.5rem">Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
 }
@@ -351,7 +351,7 @@
             {
                 <span class="teamRank"> (#@Model.EventRankings[teamNumber].rank)</span>
             }
-            <span class="teamName"> @Model.RegisteredTeams[teamNumber].nameShort</span>
+            <span class="teamName">@(Model.RegisteredTeams.ContainsKey(teamNumber) ? Model.RegisteredTeams[teamNumber].nameShort : "")</span>
         </div>
     }
 }

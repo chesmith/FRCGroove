@@ -61,6 +61,8 @@
     <Compile Include="Models\EventRanking.cs" />
     <Compile Include="Models\EventRankListing.cs" />
     <Compile Include="Models\Match.cs" />
+    <Compile Include="Models\PitLocationListing.cs" />
+    <Compile Include="Models\PitLocation.cs" />
     <Compile Include="Models\PlayoffBracket.cs" />
     <Compile Include="Models\RegisteredTeam.cs" />
     <Compile Include="Models\RegisteredTeamListing.cs" />
