@@ -24,5 +24,8 @@ namespace FRCGroove.Lib.Models
         public TBAStats Stats { get; set; }
 
         public int number { get { return teamNumber; } }
+
+        public string champsDivision { get; set; }
+        public string pitLocation { get; set; }
     }
 }
