@@ -331,12 +331,12 @@
         }
     </div>
 
-    @*if (Model.Bracket != null && (Model.EventState == FRCEventState.Quarterfinals || Model.EventState == FRCEventState.Semifinals || Model.EventState == FRCEventState.Finals || Model.EventState == FRCEventState.Past) && eventCode != "CMPTX")
+    if (Model.Bracket != null && (Model.EventState == FRCEventState.Quarterfinals || Model.EventState == FRCEventState.Semifinals || Model.EventState == FRCEventState.Finals || Model.EventState == FRCEventState.Past) && eventCode != "CMPTX")
     {
         <div style="margin-top: 15px">
             @Html.Partial("PlayoffBrackets", Model)
         </div>
-    }*@
+    }
 
     <p style="font-size: 0.75rem; font-style:italic; margin-top: 0.5rem">Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
 }

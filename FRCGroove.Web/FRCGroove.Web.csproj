@@ -200,6 +200,7 @@
     <Content Include="Views\Shared\Navigation.cshtml" />
     <Content Include="App_Data\cache\GetFullTeamListing.2019.json" />
     <Content Include="App_Data\cache\Galileo.Pits.json" />
+    <Content Include="Views\Teams\WatchList.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

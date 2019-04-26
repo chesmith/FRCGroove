@@ -81,7 +81,9 @@ if (Model.Bracket.brackets[bracketId] != 0)
             //string teamName = string.Empty;
             //RegisteredTeam fullTeamInfo = Model.RegisteredTeams.Where(t => t.number == team.number).FirstOrDefault();
             //if (fullTeamInfo != null) { teamName = fullTeamInfo.nameShort; }
-                <div class="@classes[team.number]">
+            string css = "";
+            if (classes.ContainsKey(team.number)) { css = classes[team.number]; }
+                <div class="@css">
                     &nbsp;@team.number.ToString("#")
                     @*@if (bracketId.StartsWith("q"))
                     { <span class="teamName"> @teamName</span>}*@

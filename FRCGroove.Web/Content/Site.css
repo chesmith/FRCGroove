@@ -62,6 +62,10 @@ table th {
     font-weight: bold;
 }
 
+.teamOfInterest {
+    font-weight: bold
+}
+
 .redWin {
     border: 3px solid #ff5555;
     /*box-shadow: inset -2px -2px 1px #ff5555, inset 2px 2px 1px #ff5555;*/

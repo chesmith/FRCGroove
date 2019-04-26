@@ -56,6 +56,12 @@ namespace FRCGroove.Web
             );
 
             routes.MapRoute(
+                name: "WatchList",
+                url: "Teams/List",
+                defaults: new { controller = "Teams", action = "WatchList" }
+            );
+
+            routes.MapRoute(
                 name: "UpdateWatchList",
                 url: "Teams/UpdateWatchList",
                 defaults: new { controller = "Teams", action = "UpdateWatchList" }

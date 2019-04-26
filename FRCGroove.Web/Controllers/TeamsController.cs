@@ -93,6 +93,11 @@ namespace FRCGroove.Web.Controllers
             return teamsToKeep.Distinct().OrderBy(t => Int32.Parse(t)).ToList();
         }
 
+        public ActionResult WatchList()
+        {
+            return View();
+        }
+
         [HttpPost]
         public JsonResult UpdateWatchList(string teamList)
         {
