@@ -105,12 +105,12 @@ namespace FRCGroove.Lib.Models
             {
                 if(tournamentLevel == "Qualification")
                 {
-                    return "https://www.thebluealliance.com/match/2019" + eventCode.ToLower() + "_qm" + matchNumber;
+                    return "https://www.thebluealliance.com/match/2020" + eventCode.ToLower() + "_qm" + matchNumber;
                 }
                 else
                 {
                     //TODO: probably some way to do this by mods and remainders
-                    return "https://www.thebluealliance.com/match/2019" + eventCode.ToLower() + "_" + playoffIds[matchNumber];
+                    return "https://www.thebluealliance.com/match/2020" + eventCode.ToLower() + "_" + playoffIds[matchNumber];
                 }
             }
         }

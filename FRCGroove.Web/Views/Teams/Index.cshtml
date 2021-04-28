@@ -18,7 +18,8 @@
 </script>
 
 <h2>Team Watchlist</h2>
-<i>For now, this is a quick and dirty mechanism for you to view all the teams competing in the Houston Championship.  Click colums to sort.  Tap a team to add/remove from your watchlist.</i>
+<i>This was a tab associated with Houston Championship 2019.  Will try to do something with this area eventually.</i>
+@*<i>For now, this is a quick and dirty mechanism for you to view all the teams competing in the Houston Championship.  Click colums to sort.  Tap a team to add/remove from your watchlist.</i>*@
 
 <style>
     table tr td {
@@ -72,7 +73,6 @@
         if (page == 0) { page = 1; }
 
         @Html.ActionLink("next page", "Index", new { page = page + 1 });*@
-}
 
 <script type="text/javascript">
     $("[id^=tm]").click(function () {

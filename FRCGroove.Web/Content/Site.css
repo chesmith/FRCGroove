@@ -62,6 +62,16 @@ table th {
     font-weight: bold;
 }
 
+.redWin {
+    color: white;
+    background-color: #ff5555;
+}
+
+.blueWin {
+    color: white;
+    background-color: #5555ff;
+}
+
 .teamOfInterest {
     font-weight: bold
 }

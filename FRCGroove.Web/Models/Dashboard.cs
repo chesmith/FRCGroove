@@ -47,7 +47,7 @@ namespace FRCGroove.Web.Models
                         else
                         {
                             List<Match> finals = Matches.Where(m => m.title.StartsWith("Final") && m.teams.Count(t => t.number == 0) == 0).ToList();
-                            if (finals.Count > 0)
+                            if(finals.Exists(t => t.scoreRedFinal > 0 || t.scoreBlueFinal > 0))
                             {
                                 bool redWin = (finals.Count(t => t.scoreRedFinal > t.scoreBlueFinal) == 2);
                                 bool blueWin = (finals.Count(t => t.scoreRedFinal < t.scoreBlueFinal) == 2);
@@ -59,14 +59,14 @@ namespace FRCGroove.Web.Models
                             else
                             {
                                 List<Match> semifinals = Matches.Where(m => m.title.StartsWith("Semifinal") && m.teams.Count(t => t.number == 0) == 0).ToList();
-                                if (semifinals.Count > 0)
+                                if (semifinals.Exists(t => t.scoreRedFinal > 0 || t.scoreBlueFinal > 0))
                                 {
                                     _eventState = FRCEventState.Semifinals;
                                 }
                                 else
                                 {
                                     List<Match> quarterfinals = Matches.Where(m => m.title.StartsWith("Quarterfinal") && m.teams.Count(t => t.number == 0) == 0).ToList();
-                                    if (quarterfinals.Count > 0)
+                                    if (quarterfinals.Exists(t => t.scoreRedFinal > 0 || t.scoreBlueFinal > 0))
                                         _eventState = FRCEventState.Quarterfinals;
                                     else
                                         _eventState = FRCEventState.Qualifications;

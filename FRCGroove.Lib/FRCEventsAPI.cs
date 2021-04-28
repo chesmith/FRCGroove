@@ -17,7 +17,7 @@ namespace FRCGroove.Lib
 {
     public class FRCEventsAPI
     {
-        private static RestClient _client = new RestClient("https://frc-api.firstinspires.org/v2.0/2019")
+        private static RestClient _client = new RestClient("https://frc-api.firstinspires.org/v2.0/2020")
         {
             Authenticator = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["clientid"], ConfigurationManager.AppSettings["clientsecret"])
         };
@@ -26,27 +26,36 @@ namespace FRCGroove.Lib
 
         public static Dictionary<int, RegisteredTeam> TeamListingCache { get; set; }
 
+        //private static Dictionary<string, DateTime> _knownStartTimes = new Dictionary<string, DateTime>()
+        //{   {"TXCHA~Qualification", new DateTime(2019, 3, 15, 11, 00, 00, DateTimeKind.Utc)},
+        //    {"TXCHA~Playoff", new DateTime(2019, 3, 16, 14, 00, 00, DateTimeKind.Utc)},
+        //    {"TXPAS~Qualification", new DateTime(2019, 3, 29, 11, 00, 00, DateTimeKind.Utc)},
+        //    {"TXPAS~Playoff", new DateTime(2019, 3, 30, 14, 00, 00, DateTimeKind.Utc)},
+        //    {"TXGRE~Qualification", new DateTime(2019, 3, 22, 11, 00, 00, DateTimeKind.Utc)},
+        //    {"TXGRE~Playoff", new DateTime(2019, 3, 23, 14, 00, 00, DateTimeKind.Utc)},
+        //    {"FTCMP~Qualification", new DateTime(2019,  4, 4, 13, 30, 00, DateTimeKind.Utc)},
+        //    {"FTCMP~Playoff", new DateTime(2019, 4, 6, 13, 00, 00, DateTimeKind.Utc)},
+        //    {"CARVER~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+        //    {"CARVER~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+        //    {"GALILEO~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+        //    {"GALILEO~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+        //    {"HOPPER~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+        //    {"HOPPER~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+        //    {"NEWTON~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+        //    {"NEWTON~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+        //    {"ROEBLING~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+        //    {"ROEBLING~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
+        //    {"TURING~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
+        //    {"TURING~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)}
+        //};
+
         private static Dictionary<string, DateTime> _knownStartTimes = new Dictionary<string, DateTime>()
-        {   {"TXCHA~Qualification", new DateTime(2019, 3, 15, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXCHA~Playoff", new DateTime(2019, 3, 16, 14, 00, 00, DateTimeKind.Utc)},
-            {"TXPAS~Qualification", new DateTime(2019, 3, 29, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXPAS~Playoff", new DateTime(2019, 3, 30, 14, 00, 00, DateTimeKind.Utc)},
-            {"TXGRE~Qualification", new DateTime(2019, 3, 22, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXGRE~Playoff", new DateTime(2019, 3, 23, 14, 00, 00, DateTimeKind.Utc)},
-            {"FTCMP~Qualification", new DateTime(2019,  4, 4, 13, 30, 00, DateTimeKind.Utc)},
-            {"FTCMP~Playoff", new DateTime(2019, 4, 6, 13, 00, 00, DateTimeKind.Utc)},
-            {"CARVER~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
-            {"CARVER~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
-            {"GALILEO~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
-            {"GALILEO~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
-            {"HOPPER~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
-            {"HOPPER~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
-            {"NEWTON~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
-            {"NEWTON~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
-            {"ROEBLING~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
-            {"ROEBLING~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)},
-            {"TURING~Qualification", new DateTime(2019, 4, 18, 8, 30, 00, DateTimeKind.Utc)},
-            {"TURING~Playoff", new DateTime(2019, 4, 20, 9, 30, 00, DateTimeKind.Utc)}
+        {   {"TXCHA~Qualification", new DateTime(2020, 3, 7, 11, 00, 00, DateTimeKind.Utc)},
+            {"TXCHA~Playoff", new DateTime(2020, 3, 8, 13, 00, 00, DateTimeKind.Utc)},
+            {"TXPLA~Qualification", new DateTime(2020, 3, 7, 11, 00, 00, DateTimeKind.Utc)},
+            {"TXPLA~Playoff", new DateTime(2020, 3, 8, 13, 00, 00, DateTimeKind.Utc)},
+            {"TXDEL~Qualification", new DateTime(2020, 3, 7, 11, 00, 00, DateTimeKind.Utc)},
+            {"TXDEL~Playoff", new DateTime(2020, 3, 8, 13, 00, 00, DateTimeKind.Utc)}
         };
 
         public static List<District> GetDistrictListing()
@@ -409,11 +418,11 @@ namespace FRCGroove.Lib
         {
             if (CacheFolder.Length > 0)
             {
-                string cachePath = $@"{CacheFolder}\GetFullTeamListing.2019.json";
+                string cachePath = $@"{CacheFolder}\GetFullTeamListing.2020.json";
                 if (File.Exists(cachePath))
                 {
                     string cachedData = File.ReadAllText(cachePath);
-                    List<RegisteredTeam> teams = JsonConvert.DeserializeObject<RegisteredTeamListing>(cachedData).teams;
+                    List<RegisteredTeam> teams = JsonConvert.DeserializeObject<List<RegisteredTeam>>(cachedData);
                     TeamListingCache = teams.ToDictionary(t => t.teamNumber, t => t);
                 }
             }

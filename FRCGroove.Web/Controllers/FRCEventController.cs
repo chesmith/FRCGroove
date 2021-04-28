@@ -93,7 +93,7 @@ namespace FRCGroove.Web.Controllers
             List<RegisteredTeam> teamsOfInterest = new List<RegisteredTeam>();
             if (teamList != null && teamList.Count > 0)
             {
-                TBAStatsCollection stats = TBAAPI.GetStats("2019" + ConvertToTBACode(eventCode));
+                TBAStatsCollection stats = TBAAPI.GetStats("2020" + ConvertToTBACode(eventCode));
                 if (eventRankings == null)
                     eventRankings = FRCEventsAPI.GetEventRankings(eventCode).ToDictionary(e => e.teamNumber, e => e);
 
@@ -118,9 +118,8 @@ namespace FRCGroove.Web.Controllers
 
         private string ConvertToTBACode(string eventCode)
         {
-            List<string> champs = new List<string>() { { "CARVER" }, { "GALILEO" }, { "HOPPER" }, { "NEWTON" }, { "ROEBLING" }, { "TURING" } };
-            Dictionary<string, string> champsMap = new Dictionary<string, string>() { { "CARVER", "carv" }, { "GALILEO", "gal" }, { "HOPPER", "hop" }, { "NEWTON", "new" }, { "ROEBLING", "roe" }, { "TURING", "tur" } };
-            if (champs.Contains(eventCode))
+            Dictionary<string, string> champsMap = new Dictionary<string, string>() { { "CARVER", "carv" }, { "GALILEO", "gal" }, { "HOPPER", "hop" }, { "NEWTON", "new" }, { "ROEBLING", "roe" }, { "TURING", "tur" }, { "ARCHIMEDES", "arc" }, { "CARSON", "cars" }, { "CURIE", "cur" }, { "DALY", "dal" }, { "DARWIN", "dar" }, { "TESLA", "tes" } };
+            if (champsMap.ContainsKey(eventCode))
             {
                 return champsMap[eventCode];
             }

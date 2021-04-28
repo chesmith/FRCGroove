@@ -15,60 +15,69 @@
                     teamClasses[team.number] = "teamOfInterest";
                 }
                 else { teamClasses[team.number] = string.Empty; }
+
+                if (team.station.StartsWith("Red") && playoff.scoreBlueFinal < playoff.scoreRedFinal)
+                {
+                    teamClasses[team.number] += " redWin";
+                }
+                else if (team.station.StartsWith("Blue") && playoff.scoreBlueFinal > playoff.scoreRedFinal)
+                {
+                    teamClasses[team.number] += " blueWin";
+                }
             }
         }
 
         <table style="width: 100%">
             <tr><td colspan="10"><a name="Brackets"></a><div class="followMeBar">Brackets</div></td></tr>
             <tr>
-                <td width="16%" style="border-right:none; color:red">@TeamListing("qf1-red", teamClasses)</td>
+                <td width="16%" style="border-right:none">@TeamListing("qf1-red", teamClasses, "red")</td>
                 <td style="border-left:none">@BracketProgress("qf1-red", "sf1-red", "right")</td>
 
-                <td rowspan="2" width="16%" style="border-right:none; color:red">@TeamListing("sf1-red", teamClasses)</td>
+                <td rowspan="2" width="16%" style="border-right:none">@TeamListing("sf1-red", teamClasses, "red")</td>
                 <td rowspan="2" style="border-left:none">@BracketProgress("sf1-red", "f-red", "right")</td>
 
-                <td rowspan="4" width="16%" style="color:red">@TeamListing("f-red", teamClasses)</td>
+                <td rowspan="4" width="16%" style="color:red">@TeamListing("f-red", teamClasses, "red")</td>
 
-                <td rowspan="4" width="16%" style="color:blue">@TeamListing("f-blue", teamClasses)</td>
+                <td rowspan="4" width="16%" style="color:blue">@TeamListing("f-blue", teamClasses, "blue")</td>
 
                 <td rowspan="2" style="border-right:none">@BracketProgress("sf2-red", "f-blue", "left")</td>
-                <td rowspan="2" width="16%" style="border-left:none; color:red">@TeamListing("sf2-red", teamClasses)</td>
+                <td rowspan="2" width="16%" style="border-left:none; color:red">@TeamListing("sf2-red", teamClasses, "red")</td>
 
                 <td style="border-right:none">@BracketProgress("qf3-red", "sf2-red", "left")</td>
-                <td width="16%" style="border-left:none; color:red">@TeamListing("qf3-red", teamClasses)</td>
+                <td width="16%" style="border-left:none; color:red">@TeamListing("qf3-red", teamClasses, "red")</td>
             </tr>
             <tr>
-                <td style="border-right:none; color:blue">@TeamListing("qf1-blue", teamClasses)</td>
+                <td style="border-right:none; color:blue">@TeamListing("qf1-blue", teamClasses, "blue")</td>
                 <td style="border-left:none">@BracketProgress("qf1-blue", "sf1-red", "right")</td>
 
                 <td style="border-right:none">@BracketProgress("qf3-blue", "sf2-red", "left")</td>
-                <td style="border-left:none; color:blue">@TeamListing("qf3-blue", teamClasses)</td>
+                <td style="border-left:none; color:blue">@TeamListing("qf3-blue", teamClasses, "red")</td>
             </tr>
             <tr>
-                <td style="border-right:none; color:red">@TeamListing("qf2-red", teamClasses)</td>
+                <td style="border-right:none; color:red">@TeamListing("qf2-red", teamClasses, "red")</td>
                 <td style="border-left:none">@BracketProgress("qf2-red", "sf1-blue", "right")</td>
 
-                <td rowspan="2" style="border-right:none; color:blue">@TeamListing("sf1-blue", teamClasses)</td>
+                <td rowspan="2" style="border-right:none; color:blue">@TeamListing("sf1-blue", teamClasses, "blue")</td>
                 <td rowspan="2" style="border-left:none">@BracketProgress("sf1-blue", "f-red", "right")</td>
 
                 <td rowspan="2" style="border-right:none">@BracketProgress("sf2-blue", "f-blue", "left")</td>
-                <td rowspan="2" style="border-left:none; color:blue">@TeamListing("sf2-blue", teamClasses)</td>
+                <td rowspan="2" style="border-left:none; color:blue">@TeamListing("sf2-blue", teamClasses, "blue")</td>
 
                 <td style="border-right:none">@BracketProgress("qf4-red", "sf2-blue", "left")</td>
-                <td style="border-left:none; color:red">@TeamListing("qf4-red", teamClasses)</td>
+                <td style="border-left:none; color:red">@TeamListing("qf4-red", teamClasses, "red")</td>
             </tr>
             <tr>
-                <td style="border-right:none; color:blue">@TeamListing("qf2-blue", teamClasses)</td>
+                <td style="border-right:none; color:blue">@TeamListing("qf2-blue", teamClasses, "blue")</td>
                 <td style="border-left:none">@BracketProgress("qf2-blue", "sf1-blue", "right")</td>
 
                 <td style="border-right:none">@BracketProgress("qf4-blue", "sf2-blue", "left")</td>
-                <td style="border-left:none; color:blue">@TeamListing("qf4-blue", teamClasses)</td>
+                <td style="border-left:none; color:blue">@TeamListing("qf4-blue", teamClasses, "blue")</td>
             </tr>
         </table>
     }
 </div>
 
-@helper TeamListing(string bracketId, Dictionary<int, string> classes)
+@helper TeamListing(string bracketId, Dictionary<int, string> classes, string color)
 {
 if (Model.Bracket.brackets[bracketId] != 0)
 {
