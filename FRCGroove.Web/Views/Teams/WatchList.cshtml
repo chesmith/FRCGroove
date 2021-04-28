@@ -4,12 +4,14 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@{ 
+@{
     string teamList = string.Empty;
     if (Request.Cookies.AllKeys.Contains("teamList"))
     {
         teamList = Request.Cookies["teamList"].Value;
     }
 }
+
+@Html.Partial("Navigation", "Teams")
 
 @teamList
