@@ -159,7 +159,7 @@
                             {
                                 var teamListing = '<div style="margin-top:0.5rem">';
                                 teamListing += '<div>' + team.number + ' ' + team.nameShort;
-                                teamListing += ' (<span><a href="https://frc-events.firstinspires.org/2020/@eventCode/rankings">#' + team.eventRank + '</a></span>) ';
+                                teamListing += ' (<span><a href="https://frc-events.firstinspires.org/@DateTime.Now.Year' + '/@eventCode/rankings">#' + team.eventRank + '</a></span>) ';
                                 teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.number + ');">[<span style="color:red">x</span>]</sup></div>';
                                 if (team.Stats != null) {
                                     teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';

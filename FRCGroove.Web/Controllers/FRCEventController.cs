@@ -93,7 +93,7 @@ namespace FRCGroove.Web.Controllers
             List<RegisteredTeam> teamsOfInterest = new List<RegisteredTeam>();
             if (teamList != null && teamList.Count > 0)
             {
-                TBAStatsCollection stats = TBAAPI.GetStats("2020" + ConvertToTBACode(eventCode));
+                TBAStatsCollection stats = TBAAPI.GetStats(DateTime.Now.Year + ConvertToTBACode(eventCode));
                 if (eventRankings == null)
                     eventRankings = FRCEventsAPI.GetEventRankings(eventCode).ToDictionary(e => e.teamNumber, e => e);
 
