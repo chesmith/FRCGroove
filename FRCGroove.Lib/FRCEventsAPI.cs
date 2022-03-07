@@ -17,7 +17,7 @@ namespace FRCGroove.Lib
 {
     public class FRCEventsAPI
     {
-        private static RestClient _client = new RestClient("https://frc-api.firstinspires.org/v2.0/2020")
+        private static RestClient _client = new RestClient("https://frc-api.firstinspires.org/v2.0/" + DateTime.Now.Year)
         {
             Authenticator = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["clientid"], ConfigurationManager.AppSettings["clientsecret"])
         };
