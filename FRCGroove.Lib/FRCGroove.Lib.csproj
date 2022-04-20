@@ -67,8 +67,11 @@
     <Compile Include="Models\RegisteredTeam.cs" />
     <Compile Include="Models\RegisteredTeamListing.cs" />
     <Compile Include="Models\ScheduleListing.cs" />
+    <Compile Include="Models\ScoutingAssignment.cs" />
+    <Compile Include="Models\TBAMatchData.cs" />
     <Compile Include="Models\TBAStats.cs" />
     <Compile Include="Models\TBAStatsCollection.cs" />
+    <Compile Include="Models\TBATeam.cs" />
     <Compile Include="Models\Team.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TBAAPI.cs" />

@@ -17,7 +17,7 @@ namespace FRCGroove.Lib
 {
     public class FRCEventsAPI
     {
-        private static RestClient _client = new RestClient("https://frc-api.firstinspires.org/v2.0/" + DateTime.Now.Year)
+        private static readonly RestClient _client = new RestClient("https://frc-api.firstinspires.org/v2.0/" + DateTime.Now.Year)
         {
             Authenticator = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["clientid"], ConfigurationManager.AppSettings["clientsecret"])
         };
@@ -50,12 +50,14 @@ namespace FRCGroove.Lib
         //};
 
         private static Dictionary<string, DateTime> _knownStartTimes = new Dictionary<string, DateTime>()
-        {   {"TXCHA~Qualification", new DateTime(2020, 3, 7, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXCHA~Playoff", new DateTime(2020, 3, 8, 13, 00, 00, DateTimeKind.Utc)},
-            {"TXPLA~Qualification", new DateTime(2020, 3, 7, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXPLA~Playoff", new DateTime(2020, 3, 8, 13, 00, 00, DateTimeKind.Utc)},
-            {"TXDEL~Qualification", new DateTime(2020, 3, 7, 11, 00, 00, DateTimeKind.Utc)},
-            {"TXDEL~Playoff", new DateTime(2020, 3, 8, 13, 00, 00, DateTimeKind.Utc)}
+        {   {"TXCHA~Qualification", new DateTime(2022, 3, 12, 11, 00, 00, DateTimeKind.Utc)},
+            {"TXCHA~Playoff", new DateTime(2022, 3, 13, 13, 00, 00, DateTimeKind.Utc)},
+            {"TXPAS~Qualification", new DateTime(2022, 3, 25, 11, 00, 00, DateTimeKind.Utc)},
+            {"TXPAS~Playoff", new DateTime(2022, 3, 26, 13, 00, 00, DateTimeKind.Utc)},
+            {"TXPA2~Qualification", new DateTime(2022, 4, 1, 11, 00, 00, DateTimeKind.Utc)},
+            {"TXPA2~Playoff", new DateTime(2022, 4, 2, 13, 00, 00, DateTimeKind.Utc)},
+            {"TXCMP~Qualification", new DateTime(2022, 4, 7, 15, 00, 00, DateTimeKind.Utc)},
+            {"TXCMP~Playoffs", new DateTime(2022, 4, 9, 12, 30, 00, DateTimeKind.Utc)}
         };
 
         public static List<District> GetDistrictListing()
@@ -132,7 +134,7 @@ namespace FRCGroove.Lib
 
         public static List<Match> GetEventSchedule(string eventCode, int teamNumber = 0)
         {
-            string path = $"schedule/{eventCode}";
+            string path = $"schedule/{eventCode}/Qualification";
             if (teamNumber > 0) path += $"?teamNumber={teamNumber}";
 
             var request = new RestRequest(path);
@@ -251,17 +253,20 @@ namespace FRCGroove.Lib
             if (schedule.Count > 0 && _knownStartTimes.ContainsKey($"{eventCode}~{tournamentLevel}"))
             {
                 DateTime knownStartTime = _knownStartTimes[$"{eventCode}~{tournamentLevel}"];
-                double delta = (knownStartTime - schedule[0].startTime).TotalMinutes;
-                if (Math.Abs(delta) > 50)
+                if (knownStartTime.Year == DateTime.Now.Year)
                 {
-                    foreach (Match match in schedule)
+                    double delta = (knownStartTime - schedule[0].startTime).TotalMinutes;
+                    if (Math.Abs(delta) > 50)
                     {
-                        match.startTime = match.startTime.AddMinutes(delta);
+                        foreach (Match match in schedule)
+                        {
+                            match.startTime = match.startTime.AddMinutes(delta);
+                        }
                     }
                 }
             }
 
-            //check the each match's actual time - if it's off by > 59 minutes, assume the API is misrepoting and adjust to match the scheduled time
+            //check each match's actual time - if it's off by > 59 minutes, assume the API is misrepoting and adjust to match the scheduled time
             if (schedule.Exists(m => m.actualStartTime != null))
             {
                 foreach (Match match in schedule)
@@ -418,7 +423,7 @@ namespace FRCGroove.Lib
         {
             if (CacheFolder.Length > 0)
             {
-                string cachePath = $@"{CacheFolder}\GetFullTeamListing.2020.json";
+                string cachePath = $@"{CacheFolder}\GetFullTeamListing.{DateTime.Now.Year}.json";
                 if (File.Exists(cachePath))
                 {
                     string cachedData = File.ReadAllText(cachePath);

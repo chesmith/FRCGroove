@@ -136,6 +136,17 @@ namespace FRCGroove.Web.Controllers
             if (Math.Abs(sum) > 0)
                 average = sum / todaysMatches.Count();
 
+            //if(average == 0.0)
+            //{
+            //    //TODO: if the next match scores have not posted and the time for the match after that has passed, consider matches running late
+            //    //      and report as schedule offset by that delta
+            //    List<Match> tmatches = matches.Where(m => m.actualStartTime == null).Take(3).ToList();
+            //    if(tmatches[1].startTime < DateTime.Now)
+            //    {
+            //        average = (DateTime.Now - tmatches[1].startTime).TotalMinutes;
+            //    }
+            //}
+
             return average;
         }
 

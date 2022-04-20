@@ -1,0 +1,166 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+    @Styles.Render("~/Content/css")
+
+    <style>
+        .btnInc {
+            width: 4.5em;
+            height: 2.5em;
+            font-size: 2em;
+            font-weight: bold
+        }
+
+        .btnDec {
+            width: 2em;
+            height: 2.5em;
+            font-size: 2em;
+            font-weight: bold
+        }
+
+        .count {
+            margin-left: 0.25em;
+            margin-right: 0.25em;
+            width: 2em;
+            border: 1px solid #808080;
+            padding: 0.1em;
+            font-size: 2em
+        }
+
+/*        .goal {
+            width: 2em;
+            writing-mode: vertical-lr;
+            font-size: 1.5em;
+            font-weight: 500;
+        }*/
+    </style>
+    <title>Scouting</title>
+
+    <script>
+        //TODO: use the known team listing, match listing, etc. to limit selections
+
+        let cargo = {
+            autohigh: 0,
+            autolow: 0,
+            teleophigh: 0,
+            teleoplow: 0
+        };
+
+        function LogCargo(period, goal, amount) {
+            cargo[period + goal] = cargo[period + goal] + amount;
+            $("#" + period + goal).text(cargo[period + goal]);
+            let clientTotal = 0;
+            if (period != 'none') {
+                clientTotal = parseInt($("#" + period + goal).text());
+            }
+
+            let teamNumber = $("#team").val();
+            let match = $("#match").val();
+
+            let content = { "team": teamNumber, "match": match, "period": period, "goal": goal, "amount": amount, "clientTotal": clientTotal };
+            var result = $.ajax({
+                type: "POST",
+                url: "/Scout/LogCargo",
+                data: JSON.stringify(content),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                failure: function (response) {
+                    console.error("failed to update");
+                    console.error(response);
+                },
+                error: function (response) {
+                    console.error("error updating");
+                    console.error(response);
+                }
+            });
+
+            result.done(function (data) {
+                console.log(data);
+            });
+        }
+
+        function OnChange() {
+            let teamNumber = $("#team").val();
+            let match = $("#match").val();
+            $(":button").prop('disabled', !(teamNumber.length > 0 && match.length > 0));
+            if (teamNumber.length > 0 && match.length > 0)
+                $(".card").css('opacity', '1.0');
+            else
+                $(".card").css('opacity', '0.25');
+
+            //TODO: reset the counts?
+            cargo = {
+                autohigh: 0,
+                autolow: 0,
+                teleophigh: 0,
+                teleoplow: 0
+            };
+            $("#autohigh").text(0);
+            $("#autolow").text(0);
+            $("#teleophigh").text(0);
+            $("#teleoplow").text(0);
+        }
+    </script>
+
+</head>
+<body>
+    <form>
+        <div style="margin-left: 1em">
+            <label for="team" style="width:4.5em; font-weight: 500">Team #:</label>
+            <input id="team" inputmode="numeric" pattern="[0-9]*" type="number" maxlength="5" onkeyup="OnChange()" />
+            <button type="button" class="btn btn-primary" onclick="$('#team').val(''); $('#match').val(''); OnChange();">New</button>
+        </div>
+        <div style="margin-left: 1em">
+            <label for="match" style="width:4.5em; font-weight: 500">Match #:</label>
+            <input id="match" inputmode="numeric" pattern="[0-9]*" type="number" maxlength="2" onkeyup="OnChange()" />
+        </div>
+        <div class="card" style="opacity: 0.25">
+            <div class="card-header" style="font-weight: bold">AUTO</div>
+            <div class="card-body" style="padding-top: 1em; padding-bottom:0">
+                <p>
+                    <span><img src="~/Content/high.png" /></span>
+                    <button type="button" class="btn btn-primary btnInc" onclick="LogCargo('auto','high',1)" disabled>+</button>
+                    <span id="autohigh" class="count">0</span>
+                    <button type="button" class="btn btn-danger btnDec" onclick="LogCargo('auto','high',-1)" disabled>-</button>
+                </p>
+                <p>
+                    <span><img src="~/Content/low.png" /></span>
+                    <button type="button" class="btn btn-primary btnInc" onclick="LogCargo('auto','low',1)" disabled>+</button>
+                    <span id="autolow" class="count">0</span>
+                    <button type="button" class="btn btn-danger btnDec" onclick="LogCargo('auto','low',-1)" disabled>-</button>
+                </p>
+            </div>
+        </div>
+        <div class="card" style="opacity: 0.25">
+            <div class="card-header" style="font-weight: bold">TELEOP</div>
+            <div class="card-body" style="padding-top: 1em; padding-bottom:0">
+                <p>
+                    <span><img src="~/Content/high.png" /></span>
+                    <button type="button" class="btn btn-primary btnInc" onclick="LogCargo('teleop','high',1)" disabled>+</button>
+                    <span id="teleophigh" class="count">0</span>
+                    <button type="button" class="btn btn-danger btnDec" onclick="LogCargo('teleop','high',-1)" disabled>-</button>
+                </p>
+                <p>
+                    <span><img src="~/Content/low.png" /></span>
+                    <button type="button" class="btn btn-primary btnInc" onclick="LogCargo('teleop','low',1)" disabled>+</button>
+                    <span id="teleoplow" class="count">0</span>
+                    <button type="button" class="btn btn-danger btnDec" onclick="LogCargo('teleop','low',-1)" disabled>-</button>
+                </p>
+            </div>
+        </div>
+        <div style="margin-top: 1em; margin-left: 1em; margin-right: 1em">
+            <button type="button" class="btn btn-warning" style="width: 100%; height: 3em; font-weight: bold" onclick="LogCargo('none','none',0)" disabled>NO CARGO</button>
+        </div>
+    </form>
+</body>
+</html>

@@ -136,7 +136,7 @@ namespace FRCGroove.Win
             List<RegisteredTeam> teams = FRCEventsAPI.GetFullTeamListing();
 
             string json = JsonConvert.SerializeObject(teams);
-            using (StreamWriter sw = new StreamWriter($@"C:\temp\FRCGroove.Logs\GetFullTeamListing.2020.{DateTime.Now:yyyy-dd-mm-HH-MM-ss}.json"))
+            using (StreamWriter sw = new StreamWriter($@"C:\temp\GetFullTeamListing.2022.{DateTime.Now:yyyy-dd-mm-HH-MM-ss}.json"))
             {
                 sw.Write(json);
                 sw.Close();

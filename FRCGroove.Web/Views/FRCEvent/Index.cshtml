@@ -23,7 +23,7 @@
     if (typeof gtag != "undefined") gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'view', 'event_label': '@eventCode' });
 </script>
 
-@Html.Partial("Navigation", "Schedule")
+@Html.Partial("Navigation", "Matches")
 
 @if (Model != null)
 {
@@ -80,7 +80,7 @@
                         }
                         else
                         {
-                            <span>@Model.EventState.ToString() are running on time (<a href="#nextmatch">next match</a>)</span>
+                            <span>@Model.EventState.ToString() seem to be running on time<span style="color:red">*</span> (<a href="#nextmatch">next match</a>)</span>
                         }
                     }
                 }
@@ -339,7 +339,7 @@
         </div>
     }
 
-    <p style="font-size: 0.75rem; font-style:italic; margin-top: 0.5rem">Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
+    <p style="font-size: 0.75rem; font-style:italic; margin-top: 0.5rem"><span style="color:red">*</span> Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
 }
 
 @helper TeamListing(int teamNumber, Match match, Dictionary<int, string> classes, Dictionary<int, string> actions)
