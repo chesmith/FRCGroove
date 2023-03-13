@@ -4,18 +4,18 @@
 
 @{
     string eventName = string.Empty;
-    if (Model != null && Model.FrcEvent != null)
+    if (Model != null && Model.TBAEvent != null)
     {
-        eventName = $" - {Model.FrcEvent.name}";
+        eventName = $" - {Model.TBAEvent.name}";
     }
     ViewBag.Title = $"FRC Groove{eventName}";
 }
 
 @{
     var eventCode = "Invalid";
-    if (Model != null && Model.FrcEvent != null && Model.EventState != FRCEventState.Invalid)
+    if (Model != null && Model.TBAEvent != null && Model.EventState != FRCEventState.Invalid)
     {
-        eventCode = Model.FrcEvent.code;
+        eventCode = Model.TBAEvent.key;
     }
 }
 
@@ -28,12 +28,12 @@
 @if (Model != null)
 {
     <div class="card" style="border-bottom-left-radius:0;border-bottom-right-radius:0">
-        @if (Model.FrcEvent != null)
+        @if (Model.TBAEvent != null)
         {
             <div class="card-header" style="margin-bottom:0;padding: 0.5rem">
-                <h6 style="margin-bottom:0">@Model.FrcEvent.name</h6>
+                <h6 style="margin-bottom:0">@Model.TBAEvent.name</h6>
                 <div style="width:100%;font-size:0.75rem">
-                    <span style="float:left">@Model.FrcEvent.dateStart.ToString("ddd M/d") to @Model.FrcEvent.dateEnd.ToString("ddd M/d")</span>
+                    <span style="float:left">@Model.TBAEvent.dateStart.ToString("ddd M/d") to @Model.TBAEvent.dateEnd.ToString("ddd M/d")</span>
                     <span id="refresh" style="float:right"><a class="fas fa-redo" style="color:white" href="javascript:window.location.reload(true);"></a></span>
                 </div>
             </div>
@@ -43,7 +43,7 @@
             <li class="list-group-item" style="padding:0.5rem 0.75rem 0.5rem 0.75rem">
                 @if (Model.EventState == FRCEventState.Past)
                 {
-                    <span>Event is complete (<a href="#Quarterfinals">playoffs</a> / <a href="#Brackets">brackets</a>)</span>
+                    <span>Event is complete (<a href="#Playoffs">playoffs</a> / <a href="#Brackets">brackets</a>)</span>
                 }
                 else if (Model.EventState == FRCEventState.Future)
                 {
@@ -55,32 +55,30 @@
                 }
                 else
                 {
-                    if (Model.EventState == FRCEventState.Qualifications && Model.Matches != null && Model.Matches.Count(m => m.tournamentLevel == "Qualification" && m.actualStartTime != null) == 0)
+                    if (Model.EventState == FRCEventState.Qualifications && Model.TBAMatches != null && Model.TBAMatches.Count(m => m.comp_level == "qm" && m.score_breakdown != null) == 0)
                     {
                         <span>Qualifications haven't started</span>
                     }
-                    else if ((Model.EventState == FRCEventState.Qualifications && Model.Matches != null && Model.Matches.Count(m => m.tournamentLevel == "Qualification" && m.actualStartTime == null) == 0) || (Model.EventState == FRCEventState.Quarterfinals && Model.Matches.Count(m => m.tournamentLevel == "Playoff" && m.actualStartTime != null) == 0))
+                    else if ((Model.EventState == FRCEventState.Qualifications && Model.TBAMatches != null && Model.TBAMatches.Count(m => m.comp_level == "qm" && m.score_breakdown == null) == 0) || (Model.EventState == FRCEventState.Quarterfinals && Model.TBAMatches.Count(m => m.comp_level == "qf" && m.score_breakdown != null) == 0))
                     {
                         <span>
                             Qualifications have completed - waiting for playoffs to begin
-                            @if (Model.Matches.Count(m => m.tournamentLevel == "Playoff") > 0)
+                            @if (Model.TBAMatches.Count(m => m.comp_level == "qf") > 0)
                             {<span>(<a href="#nextmatch">next match</a>)</span>}
                         </span>
                     }
                     else if (Model.EventState == FRCEventState.Qualifications || Model.EventState == FRCEventState.Quarterfinals || Model.EventState == FRCEventState.Semifinals || Model.EventState == FRCEventState.Finals)
                     {
                         int scheduleOffset = (int)Math.Round(Model.ScheduleOffset, 0);
-                        if (scheduleOffset < 0)
+                        string offsetColor = (scheduleOffset > 0 ? "#7c0a0a" : "#046705");
+                        string offsetBehindAhead = (scheduleOffset > 0 ? "behind" : "ahead");
+                        if (scheduleOffset == 0)
                         {
-                            <span style="font-style:italic; color:#046705;">@Model.EventState.ToString() are running about @Math.Abs(scheduleOffset) minute@(Math.Abs(scheduleOffset) > 1 ? "s" : "") ahead (<a href="#nextmatch">next match</a>)</span>
-                        }
-                        else if (scheduleOffset > 0)
-                        {
-                            <span style="font-style: italic"><span style="color:#7c0a0a; font-style:italic">@Model.EventState.ToString() are running about @Math.Abs(scheduleOffset) minute@(Math.Abs(scheduleOffset) > 1 ? "s" : "") behind</span> (<a href="#nextmatch">next match</a>)</span>
+                            <span>@Model.EventState.ToString() seem to be running on time<span style="color:red">*</span> (<a href="#nextmatch">next match</a>)</span>
                         }
                         else
                         {
-                            <span>@Model.EventState.ToString() seem to be running on time<span style="color:red">*</span> (<a href="#nextmatch">next match</a>)</span>
+                            <span style="font-style:italic; color:@offsetColor;">@Model.EventState.ToString() are running about @Math.Abs(scheduleOffset) minute@(Math.Abs(scheduleOffset) > 1 ? "s" : "") @offsetBehindAhead (<a href="#nextmatch">next match</a>)</span>
                         }
                     }
                 }
@@ -88,7 +86,7 @@
             <li class="list-group-item" style="padding:0.5rem 0.75rem 0.5rem 0.75rem">
                 @{
                     bool tapHint = true;
-                    if (Model.EventState != FRCEventState.Future && !(Model.EventState == FRCEventState.Qualifications && Model.Matches.Count(m => m.actualStartTime != null) == 0))
+                    if (Model.EventState != FRCEventState.Future && !(Model.EventState == FRCEventState.Qualifications && Model.TBAMatches.Count(m => m.actual_time != 0) == 0))
                     {
                         tapHint = (Model.TeamsOfInterest.Count == 0 && Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid);
                     }
@@ -103,17 +101,16 @@
                     <a href="javascript:;">CCWM</a> <i id="sortCCWM" style="display:none"></i>
                 </div>
 
-                <div id="watchlist" style="height:@(Model.EventState != FRCEventState.Future && !(Model.Matches != null && Model.Matches.Count(m => m.actualStartTime != null) == 0) ? Model.TeamsOfInterest.Count * 47 : 0)px"></div>
+                <div id="watchlist" style="height:@(Model.EventState != FRCEventState.Future && !(Model.TBAMatches != null && Model.TBAMatches.Count(m => m.actual_time != 0) == 0) ? Model.TeamsOfInterest.Count * 47 : 0)px"></div>
 
                 <script type="text/javascript">
                     var loadTime = new Date();
                     var refreshPrompt = setInterval(PromptForRefresh, 1000);
 
                     var eventState = "@Model.EventState";
-                    var matches = @(Model.Matches == null ? 0 : Model.Matches.Count(m => m.actualStartTime != null));
+                    var matches = @(Model.TBAMatches == null ? 0 : Model.TBAMatches.Count(m => m.actual_time != 0));
 
-                    var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.number))";
-                    console.log("'" + teamList + "'");
+                    var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.teamNumber))";
                     var sortName = "Rank";
                     var prevSortName = "Rank";
                     var sortDirection = "ASC";
@@ -158,9 +155,9 @@
                             if (team.eventRank > -1)
                             {
                                 var teamListing = '<div style="margin-top:0.5rem">';
-                                teamListing += '<div>' + team.number + ' ' + team.nameShort;
-                                teamListing += ' (<span><a href="https://frc-events.firstinspires.org/@DateTime.Now.Year' + '/@eventCode/rankings">#' + team.eventRank + '</a></span>) ';
-                                teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.number + ');">[<span style="color:red">x</span>]</sup></div>';
+                                teamListing += '<div>' + team.teamNumber + ' ' + team.nameShort;
+                                teamListing += ' (<span><a href="https://www.thebluealliance.com/event/@eventCode#rankings" target="_blank" rel="noopener noreferrer">#' + team.eventRank + '</a></span>) ';
+                                teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.teamNumber + ');">[<span style="color:red">x</span>]</sup></div>';
                                 if (team.Stats != null) {
                                     teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
                                 }
@@ -211,7 +208,6 @@
                         var count = 0;
                         $.each(teams, function (index, teamNumber) {
                             if ($("[id^=tm" + teamNumber + "-]").length > 0) {
-                                console.log(teamNumber);
                                 count++;
                             }
                         });
@@ -232,99 +228,119 @@
     </div>
 }
 
-@if (Model != null && Model.Matches != null && Model.Matches.Count > 0)
+@if (Model != null && Model.TBAMatches != null && Model.TBAMatches.Count > 0)
 {
     <div style="margin-top: 0px">
         @{
             Boolean inFuture = false;
             DateTime currentDate = DateTime.MinValue;
+            var day1 = Model.TBAMatches.Where(m => m.timeDT.Date == Model.TBAMatches[0].timeDT.Date).ToList();
+            var day2 = Model.TBAMatches.Where(m => m.timeDT.Date == Model.TBAMatches[0].timeDT.Date.AddDays(1)).ToList();
+            var day2Date = DateTime.MinValue;
+            if (day2 != null && day2.Count > 0) { day2Date = day2[0].timeDT.Date; }
+            int? day2FirstMatch = day2[0]?.match_number;
             <table style="width: 100%">
-                @foreach (Match match in Model.Matches)
+                @foreach (TBAMatchData match in Model.TBAMatches)
                 {
-                    if (match.title == "Qualification 1" || match.title == "Quarterfinal 1-1" || match.title == "Semifinal 1-1" || match.title == "Semifinal 1" || match.title == "Final 1")
+                    if (match.set_number == 1 && match.match_number == 1)
                     {
                         <tr><td colspan="5" style="padding:0"><a name="@(match.title.Substring(0, match.title.IndexOf(" ")))s"></a><div class="followMeBar">@(match.title.Substring(0, match.title.IndexOf(" ")))s</div></td></tr>
                     }
 
-                    if (match.startTime.Date > currentDate)
+                    if (match.timeDT.Date > currentDate)
                     {
                         if (currentDate > DateTime.MinValue)
                         {
                             <tr><td colspan="5" style="height: 3px; border-top-style: dashed"></td></tr>
                         }
-                        currentDate = match.startTime.Date;
+                        currentDate = match.timeDT.Date;
                     }
 
-                    if (match.actualStartTime == null && !inFuture)
+                    if (match.actual_time == 0 && !inFuture)
                     {
                         inFuture = true;
                         <tr><td colspan="5" style="color: white; background-color: #666699; text-align: left; font-size: small;"><a name="nextmatch"></a>&nbsp;next match &#8628;</td></tr>
                     }
 
-                    List<Team> redAlliance = match.teams.Where(t => t.station.StartsWith("Red")).ToList();
-                    List<Team> blueAlliance = match.teams.Where(t => t.station.StartsWith("Blue")).ToList();
-
+                    //TODO: maybe move this into the helper function?
                     Dictionary<int, string> teamClasses = new Dictionary<int, string>();
                     Dictionary<int, string> teamActions = new Dictionary<int, string>();
 
-                    foreach (Team team in match.teams)
+                    foreach (string teamKey in match.alliances.red.team_keys)
                     {
                         List<string> classes = new List<string>();
-                        if (Model.TeamsOfInterest.Count(t => t.number == team.number) > 0)
+                        int teamNumber = Int32.Parse(teamKey.Substring(3));
+                        if (Model.TeamsOfInterest.Count(t => t.teamNumber == teamNumber) > 0)
                         {
-                            if (team.station.StartsWith("Red")) { classes.Add("redHighlight"); }
-                            else { classes.Add("blueHighlight"); }
-
-                            teamActions[team.number] = "remove";
+                            classes.Add("redHighlight");
+                            teamActions[teamNumber] = "remove";
                         }
-                        else { teamActions[team.number] = "add"; }
+                        else { teamActions[teamNumber] = "add"; }
 
-                        if (team.dq != null && team.dq.Value) { classes.Add("disqualified"); }
+                        if (match.alliances.red.dq_team_keys.Contains(teamKey)) { classes.Add("disqualified"); }
 
-                        if (team.surrogate) { classes.Add("surrogate"); }
+                        if (match.alliances.red.surrogate_team_keys.Contains(teamKey)) { classes.Add("surrogate"); }
 
                         if (classes.Count > 0)
-                        { teamClasses[team.number] = " class=\"" + String.Join(" ", classes) + "\""; }
+                        { teamClasses[teamNumber] = " class=\"" + String.Join(" ", classes) + "\""; }
                         else
-                        { teamClasses[team.number] = string.Empty; }
+                        { teamClasses[teamNumber] = string.Empty; }
                     }
+
+                    foreach (string teamKey in match.alliances.blue.team_keys)
+                    {
+                        List<string> classes = new List<string>();
+                        int teamNumber = Int32.Parse(teamKey.Substring(3));
+                        if (Model.TeamsOfInterest.Count(t => t.teamNumber == teamNumber) > 0)
+                        {
+                            classes.Add("blueHighlight");
+                            teamActions[teamNumber] = "remove";
+                        }
+                        else { teamActions[teamNumber] = "add"; }
+
+                        if (match.alliances.blue.dq_team_keys.Contains(teamKey)) { classes.Add("disqualified"); }
+
+                        if (match.alliances.blue.surrogate_team_keys.Contains(teamKey)) { classes.Add("surrogate"); }
+
+                        if (classes.Count > 0)
+                        { teamClasses[teamNumber] = " class=\"" + String.Join(" ", classes) + "\""; }
+                        else
+                        { teamClasses[teamNumber] = string.Empty; }
+                    }
+
+                    List<int> redAlliance = match.alliances.red.team_keys.Select(v => Int32.Parse(v.Substring(3))).ToList();
+                    List<int> blueAlliance = match.alliances.blue.team_keys.Select(v => Int32.Parse(v.Substring(3))).ToList();
+
                     <tr>
                         <td style="text-align: center">
                             <div><a href="@match.matchDetailsUrl">@match.title</a></div>
                             <div style="font-size: x-small">
-                                @match.startTime.ToString("ddd M/d h:mm")
-                                @if (match.actualStartTime != null)
+                                @match.timeDT.ToString("ddd M/d h:mm")
+                                @{
+                                    double offset = Model.ScheduleOffset;
+                                    if (match.match_number > day2FirstMatch && DateTime.Now.Date < day2Date) { offset = 0; }
+                                }
+                                @if (match.actual_time != 0)
                                 {
-                                    <span>(@match.actualStartTime.Value.ToString("h:mm"))</span>
+                                    <span>(@match.actual_timeDT.ToString("h:mm"))</span>
                                 }
                                 else if (Model.EventState != FRCEventState.Future)
                                 {
-                                    <span><i>(est. @match.startTime.AddMinutes(Model.ScheduleOffset).ToString("h:mm"))</i></span>
+                                    <span><i>(est. @match.timeDT.AddMinutes(offset).ToString("h:mm"))</i></span>
                                 }
                             </div>
                         </td>
                         <td class="red">
-                            <a name="@(match.tournamentLevel + match.matchNumber)"></a>
-                            @TeamListing(redAlliance[0].number, match, teamClasses, teamActions)
-                            @TeamListing(redAlliance[1].number, match, teamClasses, teamActions)
-                            @TeamListing(redAlliance[2].number, match, teamClasses, teamActions)
+                            <a name="@(match.comp_level + match.match_number)"></a>
+                            @TeamListing(redAlliance[0], match, teamClasses, teamActions)
+                            @TeamListing(redAlliance[1], match, teamClasses, teamActions)
+                            @TeamListing(redAlliance[2], match, teamClasses, teamActions)
                         </td>
-                        @{
-                            string scoreRed = "&nbsp;&nbsp;&nbsp;";
-                            string scoreBlue = "&nbsp;&nbsp;&nbsp;";
-                            if (match.actualStartTime != null)
-                            {
-                                scoreRed = match.scoreRedFinal.ToString();
-                                scoreBlue = match.scoreBlueFinal.ToString();
-                            }
-                            string scoreWin = "Highlight";
-                        }
-                        <td class="@((match.scoreRedFinal > match.scoreBlueFinal) ? "red" + scoreWin : "red")">@Html.Raw(scoreRed)</td>
-                        <td class="@((match.scoreRedFinal < match.scoreBlueFinal) ? "blue" + scoreWin : "blue")">@Html.Raw(scoreBlue)</td>
+                        @ScoreBreakdown(match)
                         <td class="blue">
-                            @TeamListing(blueAlliance[0].number, match, teamClasses, teamActions)
-                            @TeamListing(blueAlliance[1].number, match, teamClasses, teamActions)
-                            @TeamListing(blueAlliance[2].number, match, teamClasses, teamActions)
+                            @TeamListing(blueAlliance[0], match, teamClasses, teamActions)
+                            @TeamListing(blueAlliance[1], match, teamClasses, teamActions)
+                            @TeamListing(blueAlliance[2], match, teamClasses, teamActions)
                         </td>
                     </tr>
                 }
@@ -342,11 +358,30 @@
     <p style="font-size: 0.75rem; font-style:italic; margin-top: 0.5rem"><span style="color:red">*</span> Times should be local to the event and estimates are calculated to best of our ability - trust what you see and hear on-site.</p>
 }
 
-@helper TeamListing(int teamNumber, Match match, Dictionary<int, string> classes, Dictionary<int, string> actions)
+@helper ScoreBreakdown(TBAMatchData match)
+{
+    int totalRed = 0;
+    int totalBlue = 0;
+
+    if (match.actual_time > 0 && match.score_breakdown != null)
+    {
+        totalRed = match.score_breakdown.red.totalPoints;
+        totalBlue = match.score_breakdown.blue.totalPoints;
+        <td class="@((totalRed > totalBlue) ? "redHighlight" : "red")">@Html.Raw(totalRed)</td>
+        <td class="@((totalRed < totalBlue) ? "blueHighlight" : "blue")">@Html.Raw(totalBlue)</td>
+    }
+    else
+    {
+        <td></td>
+        <td></td>
+    }
+}
+
+@helper TeamListing(int teamNumber, TBAMatchData match, Dictionary<int, string> classes, Dictionary<int, string> actions)
 {
     if (teamNumber > 0)
     {
-        <div id="tm@(teamNumber)-@(match.tournamentLevel.Substring(0,1))-@(match.matchNumber)" @Html.Raw(classes[teamNumber])>
+        <div id="tm@(teamNumber)-@(match.comp_level)-@(match.match_number)" @Html.Raw(classes[teamNumber])>
             <span>@teamNumber</span>
             @if (Model.EventRankings.ContainsKey(teamNumber))
             {

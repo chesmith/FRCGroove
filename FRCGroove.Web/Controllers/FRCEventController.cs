@@ -16,9 +16,10 @@ namespace FRCGroove.Web.Controllers
         {
             List<string> teams = BuildTeamsOfInterest(teamList);
 
-            Dashboard dashboard = BuildEventDashboard(districtCode, eventCode, teams);
+            //Dashboard dashboard1 = BuildEventDashboard(districtCode, eventCode, teams);
+            Dashboard dashboard = BuildEventDashboardTBA("2023" + districtCode.ToLower(), "2023" + eventCode.ToLower(), teams);
 
-            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(1) });
+            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(100) });
             this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("eventCode") { Value = eventCode, Expires = DateTime.Now.AddYears(1) });
 
             //TODO: if we added teams from the cookie that weren't there in the input list, do a redirect with the full URL instead of just showing the dashboard (update the cookie first?)
@@ -46,7 +47,54 @@ namespace FRCGroove.Web.Controllers
             return teamsToKeep.Distinct().OrderBy(t => Int32.Parse(t)).ToList();
         }
 
-        private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamsOfInterest)
+        //private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamsOfInterest)
+        //{
+        //    Dashboard dashboard = new Dashboard();
+
+        //    dashboard.districtCode = districtCode;
+
+        //    if (eventCode.Length > 0)
+        //    {
+        //        dashboard.FrcEvent = FRCEventsAPI.GetEvent(eventCode);
+        //        if (dashboard.FrcEvent != null)
+        //        {
+        //            dashboard.Matches = FRCEventsAPI.GetFullHybridSchedule(eventCode);
+
+        //            if (dashboard.Matches != null && (dashboard.EventState == FRCEventState.Past || dashboard.EventState == FRCEventState.Qualifications || dashboard.EventState == FRCEventState.Quarterfinals || dashboard.EventState == FRCEventState.Semifinals || dashboard.EventState == FRCEventState.Finals))
+        //            {
+        //                if (dashboard.EventState != FRCEventState.Qualifications)
+        //                {
+        //                    dashboard.Alliances = FRCEventsAPI.GetPlayoffAlliances(eventCode);
+        //                    dashboard.Bracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
+        //                }
+
+        //                if (dashboard.EventState != FRCEventState.Past)
+        //                {
+        //                    List<Match> matchesForOffsetCalc = dashboard.Matches;
+        //                    if (dashboard.EventState != FRCEventState.Qualifications)
+        //                        matchesForOffsetCalc = dashboard.Matches.Where(m => m.tournamentLevel == "Playoff").ToList();
+        //                    dashboard.ScheduleOffset = CalculateScheduleOffset(matchesForOffsetCalc);
+        //                }
+        //            }
+        //        }
+
+        //        dashboard.RegisteredTeams = FRCEventsAPI.TeamListingCache;
+
+        //        //TODO: Should this be up in the != null section above?
+        //        if (dashboard.EventState != FRCEventState.Invalid)
+        //        {
+        //            List<EventRanking> eventRankings = FRCEventsAPI.GetEventRankings(eventCode);
+        //            if (eventRankings != null)
+        //                dashboard.EventRankings = eventRankings.ToDictionary(e => e.teamNumber, e => e);
+        //        }
+        //    }
+
+        //    dashboard.TeamsOfInterest.AddRange(GatherTeamsOfInterest(eventCode, teamsOfInterest, dashboard.EventRankings));
+
+        //    return dashboard;
+        //}
+
+        private Dashboard BuildEventDashboardTBA(string districtCode, string eventCode, List<string> teamsOfInterest)
         {
             Dashboard dashboard = new Dashboard();
 
@@ -54,33 +102,41 @@ namespace FRCGroove.Web.Controllers
 
             if (eventCode.Length > 0)
             {
-                dashboard.FrcEvent = FRCEventsAPI.GetEvent(eventCode);
-                if (dashboard.FrcEvent != null)
+                dashboard.TBAEvent = TBAAPI.GetEvent(eventCode);
+                if (dashboard.TBAEvent != null)
                 {
-                    dashboard.Matches = FRCEventsAPI.GetFullHybridSchedule(eventCode);
+                    dashboard.TBAMatches = TBAAPI.GetMatches(eventCode);
+                    dashboard.TBAMatches = dashboard.TBAMatches.OrderBy(m => m.sortTitle).ToList();
 
-                    if (dashboard.Matches != null && (dashboard.EventState == FRCEventState.Past || dashboard.EventState == FRCEventState.Qualifications || dashboard.EventState == FRCEventState.Quarterfinals || dashboard.EventState == FRCEventState.Semifinals || dashboard.EventState == FRCEventState.Finals))
+                    //TODO: replace with TBA
+                    if (dashboard.TBAMatches != null && (dashboard.EventState == FRCEventState.Past || dashboard.EventState == FRCEventState.Qualifications || dashboard.EventState == FRCEventState.Quarterfinals || dashboard.EventState == FRCEventState.Semifinals || dashboard.EventState == FRCEventState.Finals))
                     {
                         if (dashboard.EventState != FRCEventState.Qualifications)
                         {
-                            dashboard.Alliances = FRCEventsAPI.GetPlayoffAlliances(eventCode);
-                            dashboard.Bracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
+                            dashboard.TBAPlayoffAlliances = TBAAPI.GetPlayoffAlliances(eventCode);
+                            //dashboard.TBABracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
                         }
 
                         if (dashboard.EventState != FRCEventState.Past)
                         {
-                            List<Match> matchesForOffsetCalc = dashboard.Matches;
+                            List<TBAMatchData> matchesForOffsetCalc = dashboard.TBAMatches;
                             if (dashboard.EventState != FRCEventState.Qualifications)
-                                matchesForOffsetCalc = dashboard.Matches.Where(m => m.tournamentLevel == "Playoff").ToList();
-                            dashboard.ScheduleOffset = CalculateScheduleOffset(matchesForOffsetCalc);
+                                matchesForOffsetCalc = dashboard.TBAMatches.Where(m => m.comp_level != "qm").ToList();
+                            dashboard.ScheduleOffset = CalculateScheduleOffsetTBA(matchesForOffsetCalc);
+                        }
+                    }
+
+                    if (dashboard.EventState != FRCEventState.Invalid)
+                    {
+                        TBAEventRankings rankings = TBAAPI.GetEventRankings(eventCode);
+                        if (rankings != null)
+                        {
+                            dashboard.EventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(e.team_key.Substring(3)), e => e);
                         }
                     }
                 }
 
-                dashboard.RegisteredTeams = FRCEventsAPI.TeamListingCache;
-                List<EventRanking> eventRankings = FRCEventsAPI.GetEventRankings(eventCode);
-                if(eventRankings != null)
-                    dashboard.EventRankings = eventRankings.ToDictionary(e => e.teamNumber, e => e);
+                dashboard.RegisteredTeams = FRCEventsAPI.TeamListingCache;  //TODO: replace with TBA
             }
 
             dashboard.TeamsOfInterest.AddRange(GatherTeamsOfInterest(eventCode, teamsOfInterest, dashboard.EventRankings));
@@ -88,18 +144,18 @@ namespace FRCGroove.Web.Controllers
             return dashboard;
         }
 
-        private List<RegisteredTeam> GatherTeamsOfInterest(string eventCode, List<string> teamList, Dictionary<int, EventRanking> eventRankings = null)
+        private List<RegisteredTeam> GatherTeamsOfInterest(string eventCode, List<string> teamList, Dictionary<int, TBARanking> eventRankings = null)
         {
             List<RegisteredTeam> teamsOfInterest = new List<RegisteredTeam>();
             if (teamList != null && teamList.Count > 0)
             {
-                TBAStatsCollection stats = TBAAPI.GetStats(DateTime.Now.Year + ConvertToTBACode(eventCode));
+                TBAStatsCollection stats = TBAAPI.GetStats(eventCode);
                 if (eventRankings == null)
-                    eventRankings = FRCEventsAPI.GetEventRankings(eventCode).ToDictionary(e => e.teamNumber, e => e);
+                    eventRankings = TBAAPI.GetEventRankings(eventCode).rankings.ToDictionary(e => Int32.Parse(e.team_key.Substring(3)), e => e);
 
                 foreach (string teamNumber in teamList)
                 {
-                    RegisteredTeam team = FRCEventsAPI.GetTeam(Int32.Parse(teamNumber));
+                    RegisteredTeam team = FRCEventsAPI.GetTeam(Int32.Parse(teamNumber));  //TODO: replace with TBA
                     if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.teamNumber))
                         team.Stats = new TBAStats(stats, team.teamNumber);
                     else
@@ -132,6 +188,29 @@ namespace FRCGroove.Web.Controllers
             DateTime today = DateTime.Now.Date;
             List<Match> todaysMatches = matches.Where(m => m.startTime.Date == today && m.actualStartTime != null).Reverse().Take(3).ToList();
             double sum = todaysMatches.Select(m => (m.actualStartTime.Value - m.startTime).TotalMinutes).Sum();
+            double average = 0.0;
+            if (Math.Abs(sum) > 0)
+                average = sum / todaysMatches.Count();
+
+            //if(average == 0.0)
+            //{
+            //    //TODO: if the next match scores have not posted and the time for the match after that has passed, consider matches running late
+            //    //      and report as schedule offset by that delta
+            //    List<Match> tmatches = matches.Where(m => m.actualStartTime == null).Take(3).ToList();
+            //    if(tmatches[1].startTime < DateTime.Now)
+            //    {
+            //        average = (DateTime.Now - tmatches[1].startTime).TotalMinutes;
+            //    }
+            //}
+
+            return average;
+        }
+
+        private double CalculateScheduleOffsetTBA(List<TBAMatchData> matches)
+        {
+            DateTime today = DateTime.Now.Date;
+            List<TBAMatchData> todaysMatches = matches.Where(m => m.timeDT.Date == today && m.actual_time != 0).Reverse().Take(3).ToList();
+            double sum = todaysMatches.Select(m => (m.actual_timeDT - m.timeDT).TotalMinutes).Sum();
             double average = 0.0;
             if (Math.Abs(sum) > 0)
                 average = sum / todaysMatches.Count();

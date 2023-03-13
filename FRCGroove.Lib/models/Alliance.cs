@@ -22,10 +22,6 @@ namespace FRCGroove.Lib.Models
         public void LoadTeams()
         {
             teams = new List<RegisteredTeam>();
-            //TODO:?
-            //teams.Add(FRCEventsAPI.GetTeam(captain));
-            //teams.Add(FRCEventsAPI.GetTeam(round1));
-            //teams.Add(FRCEventsAPI.GetTeam(round2));
 
             teams.Add(new RegisteredTeam() { teamNumber = captain });
             teams.Add(new RegisteredTeam() { teamNumber = round1 });

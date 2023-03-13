@@ -68,7 +68,26 @@ namespace FRCGroove.Lib.Models
 
     public class TBAMatchData
     {
+        Dictionary<string, string> _champsCodes = new Dictionary<string, string>
+        {
+            { "CARVER", "carv" },
+            { "GALILEO", "gal" },
+            { "HOPPER", "hop" },
+            { "NEWTON", "new" },
+            { "ROEBLING", "roe" },
+            { "TURING", "tur" }
+        };
+
         public int actual_time { get; set; }
+        public DateTime actual_timeDT
+        {
+            get
+            {
+                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                dateTime = dateTime.AddSeconds(this.actual_time).ToLocalTime();
+                return dateTime;
+            }
+        }
         public Alliances alliances { get; set; }
         public string comp_level { get; set; }
         public string event_key { get; set; }
@@ -76,9 +95,28 @@ namespace FRCGroove.Lib.Models
         public int match_number { get; set; }
         public int post_result_time { get; set; }
         public int predicted_time { get; set; }
+        public DateTime predicted_timeDT
+        {
+            get
+            {
+                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                dateTime = dateTime.AddSeconds(this.predicted_time).ToLocalTime();
+                return dateTime;
+            }
+        }
         public ScoreBreakdown score_breakdown { get; set; }
         public int set_number { get; set; }
         public int time { get; set; }
+        public DateTime timeDT
+        {
+            get
+            {
+                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                dateTime = dateTime.AddSeconds(this.time).ToLocalTime();
+                return dateTime;
+            }
+        }
+
         public string winning_alliance { get; set; }
 
         public Scoring TransformScoring()
@@ -102,6 +140,43 @@ namespace FRCGroove.Lib.Models
             scoring.endgame.Add(alliances.red.team_keys[2], score_breakdown.red.endgameRobot3);
 
             return scoring;
+        }
+
+        public string matchDetailsUrl
+        {
+            get { return "https://www.thebluealliance.com/match/" + key; }
+        }
+
+        public string title
+        {
+            get
+            {
+                switch (comp_level)
+                {
+                    case "qm": return $"Qualification {match_number}";
+                    case "qf": return $"Quarterfinal {set_number}-{match_number}";
+                    case "sf": return $"Semifinal {set_number}";
+                    case "f": return $"Final {match_number}";
+                }
+
+                return string.Empty;
+            }
+        }
+
+        public string sortTitle
+        {
+            get
+            {
+                switch (comp_level)
+                {
+                    case "qm": return $"01 {match_number:00}";
+                    case "qf": return $"02 {set_number:00}-{match_number:00}";
+                    case "sf": return $"03 {set_number:00}-{match_number:00}";
+                    case "f": return $"04 {match_number:00}";
+                }
+
+                return string.Empty;
+            }
         }
     }
 

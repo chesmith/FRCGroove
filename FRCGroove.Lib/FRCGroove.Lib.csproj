@@ -68,6 +68,10 @@
     <Compile Include="Models\RegisteredTeamListing.cs" />
     <Compile Include="Models\ScheduleListing.cs" />
     <Compile Include="Models\ScoutingAssignment.cs" />
+    <Compile Include="Models\TBAPlayoffAlliance.cs" />
+    <Compile Include="Models\TBADistrict.cs" />
+    <Compile Include="Models\TBAEvent.cs" />
+    <Compile Include="Models\TBAEventRankings.cs" />
     <Compile Include="Models\TBAMatchData.cs" />
     <Compile Include="Models\TBAStats.cs" />
     <Compile Include="Models\TBAStatsCollection.cs" />

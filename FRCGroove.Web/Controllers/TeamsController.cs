@@ -38,7 +38,7 @@ namespace FRCGroove.Web.Controllers
                     }
                 }
 
-                Dictionary<int, string> pitLocationsGalileo = FRCEventsAPI.GetPitLocations("GALILEO");
+                Dictionary<int, string> pitLocationsGalileo = FRCEventsAPI.GetChampsPitLocations();
                 foreach (RegisteredTeam team in champsTeams)
                 {
                     if (pitLocationsGalileo.ContainsKey(team.teamNumber))

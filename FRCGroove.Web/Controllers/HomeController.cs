@@ -17,6 +17,7 @@ namespace FRCGroove.Web.Controllers
     {
         public ActionResult Index(string districtCode = "")
         {
+            //TODO: Convert to TBA
             FRCEventListing frcEventListing = new FRCEventListing();
 
             frcEventListing.Districts = FRCEventsAPI.GetDistrictListing();
@@ -36,10 +37,13 @@ namespace FRCGroove.Web.Controllers
 
             List<Event> eventListing;
             if (districtCode.Length > 0 && districtCode != "World" && districtCode != "All")
+            {
                 eventListing = FRCEventsAPI.GetDistrictEventListing(districtCode);
+            }
             else
                 eventListing = FRCEventsAPI.GetEventListing();
 
+            List<TBAEvent> listing2 = TBAAPI.GetEventListing(2023);
 
             if (eventListing != null)
             {
@@ -48,6 +52,7 @@ namespace FRCGroove.Web.Controllers
                     eventListing = eventListing.Where(e => e.name.StartsWith("FIRST Championship")).ToList();
                 }
 
+                //TODO: this assumes dates and times are in my timezone - adjust everything to UTC or something 
                 frcEventListing.PastEvents = eventListing.Where(e => e.dateEnd < DateTime.Now.Date).ToList();
                 frcEventListing.CurrentEvents = eventListing.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).ToList();
                 frcEventListing.FutureEvents = eventListing.Where(e => e.dateStart > DateTime.Now.Date).ToList();

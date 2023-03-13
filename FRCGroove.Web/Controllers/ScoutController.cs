@@ -105,7 +105,7 @@ namespace FRCGroove.Web.Controllers
                 //var events = FRCEventsAPI.GetDistrictEventListing(d.code);
                 foreach (var e in events)
                 {
-                    var matches = TBAAPI.GetMatches("2022" + e.code.ToLower());
+                    var matches = TBAAPI.GetMatches("2023" + e.code.ToLower());
                     foreach(var m in matches)
                     {
                         if (m.score_breakdown != null)
@@ -143,8 +143,8 @@ namespace FRCGroove.Web.Controllers
             Dictionary<int, List<string>> teamEvents = new Dictionary<int, List<string>>();
             foreach (RegisteredTeam team in teams)
             {
-                List<string> eventCodes = TBAAPI.GetTeamEvents("frc" + team.number);
-                teamEvents.Add(team.number, eventCodes);
+                List<string> eventCodes = TBAAPI.GetTeamEvents("frc" + team.teamNumber);
+                teamEvents.Add(team.teamNumber, eventCodes);
                 allEventCodes.AddRange(eventCodes);
             }
             //List<string> allcodes = teamEvents.Select(t => t.Value.Select(s => s)).Distinct().ToList();
@@ -166,16 +166,16 @@ namespace FRCGroove.Web.Controllers
             foreach (RegisteredTeam team in teams)
             {
                 List<SelectionTeamData> data = new List<SelectionTeamData>();
-                List<string> events = teamEvents[team.number];
+                List<string> events = teamEvents[team.teamNumber];
                 foreach (string eventCode in events)
                 {
-                    if (cacheTeamData[eventCode].ContainsKey(team.number))
+                    if (cacheTeamData[eventCode].ContainsKey(team.teamNumber))
                     {
-                        data.Add(cacheTeamData[eventCode][team.number]);
+                        data.Add(cacheTeamData[eventCode][team.teamNumber]);
                     }
                 }
 
-                results.Add(team.number, data);
+                results.Add(team.teamNumber, data);
             }
 
             //load stats

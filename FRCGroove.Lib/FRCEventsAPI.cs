@@ -50,14 +50,29 @@ namespace FRCGroove.Lib
         //};
 
         private static Dictionary<string, DateTime> _knownStartTimes = new Dictionary<string, DateTime>()
-        {   {"TXCHA~Qualification", new DateTime(2022, 3, 12, 11, 00, 00, DateTimeKind.Utc)},
+        {
+            {"TXBEL~Qualification", new DateTime(2023, 3, 10, 11, 00, 00, DateTimeKind.Utc)},
+            {"TXBEL~Playoff", new DateTime(2023, 3, 11, 13, 00, 00, DateTimeKind.Utc)},
+            {"TXCHA~Qualification", new DateTime(2022, 3, 12, 11, 00, 00, DateTimeKind.Utc)},
             {"TXCHA~Playoff", new DateTime(2022, 3, 13, 13, 00, 00, DateTimeKind.Utc)},
             {"TXPAS~Qualification", new DateTime(2022, 3, 25, 11, 00, 00, DateTimeKind.Utc)},
             {"TXPAS~Playoff", new DateTime(2022, 3, 26, 13, 00, 00, DateTimeKind.Utc)},
             {"TXPA2~Qualification", new DateTime(2022, 4, 1, 11, 00, 00, DateTimeKind.Utc)},
             {"TXPA2~Playoff", new DateTime(2022, 4, 2, 13, 00, 00, DateTimeKind.Utc)},
             {"TXCMP~Qualification", new DateTime(2022, 4, 7, 15, 00, 00, DateTimeKind.Utc)},
-            {"TXCMP~Playoffs", new DateTime(2022, 4, 9, 12, 30, 00, DateTimeKind.Utc)}
+            {"TXCMP~Playoffs", new DateTime(2022, 4, 9, 12, 30, 00, DateTimeKind.Utc)},
+            {"CARVER~Qualification", new DateTime(2022, 4, 21, 8, 30, 00, DateTimeKind.Utc)},
+            {"CARVER~Playoff", new DateTime(2022, 4, 23, 8, 30, 00, DateTimeKind.Utc)},
+            {"GALILEO~Qualification", new DateTime(2022, 4, 21, 8, 30, 00, DateTimeKind.Utc)},
+            {"GALILEO~Playoff", new DateTime(2022, 4, 23, 8, 30, 00, DateTimeKind.Utc)},
+            {"HOPPER~Qualification", new DateTime(2022, 4, 21, 8, 30, 00, DateTimeKind.Utc)},
+            {"HOPPER~Playoff", new DateTime(2022, 4, 23, 8, 30, 00, DateTimeKind.Utc)},
+            {"NEWTON~Qualification", new DateTime(2022, 4, 21, 8, 30, 00, DateTimeKind.Utc)},
+            {"NEWTON~Playoff", new DateTime(2022, 4, 23, 8, 30, 00, DateTimeKind.Utc)},
+            {"ROEBLING~Qualification", new DateTime(2022, 4, 21, 8, 30, 00, DateTimeKind.Utc)},
+            {"ROEBLING~Playoff", new DateTime(2022, 4, 23, 8, 30, 00, DateTimeKind.Utc)},
+            {"TURING~Qualification", new DateTime(2022, 4, 21, 8, 30, 00, DateTimeKind.Utc)},
+            {"TURING~Playoff", new DateTime(2022, 4, 23, 8, 30, 00, DateTimeKind.Utc)}
         };
 
         public static List<District> GetDistrictListing()
@@ -188,22 +203,21 @@ namespace FRCGroove.Lib
             return schedule;
         }
 
-        public static Dictionary<int, string> GetPitLocations(string eventCode)
+        public static Dictionary<int, string> GetChampsPitLocations()
         {
-            List<string> _champs = new List<string>() { { "CARVER" }, { "GALILEO" }, { "HOPPER" }, { "NEWTON" }, { "ROEBLING" }, { "TURING" } };
-            RestResponse<PitLocationListing> response = new RestResponse<PitLocationListing>();
+            RestResponse<List<PitLocation>> response = new RestResponse<List<PitLocation>>();
 
-            string cachePath = $@"{CacheFolder}\{eventCode}.Pits.json";
+            string cachePath = $@"{CacheFolder}\pits.json";
             if (File.Exists(cachePath))
             {
                 string cachedData = File.ReadAllText(cachePath);
-                response = new RestResponse<PitLocationListing>() { Data = JsonConvert.DeserializeObject<PitLocationListing>(cachedData) };
+                response = new RestResponse<List<PitLocation>>() { Data = JsonConvert.DeserializeObject<List<PitLocation>>(cachedData) };
             }
 
             Dictionary<int, string> pitLocations = null;
             if (response.Data != null)
             {
-                pitLocations = response.Data.teams.ToDictionary(t => t.teamNumber, t => t.pitLocation);
+                pitLocations = response.Data.ToDictionary(t => t.teamNumber, t => t.pitLocation);
             }
 
             return pitLocations;
@@ -340,7 +354,6 @@ namespace FRCGroove.Lib
 
             Log($"GetEventTeamListing-{eventCode}", response.Content);
 #endif
-            //TODO: this multipage code probably works funky if I'm using mock data
             if (response.Data != null)
             {
                 List<RegisteredTeam> teams = response.Data.teams;
@@ -357,30 +370,29 @@ namespace FRCGroove.Lib
                         }
                     }
                 }
-                return teams.OrderBy(t => t.number).ToList();
+                return teams.OrderBy(t => t.teamNumber).ToList();
             }
             else
                 return null;
         }
 
-        public static List<RegisteredTeam> GetDistrictTeamListing(string districtCode)
-        {
-            string path = $"teams/?districtCode={districtCode}";
+//        public static List<RegisteredTeam> GetDistrictTeamListing(string districtCode)
+//        {
+//            string path = $"teams/?districtCode={districtCode}";
 
-#if MOCK
-            string mockInput = File.ReadAllText(@"C:\temp\GetDistrictRankings.mock.json");
-            var response = new { Data = JsonConvert.DeserializeObject<RegisteredTeamListing>(mockInput) };
-#else
-            var request = new RestRequest(path);
-            var response = _client.Execute<RegisteredTeamListing>(request);
+//#if MOCK
+//            string mockInput = File.ReadAllText(@"C:\temp\GetDistrictRankings.mock.json");
+//            var response = new { Data = JsonConvert.DeserializeObject<RegisteredTeamListing>(mockInput) };
+//#else
+//            var request = new RestRequest(path);
+//            var response = _client.Execute<RegisteredTeamListing>(request);
 
-            Log($"GetDistrictTeamListing-{districtCode}", response.Content);
-#endif
-            //TODO: Multi-page responses
-            List<RegisteredTeam> registeredTeams = response.Data.teams.OrderBy(t => t.number).ToList();
+//            Log($"GetDistrictTeamListing-{districtCode}", response.Content);
+//#endif
+//            List<RegisteredTeam> registeredTeams = response.Data.teams.OrderBy(t => t.teamNumber).ToList();
 
-            return registeredTeams;
-        }
+//            return registeredTeams;
+//        }
 
         public static List<RegisteredTeam> GetFullTeamListing(/*TODO: int year*/)
         {
