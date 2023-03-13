@@ -5,6 +5,16 @@ namespace FRCGroove.Lib.Models
 {
     public class Match
     {
+        Dictionary<string, string> _champsCodes = new Dictionary<string, string>
+        {
+            { "CARVER", "carv" },
+            { "GALILEO", "gal" },
+            { "HOPPER", "hop" },
+            { "NEWTON", "new" },
+            { "ROEBLING", "roe" },
+            { "TURING", "tur" }
+        };
+
         static private Dictionary<int, string> playoffTitles = new Dictionary<int, string>()
         {
             {1, "Quarterfinal 1-1"},
@@ -103,14 +113,16 @@ namespace FRCGroove.Lib.Models
         {
             get
             {
-                if(tournamentLevel == "Qualification")
+                string code = eventCode;
+                if( _champsCodes.ContainsKey(code) ) code = _champsCodes[code];
+                if (tournamentLevel == "Qualification")
                 {
-                    return "https://www.thebluealliance.com/match/" + DateTime.Now.Year + eventCode.ToLower() + "_qm" + matchNumber;
+                    return "https://www.thebluealliance.com/match/" + DateTime.Now.Year + code.ToLower() + "_qm" + matchNumber;
                 }
                 else
                 {
                     //TODO: probably some way to do this by mods and remainders
-                    return "https://www.thebluealliance.com/match/" + DateTime.Now.Year + eventCode.ToLower() + "_" + playoffIds[matchNumber];
+                    return "https://www.thebluealliance.com/match/" + DateTime.Now.Year + code.ToLower() + "_" + playoffIds[matchNumber];
                 }
             }
         }
