@@ -28,28 +28,37 @@
 
     @Styles.Render("~/Content/css")
 
-    @Scripts.Render("~/Scripts/stickyheader.js")
+    @*@Scripts.Render("~/Scripts/stickyheader.js")*@
 </head>
 <body style="margin-bottom:40px">
-    @*https://jsfiddle.net/fxvtaw60/*@
-    <div ID="backToTop" class="up"><p>top</p></div>
     <script>
         $(document).ready(function () {
             if ($(window).scrollTop() > 200) {
-                $('#backToTop').fadeIn('fast');
+                if ($('#filterToggle')) $('#filterToggle').fadeOut('fast');
             }
             $(window).scroll(function () {
                 if ($(this).scrollTop() > 200) {
-                    $('#backToTop').fadeIn('slow');
+                    if ($('#filterToggle')) $('#filterToggle').fadeOut('fast');
                 } else {
-                    $('#backToTop').fadeOut('slow');
+                    if ($('#filterToggle')) $('#filterToggle').fadeIn('fast');
                 }
             });
-            $('#backToTop').click(function () {
-                $("html, body").animate({ scrollTop: 0 }, 250);
-                return false;
-            });
         });
+
+        //TODO: honor dark mode (requires Bootstrap 5.3 which is currently in alpha and breaks my site)
+        /*
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            switchColorScheme();
+        });
+
+        function switchColorScheme() {
+            document.querySelector('html').dataset.bsTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? "dark"
+                : "light";
+        }
+
+        switchColorScheme();
+        */
     </script>
 
     <div class="container body-content">

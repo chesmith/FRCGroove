@@ -22,6 +22,7 @@ namespace FRCGroove.Lib.Models
         //public int districtRank { get; set; } = -1;
 
         public TBAStats Stats { get; set; }
+        public EPA epa { get; set; }
 
         public string champsDivision { get; set; }
         public string pitLocation { get; set; }

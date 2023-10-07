@@ -17,12 +17,11 @@ namespace FRCGroove.Web.Controllers
     {
         public ActionResult Index(string districtCode = "")
         {
-            //TODO: Convert to TBA
-            FRCEventListing frcEventListing = new FRCEventListing();
+            TBAEventListing eventListing = new TBAEventListing();
 
-            frcEventListing.Districts = FRCEventsAPI.GetDistrictListing();
-            frcEventListing.Districts.Insert(0, new District() { code = "All", name = "All Districts" });
-            frcEventListing.Districts.Insert(1, new District() { code = "World", name = "World Championship" });
+            eventListing.Districts = TBAAPI.GetDistrictListing();
+            eventListing.Districts.Insert(0, new TBADistrict() { abbreviation = "All", display_name = "All Districts", key = "All", year = 2023 });
+            eventListing.Districts.Insert(0, new TBADistrict() { abbreviation = "World", display_name = "World Championship", key = "World", year = 2023 });
 
             if (districtCode.Length == 0 && this.ControllerContext.HttpContext.Request.Cookies.AllKeys.Contains("districtCode"))
             {
@@ -33,29 +32,29 @@ namespace FRCGroove.Web.Controllers
                 }
             }
 
-            frcEventListing.districtCode = districtCode;
+            eventListing.districtCode = districtCode;
 
-            List<Event> eventListing;
+            List<TBAEvent> events;
             if (districtCode.Length > 0 && districtCode != "World" && districtCode != "All")
             {
-                eventListing = FRCEventsAPI.GetDistrictEventListing(districtCode);
+                events = TBAAPI.GetDistrictEventListing(districtCode);
             }
             else
-                eventListing = FRCEventsAPI.GetEventListing();
+            {
+                events = TBAAPI.GetEventListing(DateTime.Now.Year);
+            }
 
-            List<TBAEvent> listing2 = TBAAPI.GetEventListing(2023);
-
-            if (eventListing != null)
+            if (events != null)
             {
                 if (districtCode == "World")
                 {
-                    eventListing = eventListing.Where(e => e.name.StartsWith("FIRST Championship")).ToList();
+                    events = events.Where(e => e.event_type == 3).ToList();
                 }
 
                 //TODO: this assumes dates and times are in my timezone - adjust everything to UTC or something 
-                frcEventListing.PastEvents = eventListing.Where(e => e.dateEnd < DateTime.Now.Date).ToList();
-                frcEventListing.CurrentEvents = eventListing.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).ToList();
-                frcEventListing.FutureEvents = eventListing.Where(e => e.dateStart > DateTime.Now.Date).ToList();
+                eventListing.PastEvents = events.Where(e => e.dateEnd < DateTime.Now.Date).OrderBy(e => e.dateStart).ThenBy(e => e.name).ToList();
+                eventListing.CurrentEvents = events.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).OrderBy(e => e.dateStart).ThenBy(e => e.name).ToList();
+                eventListing.FutureEvents = events.Where(e => e.dateStart > DateTime.Now.Date).OrderBy(e => e.dateStart).ThenBy(e => e.name).ToList();
             }
 
             HttpCookie cookie = new HttpCookie("districtCode");
@@ -63,7 +62,16 @@ namespace FRCGroove.Web.Controllers
             cookie.Expires = DateTime.Now.AddYears(1);
             this.ControllerContext.HttpContext.Response.Cookies.Add(cookie);
 
-            return View(frcEventListing);
+            return View(eventListing);
+        }
+
+        private void AdjustChampsEventCodes(List<Event> events)
+        {
+            var champs = events.Where(e => FRCEventsAPI.ChampsDivisions.ContainsKey(e.code));
+            foreach (Event e in champs)
+            {
+                e.code = FRCEventsAPI.ChampsDivisions[e.code];
+            }
         }
 
         public ActionResult About()
@@ -76,6 +84,13 @@ namespace FRCGroove.Web.Controllers
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+
+        public ActionResult ResetEPACache()
+        {
+            TBAAPI.ResetEPACache();
 
             return View();
         }

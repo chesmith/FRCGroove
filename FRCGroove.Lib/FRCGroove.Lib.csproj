@@ -56,6 +56,7 @@
     <Compile Include="Models\DistrictListing.cs" />
     <Compile Include="Models\DistrictRank.cs" />
     <Compile Include="Models\DistrictRankListing.cs" />
+    <Compile Include="Models\EPA.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\EventListing.cs" />
     <Compile Include="Models\EventRanking.cs" />

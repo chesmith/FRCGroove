@@ -13,45 +13,46 @@ namespace FRCGroove.Lib.Models
         public List<object> surrogate_team_keys { get; set; }
         public List<string> team_keys { get; set; }
         public int adjustPoints { get; set; }
-        public int autoCargoLowerBlue { get; set; }
-        public int autoCargoLowerFar { get; set; }
-        public int autoCargoLowerNear { get; set; }
-        public int autoCargoLowerRed { get; set; }
-        public int autoCargoPoints { get; set; }
-        public int autoCargoTotal { get; set; }
-        public int autoCargoUpperBlue { get; set; }
-        public int autoCargoUpperFar { get; set; }
-        public int autoCargoUpperNear { get; set; }
-        public int autoCargoUpperRed { get; set; }
         public int autoPoints { get; set; }
         public int autoTaxiPoints { get; set; }
-        public bool cargoBonusRankingPoint { get; set; }
         public int endgamePoints { get; set; }
-        public string endgameRobot1 { get; set; }
-        public string endgameRobot2 { get; set; }
-        public string endgameRobot3 { get; set; }
         public int foulCount { get; set; }
         public int foulPoints { get; set; }
-        public bool hangarBonusRankingPoint { get; set; }
-        public int matchCargoTotal { get; set; }
-        public bool quintetAchieved { get; set; }
         public int rp { get; set; }
-        public string taxiRobot1 { get; set; }
-        public string taxiRobot2 { get; set; }
-        public string taxiRobot3 { get; set; }
         public int techFoulCount { get; set; }
-        public int teleopCargoLowerBlue { get; set; }
-        public int teleopCargoLowerFar { get; set; }
-        public int teleopCargoLowerNear { get; set; }
-        public int teleopCargoLowerRed { get; set; }
-        public int teleopCargoPoints { get; set; }
-        public int teleopCargoTotal { get; set; }
-        public int teleopCargoUpperBlue { get; set; }
-        public int teleopCargoUpperFar { get; set; }
-        public int teleopCargoUpperNear { get; set; }
-        public int teleopCargoUpperRed { get; set; }
         public int teleopPoints { get; set; }
         public int totalPoints { get; set; }
+
+        //prediction (statbotics)
+        public int predictedPoints { get; set; }
+
+        //2023 specific
+        public bool activationBonusAchieved { get; set; }
+        public string autoBridgeState { get; set; }
+        public int autoChargeStationPoints { get; set; }
+        public string autoChargeStationRobot1 { get; set; }
+        public string autoChargeStationRobot2 { get; set; }
+        public string autoChargeStationRobot3 { get; set; }
+        public bool autoDocked { get; set; }
+        public int autoGamePieceCount { get; set; }
+        public int autoGamePiecePoints { get; set; }
+        public int autoMobilityPoints { get; set; }
+        public int coopGamePieceCount { get; set; }
+        public bool coopertitionCriteriaMet { get; set; }
+        public string endGameBridgeState { get; set; }
+        public int endGameChargeStationPoints { get; set; }
+        public string endGameChargeStationRobot1 { get; set; }
+        public string endGameChargeStationRobot2 { get; set; }
+        public string endGameChargeStationRobot3 { get; set; }
+        public int endGameParkPoints { get; set; }
+        public int linkPoints { get; set; }
+        public string mobilityRobot1 { get; set; }
+        public string mobilityRobot2 { get; set; }
+        public string mobilityRobot3 { get; set; }
+        public bool sustainabilityBonusAchieved { get; set; }
+        public int teleopGamePieceCount { get; set; }
+        public int teleopGamePiecePoints { get; set; }
+        public int totalChargeStationPoints { get; set; }
     }
 
     public class Alliances
@@ -126,18 +127,25 @@ namespace FRCGroove.Lib.Models
                 alliances.blue.team_keys[0], alliances.blue.team_keys[1], alliances.blue.team_keys[2],
                 alliances.red.team_keys[0], alliances.red.team_keys[1], alliances.red.team_keys[2]
             };
-            scoring.taxi.Add(alliances.blue.team_keys[0], score_breakdown.blue.taxiRobot1);
-            scoring.taxi.Add(alliances.blue.team_keys[1], score_breakdown.blue.taxiRobot2);
-            scoring.taxi.Add(alliances.blue.team_keys[2], score_breakdown.blue.taxiRobot3);
-            scoring.endgame.Add(alliances.blue.team_keys[0], score_breakdown.blue.endgameRobot1);
-            scoring.endgame.Add(alliances.blue.team_keys[1], score_breakdown.blue.endgameRobot2);
-            scoring.endgame.Add(alliances.blue.team_keys[2], score_breakdown.blue.endgameRobot3);
-            scoring.taxi.Add(alliances.red.team_keys[0], score_breakdown.red.taxiRobot1);
-            scoring.taxi.Add(alliances.red.team_keys[1], score_breakdown.red.taxiRobot2);
-            scoring.taxi.Add(alliances.red.team_keys[2], score_breakdown.red.taxiRobot3);
-            scoring.endgame.Add(alliances.red.team_keys[0], score_breakdown.red.endgameRobot1);
-            scoring.endgame.Add(alliances.red.team_keys[1], score_breakdown.red.endgameRobot2);
-            scoring.endgame.Add(alliances.red.team_keys[2], score_breakdown.red.endgameRobot3);
+            scoring.automobility.Add(alliances.blue.team_keys[0], score_breakdown.blue.mobilityRobot1);
+            scoring.automobility.Add(alliances.blue.team_keys[1], score_breakdown.blue.mobilityRobot1);
+            scoring.automobility.Add(alliances.blue.team_keys[2], score_breakdown.blue.mobilityRobot1);
+            scoring.autodock.Add(alliances.blue.team_keys[0], score_breakdown.blue.autoChargeStationRobot1 + score_breakdown.blue.autoBridgeState);
+            scoring.autodock.Add(alliances.blue.team_keys[1], score_breakdown.blue.autoChargeStationRobot2 + score_breakdown.blue.autoBridgeState);
+            scoring.autodock.Add(alliances.blue.team_keys[2], score_breakdown.blue.autoChargeStationRobot3 + score_breakdown.blue.autoBridgeState);
+            scoring.endgame.Add(alliances.blue.team_keys[0], score_breakdown.blue.endGameChargeStationRobot1 + score_breakdown.blue.endGameBridgeState);
+            scoring.endgame.Add(alliances.blue.team_keys[1], score_breakdown.blue.endGameChargeStationRobot2 + score_breakdown.blue.endGameBridgeState);
+            scoring.endgame.Add(alliances.blue.team_keys[2], score_breakdown.blue.endGameChargeStationRobot3 + score_breakdown.blue.endGameBridgeState);
+
+            scoring.automobility.Add(alliances.red.team_keys[0], score_breakdown.red.mobilityRobot1);
+            scoring.automobility.Add(alliances.red.team_keys[1], score_breakdown.red.mobilityRobot1);
+            scoring.automobility.Add(alliances.red.team_keys[2], score_breakdown.red.mobilityRobot1);
+            scoring.autodock.Add(alliances.red.team_keys[0], score_breakdown.red.autoChargeStationRobot1 + score_breakdown.red.autoBridgeState);
+            scoring.autodock.Add(alliances.red.team_keys[1], score_breakdown.red.autoChargeStationRobot2 + score_breakdown.red.autoBridgeState);
+            scoring.autodock.Add(alliances.red.team_keys[2], score_breakdown.red.autoChargeStationRobot3 + score_breakdown.red.autoBridgeState);
+            scoring.endgame.Add(alliances.red.team_keys[0], score_breakdown.red.endGameChargeStationRobot1 + score_breakdown.red.endGameBridgeState);
+            scoring.endgame.Add(alliances.red.team_keys[1], score_breakdown.red.endGameChargeStationRobot2 + score_breakdown.red.endGameBridgeState);
+            scoring.endgame.Add(alliances.red.team_keys[2], score_breakdown.red.endGameChargeStationRobot3 + score_breakdown.red.endGameBridgeState);
 
             return scoring;
         }
@@ -169,7 +177,7 @@ namespace FRCGroove.Lib.Models
             {
                 switch (comp_level)
                 {
-                    case "qm": return $"01 {match_number:00}";
+                    case "qm": return $"01 {match_number:000}";
                     case "qf": return $"02 {set_number:00}-{match_number:00}";
                     case "sf": return $"03 {set_number:00}-{match_number:00}";
                     case "f": return $"04 {match_number:00}";
@@ -183,7 +191,8 @@ namespace FRCGroove.Lib.Models
     public class Scoring
     {
         public string[] teams { get; set; }
-        public Dictionary<string, string> taxi { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> automobility { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> autodock { get; set; } = new Dictionary<string, string>();
         public Dictionary<string, string> endgame { get; set; } = new Dictionary<string, string>();
     }
 }

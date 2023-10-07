@@ -20,12 +20,12 @@ namespace FRCGroove.Web.Models
 
     public class Dashboard
     {
-        public string districtCode { get; set; }
-        public Event FrcEvent { get; set; }
+        //public string districtCode { get; set; }
+        //public Event FrcEvent { get; set; }
         public TBAEvent TBAEvent { get; set; }
         public List<RegisteredTeam> TeamsOfInterest { get; set; }
         public double ScheduleOffset { get; set; }
-        public List<Match> Matches { get; set; }
+        //public List<Match> Matches { get; set; }
         public List<TBAMatchData> TBAMatches { get; set; }
 
         public List<Alliance> Alliances { get; set; }
@@ -33,6 +33,7 @@ namespace FRCGroove.Web.Models
         public PlayoffBracket Bracket { get; set; }
 
         public Dictionary<int, RegisteredTeam> RegisteredTeams { get; set; }
+        public Dictionary<int, EPA> EPACache { get; set; }
         public Dictionary<int, TBARanking> EventRankings { get; set; }
 
         private FRCEventState _eventState = FRCEventState.Invalid;
@@ -83,51 +84,53 @@ namespace FRCGroove.Web.Models
         //    }
         //}
 
-        public FRCEventState EventState
-        {
-            get
-            {
-                if (_eventState == FRCEventState.Invalid)
-                {
-                    if (TBAMatches != null)
-                    {
-                        if (TBAMatches.Count() == 0)
-                            _eventState = FRCEventState.Future;
-                        else
-                        {
-                            List<TBAMatchData> finals = TBAMatches.Where(m => m.comp_level == "f" && m.alliances.red.team_keys.Count() > 0 && m.alliances.blue.team_keys.Count() > 0).ToList();
-                            if (finals.Exists(t => t.alliances.red.score > 0 || t.alliances.blue.score > 0))
-                            {
-                                bool redWin = (finals.Count(t => t.alliances.red.score > t.alliances.blue.score) == 2);
-                                bool blueWin = (finals.Count(t => t.alliances.red.score < t.alliances.blue.score) == 2);
-                                if (redWin || blueWin)
-                                    _eventState = FRCEventState.Past;
-                                else
-                                    _eventState = FRCEventState.Finals;
-                            }
-                            else
-                            {
-                                List<TBAMatchData> semifinals = TBAMatches.Where(m => m.comp_level == "sf" && m.alliances.red.team_keys.Count() > 0 && m.alliances.blue.team_keys.Count() > 0).ToList();
-                                if (semifinals.Exists(t => t.alliances.red.score > 0 || t.alliances.blue.score > 0))
-                                {
-                                    _eventState = FRCEventState.Semifinals;
-                                }
-                                else
-                                {
-                                    List<TBAMatchData> quarterfinals = TBAMatches.Where(m => m.comp_level == "qf" && m.alliances.red.team_keys.Count() > 0 && m.alliances.blue.team_keys.Count() > 0).ToList();
-                                    if (quarterfinals.Exists(t => t.alliances.red.score > 0 || t.alliances.blue.score > 0))
-                                        _eventState = FRCEventState.Quarterfinals;
-                                    else
-                                        _eventState = FRCEventState.Qualifications;
-                                }
-                            }
-                        }
-                    }
-                }
+        public FRCEventState EventState { get; set; }
+        //{
+        //    get
+        //    {
+        //        if (_eventState == FRCEventState.Invalid)
+        //        {
+        //            if (TBAMatches != null)
+        //            {
+        //                if (TBAMatches.Count() <= 1)
+        //                    _eventState = FRCEventState.Future;
+        //                else
+        //                {
+        //                    List<TBAMatchData> finals = TBAMatches.Where(m => 
+        //                        m.comp_level == "f"
+        //                        && m.alliances.red.team_keys.Count() > 0
+        //                        && m.alliances.blue.team_keys.Count() > 0).ToList();
+        //                    if (finals.Exists(t => t.alliances.red.score > 0 || t.alliances.blue.score > 0))
+        //                    {
+        //                        bool redWin = (finals.Count(t => t.alliances.red.score > t.alliances.blue.score) == 2);
+        //                        bool blueWin = (finals.Count(t => t.alliances.red.score < t.alliances.blue.score) == 2);
+        //                        if (redWin || blueWin)
+        //                            _eventState = FRCEventState.Past;
+        //                        else
+        //                            _eventState = FRCEventState.Finals;
+        //                    }
+        //                    else
+        //                    {
+        //                        List<TBAMatchData> semifinals = TBAMatches.Where(m => 
+        //                            m.comp_level == "sf"
+        //                            && m.alliances.red.team_keys.Count() > 0
+        //                            && m.alliances.blue.team_keys.Count() > 0).ToList();
+        //                        if (semifinals.Exists(t => t.alliances.red.score > 0 || t.alliances.blue.score > 0))
+        //                        {
+        //                            _eventState = FRCEventState.Semifinals;
+        //                        }
+        //                        else
+        //                        {
+        //                            _eventState = FRCEventState.Qualifications;
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
 
-                return _eventState;
-            }
-        }
+        //        return _eventState;
+        //    }
+        //}
 
         public Dashboard()
         {

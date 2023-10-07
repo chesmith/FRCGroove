@@ -21,6 +21,8 @@ namespace FRCGroove.Web
 
             FRCEventsAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
             FRCEventsAPI.InitializeTeamListingCache();
+            TBAAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
+            TBAAPI.InitializeEPACache();
         }
     }
 }

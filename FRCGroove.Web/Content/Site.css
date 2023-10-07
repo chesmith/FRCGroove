@@ -56,9 +56,21 @@ table th {
     font-weight: bold;
 }
 
+.redHighlightPredict {
+    color: white;
+    background-color: #ffabab;
+    font-weight: bold;
+}
+
 .blueHighlight {
     color: white;
     background-color: #5555ff;
+    font-weight: bold;
+}
+
+.blueHighlightPredict {
+    color: white;
+    background-color: #ababff;
     font-weight: bold;
 }
 
@@ -303,3 +315,26 @@ div#backToTop {
     color: white;
     background-color: rgba(51, 51, 153, 1)
 }
+
+.title {
+    position: absolute;
+    top: 20px;
+    background: silver;
+    padding: 4px;
+    left: 0;
+    white-space: nowrap;
+}
+
+/*@media (prefers-color-scheme: light) {
+    body {
+        background-color: white;
+        color: black;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: black;
+        color: white;
+    }
+}*/

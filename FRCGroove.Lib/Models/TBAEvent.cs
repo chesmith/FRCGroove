@@ -20,8 +20,26 @@ namespace FRCGroove.Lib.Models
         public string end_date { get; set; }
         public int year { get; set; }
 
-        public DateTime dateStart { get { return DateTime.Parse(start_date); } }
+        public DateTime dateStart
+        {
+            get
+            {
+                if (start_date != null)
+                    return DateTime.Parse(start_date);
+                else
+                    return DateTime.MinValue;
+            }
+        }
 
-        public DateTime dateEnd { get { return DateTime.Parse(end_date); } }
+        public DateTime dateEnd
+        {
+            get
+            {
+                if (end_date != null)
+                    return DateTime.Parse(end_date);
+                else
+                    return DateTime.MinValue;
+            }
+        }
     }
 }

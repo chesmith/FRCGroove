@@ -45,90 +45,90 @@ namespace FRCGroove.Web.Controllers
 
         public String Data(int? team, int? match)
         {
-            //if (team != null && match != null)
-            //{
-            //    DataTable table;
-            //    using (GenericParserAdapter parser = new GenericParserAdapter(Path.Combine(_appDataFolder, "data.csv")))
-            //    {
-            //        parser.ColumnDelimiter = ',';
-            //        parser.FirstRowSetsExpectedColumnCount = true;
-            //        parser.FirstRowHasHeader = false;
+            ////if (team != null && match != null)
+            ////{
+            ////    DataTable table;
+            ////    using (GenericParserAdapter parser = new GenericParserAdapter(Path.Combine(_appDataFolder, "data.csv")))
+            ////    {
+            ////        parser.ColumnDelimiter = ',';
+            ////        parser.FirstRowSetsExpectedColumnCount = true;
+            ////        parser.FirstRowHasHeader = false;
 
-            //        table = parser.GetDataTable();
-            //    }
+            ////        table = parser.GetDataTable();
+            ////    }
 
-            //    var data = table.AsEnumerable().Where(r => ((string)r[1] == team.ToString() && (string)r[2] == match.ToString()));
-            //    int autohigh = data.Where(r => (r[3].Equals("auto") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
-            //    int autolow = data.Where(r => (r[3].Equals("auto") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
-            //    int teleophigh = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
-            //    int teleoplow = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    var data = table.AsEnumerable().Where(r => ((string)r[1] == team.ToString() && (string)r[2] == match.ToString()));
+            ////    int autohigh = data.Where(r => (r[3].Equals("auto") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    int autolow = data.Where(r => (r[3].Equals("auto") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    int teleophigh = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    int teleoplow = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
 
-            //    var result = new { autohigh = autohigh, autolow = autolow, teleophigh = teleophigh, teleoplow = teleoplow };
+            ////    var result = new { autohigh = autohigh, autolow = autolow, teleophigh = teleophigh, teleoplow = teleoplow };
 
-            //    return JsonConvert.SerializeObject(result);
-            //}
-            //else if (team != null && match == null)
-            //{
-            //    DataTable table;
-            //    using (GenericParserAdapter parser = new GenericParserAdapter(Path.Combine(_appDataFolder, "data.csv")))
-            //    {
-            //        parser.ColumnDelimiter = ',';
-            //        parser.FirstRowSetsExpectedColumnCount = true;
-            //        parser.FirstRowHasHeader = false;
+            ////    return JsonConvert.SerializeObject(result);
+            ////}
+            ////else if (team != null && match == null)
+            ////{
+            ////    DataTable table;
+            ////    using (GenericParserAdapter parser = new GenericParserAdapter(Path.Combine(_appDataFolder, "data.csv")))
+            ////    {
+            ////        parser.ColumnDelimiter = ',';
+            ////        parser.FirstRowSetsExpectedColumnCount = true;
+            ////        parser.FirstRowHasHeader = false;
 
-            //        table = parser.GetDataTable();
-            //    }
+            ////        table = parser.GetDataTable();
+            ////    }
 
-            //    var data = table.AsEnumerable().Where(r => ((string)r[1] == team.ToString()));
-            //    int autohigh = data.Where(r => (r[3].Equals("auto") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
-            //    int autolow = data.Where(r => (r[3].Equals("auto") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
-            //    int teleophigh = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
-            //    int teleoplow = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    var data = table.AsEnumerable().Where(r => ((string)r[1] == team.ToString()));
+            ////    int autohigh = data.Where(r => (r[3].Equals("auto") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    int autolow = data.Where(r => (r[3].Equals("auto") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    int teleophigh = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("high"))).Sum(r => Int32.Parse((string)r[5]));
+            ////    int teleoplow = data.Where(r => (r[3].Equals("teleop") && r[4].Equals("low"))).Sum(r => Int32.Parse((string)r[5]));
 
-            //    int matches = data.Select(r => r[2]).Distinct().Count();
+            ////    int matches = data.Select(r => r[2]).Distinct().Count();
 
-            //    var result = new { autohigh = (double)autohigh / (double)matches, autolow = (double)autolow / (double)matches, teleophigh = (double)teleophigh / (double)matches, teleoplow = (double)teleoplow / (double)matches };
+            ////    var result = new { autohigh = (double)autohigh / (double)matches, autolow = (double)autolow / (double)matches, teleophigh = (double)teleophigh / (double)matches, teleoplow = (double)teleoplow / (double)matches };
 
-            //    return JsonConvert.SerializeObject(result);
-            //}
-            //else
-            //{
-            //    return System.IO.File.ReadAllText(Path.Combine(_appDataFolder, "data.csv"));
-            //}
+            ////    return JsonConvert.SerializeObject(result);
+            ////}
+            ////else
+            ////{
+            ////    return System.IO.File.ReadAllText(Path.Combine(_appDataFolder, "data.csv"));
+            ////}
 
             StringBuilder sb = new StringBuilder();
-            List<string> allEventCodes = new List<string>();
-            //var districts = FRCEventsAPI.GetDistrictListing();
-            //foreach(var d in districts)
-            //{
-                var events = FRCEventsAPI.GetEventListing();
-                //var events = FRCEventsAPI.GetDistrictEventListing(d.code);
-                foreach (var e in events)
-                {
-                    var matches = TBAAPI.GetMatches("2023" + e.code.ToLower());
-                    foreach(var m in matches)
-                    {
-                        if (m.score_breakdown != null)
-                        {
-                            if (m.score_breakdown.blue.endgameRobot1 == "Traversal"
-                                && m.score_breakdown.blue.endgameRobot2 == "Traversal"
-                                && m.score_breakdown.blue.endgameRobot3 == "Traversal")
-                            {
-                                //sb.AppendLine($"{d.code},{e.code},{m.match_number},blue,{String.Join(",", m.alliances.blue.team_keys)}<br />");
-                                sb.AppendLine($"{e.code},{m.comp_level},{m.match_number},blue,{String.Join(",", m.alliances.blue.team_keys)}<br />");
-                            }
+            //List<string> allEventCodes = new List<string>();
+            ////var districts = FRCEventsAPI.GetDistrictListing();
+            ////foreach(var d in districts)
+            ////{
+            //    var events = FRCEventsAPI.GetEventListing();
+            //    //var events = FRCEventsAPI.GetDistrictEventListing(d.code);
+            //    foreach (var e in events)
+            //    {
+            //        var matches = TBAAPI.GetMatches("2023" + e.code.ToLower());
+            //        foreach(var m in matches)
+            //        {
+            //            if (m.score_breakdown != null)
+            //            {
+            //                if (m.score_breakdown.blue.endgameRobot1 == "Traversal"
+            //                    && m.score_breakdown.blue.endgameRobot2 == "Traversal"
+            //                    && m.score_breakdown.blue.endgameRobot3 == "Traversal")
+            //                {
+            //                    //sb.AppendLine($"{d.code},{e.code},{m.match_number},blue,{String.Join(",", m.alliances.blue.team_keys)}<br />");
+            //                    sb.AppendLine($"{e.code},{m.comp_level},{m.match_number},blue,{String.Join(",", m.alliances.blue.team_keys)}<br />");
+            //                }
 
-                            if (m.score_breakdown.red.endgameRobot1 == "Traversal"
-                                && m.score_breakdown.red.endgameRobot2 == "Traversal"
-                                && m.score_breakdown.red.endgameRobot3 == "Traversal")
-                            {
-                                //sb.AppendLine($"{d.code},{e.code},{m.match_number},red,{String.Join(",", m.alliances.red.team_keys)}<br />");
-                                sb.AppendLine($"{e.code},{m.comp_level},{m.match_number},red,{String.Join(",", m.alliances.red.team_keys)}<br />");
-                            }
-                        }
-                    }
-                }
-            //}
+            //                if (m.score_breakdown.red.endgameRobot1 == "Traversal"
+            //                    && m.score_breakdown.red.endgameRobot2 == "Traversal"
+            //                    && m.score_breakdown.red.endgameRobot3 == "Traversal")
+            //                {
+            //                    //sb.AppendLine($"{d.code},{e.code},{m.match_number},red,{String.Join(",", m.alliances.red.team_keys)}<br />");
+            //                    sb.AppendLine($"{e.code},{m.comp_level},{m.match_number},red,{String.Join(",", m.alliances.red.team_keys)}<br />");
+            //                }
+            //            }
+            //        }
+            //    }
+            ////}
 
             return sb.ToString();
         }
@@ -295,30 +295,30 @@ namespace FRCGroove.Web.Controllers
                 if (cargoCounts != null && cargoCounts.ContainsKey(teamNumber))
                 {
                     int[] cargo = cargoCounts[teamNumber];
-                    data.CargoAutoHigh = cargo[0];
-                    data.CargoAutoLow = cargo[1];
-                    data.CargoTeleopHigh = cargo[2];
-                    data.CargoTeleopLow = cargo[3];
-                    data.CargoMatchCount = cargo[4];
+                    //data.CargoAutoHigh = cargo[0];
+                    //data.CargoAutoLow = cargo[1];
+                    //data.CargoTeleopHigh = cargo[2];
+                    //data.CargoTeleopLow = cargo[3];
+                    //data.CargoMatchCount = cargo[4];
                 }
             }
 
             Dictionary<int, SelectionTeamData> result;
 
-            if (sort.ToLower() == "team")
-                result = teamData.OrderBy(t => t.Value.TeamNumber).ToDictionary(t => t.Key, t => t.Value);
-            else if (sort.ToLower() == "opr")
-                result = teamData.OrderByDescending(t => t.Value.OPR).ToDictionary(t => t.Key, t => t.Value);
-            else if (sort.ToLower() == "dpr")
-                result = teamData.OrderBy(t => t.Value.DPR).ToDictionary(t => t.Key, t => t.Value);
-            else if (sort.ToLower() == "ccwm")
-                result = teamData.OrderByDescending(t => t.Value.CCWM).ToDictionary(t => t.Key, t => t.Value);
-            else if (sort.ToLower() == "rank")
-                result = teamData.OrderBy(t => t.Value.Rank).ToDictionary(t => t.Key, t => t.Value);
-            else if (sort.ToLower() == "pts")
-                result = teamData.OrderByDescending(t => (t.Value.CargoAutoHigh * 4 + t.Value.CargoAutoLow * 2 + t.Value.CargoTeleopHigh * 2 + t.Value.CargoTeleopLow)).ToDictionary(t => t.Key, t => t.Value);
-            else
-                result = teamData.OrderByDescending(t => t.Value.CCWM).ThenByDescending(t => (t.Value.CargoAutoHigh * 4 + t.Value.CargoAutoLow * 2 + t.Value.CargoTeleopHigh * 2 + t.Value.CargoTeleopLow)).ToDictionary(t => t.Key, t => t.Value);
+            //if (sort.ToLower() == "team")
+            result = teamData.OrderBy(t => t.Value.TeamNumber).ToDictionary(t => t.Key, t => t.Value);
+            //else if (sort.ToLower() == "opr")
+            //    result = teamData.OrderByDescending(t => t.Value.OPR).ToDictionary(t => t.Key, t => t.Value);
+            //else if (sort.ToLower() == "dpr")
+            //    result = teamData.OrderBy(t => t.Value.DPR).ToDictionary(t => t.Key, t => t.Value);
+            //else if (sort.ToLower() == "ccwm")
+            //    result = teamData.OrderByDescending(t => t.Value.CCWM).ToDictionary(t => t.Key, t => t.Value);
+            //else if (sort.ToLower() == "rank")
+            //    result = teamData.OrderBy(t => t.Value.Rank).ToDictionary(t => t.Key, t => t.Value);
+            //else if (sort.ToLower() == "pts")
+            //    result = teamData.OrderByDescending(t => (t.Value.CargoAutoHigh * 4 + t.Value.CargoAutoLow * 2 + t.Value.CargoTeleopHigh * 2 + t.Value.CargoTeleopLow)).ToDictionary(t => t.Key, t => t.Value);
+            //else
+            //    result = teamData.OrderByDescending(t => t.Value.CCWM).ThenByDescending(t => (t.Value.CargoAutoHigh * 4 + t.Value.CargoAutoLow * 2 + t.Value.CargoTeleopHigh * 2 + t.Value.CargoTeleopLow)).ToDictionary(t => t.Key, t => t.Value);
 
             return View(result);
         }
@@ -342,11 +342,12 @@ namespace FRCGroove.Web.Controllers
                         teamData[teamNumber] = data;
                     }
 
-                    data.AutoTaxi += (scoring.taxi[team] == "Yes" ? 1 : 0);
-                    data.ClimbLow += (scoring.endgame[team] == "Low" ? 1 : 0);
-                    data.ClimbMid += (scoring.endgame[team] == "Mid" ? 1 : 0);
-                    data.ClimbHigh += (scoring.endgame[team] == "High" ? 1 : 0);
-                    data.ClimbTraversal += (scoring.endgame[team] == "Traversal" ? 1 : 0);
+                    data.AutoMobility += (scoring.automobility[team] == "Yes" ? 1 : 0);
+                    data.AutoDock += (scoring.autodock[team] == "DockedNotLevel" ? 1 : 0);
+                    data.AutoEngage += (scoring.autodock[team] == "DockedLevel" ? 1 : 0);
+                    data.EndgameDock += (scoring.endgame[team] == "DockedNotLevel" ? 1 : 0);
+                    data.EndgameEngage += (scoring.endgame[team] == "DockedLevel" ? 1 : 0);
+                    data.EndgamePark += (scoring.endgame[team].StartsWith("Park") ? 1 : 0);
 
                     data.DQCount += (match.alliances.blue.dq_team_keys.Contains(team) || match.alliances.red.dq_team_keys.Contains(team) ? 1 : 0);
 

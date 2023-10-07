@@ -4,22 +4,20 @@
 
 @{
     ViewBag.Title = "Teams";
+
+    Dictionary<string, string> divisionColorMap = new Dictionary<string, string>() {
+        { "ARCHIMEDES", "#E58C88" },
+        { "CURIE", "#959493" },
+        { "DALY", "#DDDDDD" },
+        { "GALILEO", "#91CC91" },
+        { "HOPPER", "#A8B5D0" },
+        { "JOHNSON", "#DBE38D" },
+        { "MILSTEIN", "#B3926B" },
+        { "NEWTON", "#FFFFFF" }
+    };
 }
 
 @Html.Partial("Navigation", "Teams")
-
-<script type="text/javascript">
-    var teamList = '@(Model.Watchlist != null ? string.Join(",", Model.Watchlist) : "")';
-    //$("body").on("click", "#teamSort th", function () {
-    //    sort = $(this).html();
-    //    setTimeout(function () { document.location.href = "/Teams?sort=" + sort; }, 250);
-    //});
-    if (typeof gtag != "undefined") gtag('event', 'list', { 'event_category': 'Team', 'event_action': 'list', 'event_label': teamList });
-</script>
-
-@*<h2>Team Watchlist</h2>*@
-<i>2023 Houston Champs.  Tap columns to sort.  Tap teams to update your watchlist.</i>
-<a href="~/Content/2023FRCPitMap.png">&lt;&lt;Pit Map&gt;&gt;</a>
 
 <style>
     table tr td {
@@ -27,62 +25,63 @@
     }
 </style>
 
-    <table class="teamListing">
-        <thead>
-            <tr id="teamSort">
-                <th><a href="/Teams?sort=Number">#</a></th>
-                <th><a href="/Teams?sort=Name">Name</a></th>
-                <th><a href="/Teams?sort=Division">Division</a></th>
-                <th><a href="/Teams?sort=Pit">Pit</a></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Teams != null)
-            {
-                foreach (RegisteredTeam team in Model.Teams)
-                {
-                    if (Model.Watchlist.Contains(team.teamNumber))
-                    {
-                        <tr>
-                            <td id="tm@(team.teamNumber)-a" style="background-color: yellow; font-weight: 600">@team.teamNumber</td>
-                            <td id="tm@(team.teamNumber)-b" style="background-color: yellow; font-weight: 600">@team.nameShort</td>
-                            <td id="tm@(team.teamNumber)-d" style="background-color: yellow; font-weight: 600">@team.champsDivision</td>
-                            <td id="tm@(team.teamNumber)-p" style="background-color: yellow; font-weight: 600">@team.pitLocation</td>
-                        </tr>
-                    }
-                    else
-                    {
-                        <tr>
-                            <td id="tm@(team.teamNumber)-a">@team.teamNumber</td>
-                            <td id="tm@(team.teamNumber)-b">@team.nameShort</td>
-                            <td id="tm@(team.teamNumber)-d">@team.champsDivision</td>
-                            <td id="tm@(team.teamNumber)-d">@team.pitLocation</td>
-                        </tr>
-                    }
-                }
-            }
-            else
-            {
-                <tr><td colspan="4" style="color:darkred">Error retrieving team listing</td></tr>
-            }
-        </tbody>
-    </table>
+<script type="text/javascript">
+    var teamList = '@(Model.Watchlist != null ? string.Join(",", Model.Watchlist) : "")';
+    if (typeof gtag != "undefined") gtag('event', 'list', { 'event_category': 'Team', 'event_action': 'list', 'event_label': teamList });
 
-    @*int page = 0;
-        Int32.TryParse(Request.QueryString["page"], out page);
-        if (page == 0) { page = 1; }
+    divisionColorMap = { };
+    divisionColorMap["ARCHIMEDES"] = "#E58C88";
+    divisionColorMap["CURIE"] = "#959493";
+    divisionColorMap["DALY"] = "#DDDDDD";
+    divisionColorMap["GALILEO"] = "#91CC91";
+    divisionColorMap["HOPPER"] = "#A8B5D0";
+    divisionColorMap["JOHNSON"] = "#DBE38D";
+    divisionColorMap["MILSTEIN"] = "#B3926B";
+    divisionColorMap["NEWTON"] = "#FFFFFF";
 
-        @Html.ActionLink("next page", "Index", new { page = page + 1 });*@
+    var lastSort = '#';
+    var lastSearch = '';
+</script>
+
+<i>2023 Houston Champs.  Tap columns to sort.  Tap teams to update your watchlist.</i>
+<a href="~/Content/2023FRCPitMap.htm" target="_blank">&lt;&lt;Pit Map&gt;&gt;</a>
+
+<p><label for"search">Search (#, name, or div)</label>&nbsp;<input type="text" name="search" id="search" size="15" />
+<br /><span id="numTeams"></span></p>
+
+<table class="teamListing" id="teams">
+    <thead>
+        <tr id="teamSort">
+            <th>#</th>
+            <th>Name</th>
+            <th>EPA</th>
+            <th>Division</th>
+            <th>Pit</th>
+        </tr>
+    </thead>
+    <tbody id="teamsBody">
+    </tbody>
+</table>
 
 <script type="text/javascript">
-    $("[id^=tm]").click(function () {
+    $("#teamsBody").on('click', '[id^=tm]', function () {
         var id = $(this).attr('id');
         var teamNumber = id.substring(2, id.indexOf('-'));
-        WatchTeam(teamNumber)
+        WatchTeam(teamNumber);
+    });
+
+    $("#search").on("input", function () {
+        lastSearch = $(this).val();
+        GetChampsTeams(lastSort, $(this).val());
+    });
+
+    $("th").click(function () {
+        lastSort = $(this).text();
+        GetChampsTeams(lastSort, lastSearch)
     });
 
     function WatchTeam(teamNumber) {
-        var entries = $("[id^=tm" + teamNumber + "-]");
+        var entries = $("[id^=tm" + teamNumber + "-a]");
         var action = '';
         $.each(entries, function () {
             var weight = $(this).css('font-weight');
@@ -115,19 +114,46 @@
             data: '{"teamList": "' + teamList + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
-            success: OnSuccess,
+            success: function () {
+                console.log("successfully updated watchlist");
+            },
             failure: function (response) {
-                OnFailure();
                 console.log("failed to update teams: " + response.d);
             },
             error: function (response) {
-                OnFailure();
                 console.log("error updating teams: " + response.d);
             }
         });
     }
 
-    function OnSuccess() {
-        console.log("successfully updated watchlist");
-    };
+    function GetChampsTeams(sort, search) {
+        $('#teams').find("tr:gt(0)").remove();
+        var uri = "Teams/GetChampsTeams?sort=" + sort + "&search=" + search
+        $.get(uri.replace('#', '%23'), function (data) {
+            var row = '';
+            $.each(data.Teams, function (key, team) {
+                style = ''
+                if (data.Watchlist.includes(team.teamNumber)) {
+                    style = ' style="background-color: yellow; font-weight: 600"';
+                }
+                var division = team.champsDivision.substring(0, 1) + team.champsDivision.substring(1).toLowerCase();
+                row += '<tr>';
+                row += '<td id="tm' + team.teamNumber + '-a"' + style + '>' + team.teamNumber + '</td>';
+                row += '<td id="tm' + team.teamNumber + '-a"' + style + '>' + team.nameShort + '</td>';
+                row += '<td id="tm' + team.teamNumber + '-a"' + style + '>' + team.epa.epa_end + '</td>';
+                row += '<td id="tm' + team.teamNumber + '-d" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + division + '</td>';
+                row += '<td id="tm' + team.teamNumber + '-p" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + team.pitLocation + '</td>';
+                row += '</tr>';
+            });
+
+            $('#teamsBody').append(row);
+
+            if (data.Teams.length == 1)
+                $("#numTeams").text(data.Teams.length + ' team');
+            else
+                $("#numTeams").text(data.Teams.length + ' teams');
+        });
+    }
+
+    champsTeams = GetChampsTeams('', '');
 </script>

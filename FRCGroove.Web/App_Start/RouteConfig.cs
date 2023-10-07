@@ -44,6 +44,12 @@ namespace FRCGroove.Web
             );
 
             routes.MapRoute(
+                name: "GetDashboardData",
+                url: "FRCEvent/GetDashboardData",
+                defaults: new { controller = "FRCEvent", action = "GetDashboardData" }
+            );
+
+            routes.MapRoute(
                 name: "FRCEvent",
                 url: "FRCEvent/{eventCode}/{teamList}",
                 defaults: new { controller = "FRCEvent", action = "Index", teamList = UrlParameter.Optional }
@@ -65,6 +71,12 @@ namespace FRCGroove.Web
                 name: "UpdateWatchList",
                 url: "Teams/UpdateWatchList",
                 defaults: new { controller = "Teams", action = "UpdateWatchList" }
+            );
+
+            routes.MapRoute(
+                name: "GetChampsTeas",
+                url: "Teams/GetChampsTeams",
+                defaults: new { controller = "Teams", action = "GetChampsTeams" }
             );
 
             routes.MapRoute(
@@ -107,6 +119,12 @@ namespace FRCGroove.Web
                 name: "PreScout",
                 url: "Scout/PreScout/{tbaEventCode}",
                 defaults: new { controller = "Scout", action = "PreScout" }
+            );
+
+            routes.MapRoute(
+                name: "ResetEPACache",
+                url: "ResetEPACache",
+                defaults: new { controller = "Home", action = "ResetEPACache" }
             );
         }
     }
