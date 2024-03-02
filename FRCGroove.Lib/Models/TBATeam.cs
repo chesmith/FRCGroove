@@ -20,5 +20,15 @@
         public string website { get; set; }
         public int rookie_year { get; set; }
         public string motto { get; set; }
+
+        public int eventRank { get; set; } = -1;
+        //public int districtRank { get; set; } = -1;
+
+        public TBAStats Stats { get; set; }
+        public EPA epa { get; set; }
+
+        public string champsDivision { get; set; }
+        public string pitLocation { get; set; }
+
     }
 }

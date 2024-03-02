@@ -20,8 +20,8 @@ namespace FRCGroove.Web
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             FRCEventsAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
-            FRCEventsAPI.InitializeTeamListingCache();
             TBAAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
+            TBAAPI.InitializeTeamListingCache();
             TBAAPI.InitializeEPACache();
         }
     }

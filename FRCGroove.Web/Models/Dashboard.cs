@@ -23,7 +23,7 @@ namespace FRCGroove.Web.Models
         //public string districtCode { get; set; }
         //public Event FrcEvent { get; set; }
         public TBAEvent TBAEvent { get; set; }
-        public List<RegisteredTeam> TeamsOfInterest { get; set; }
+        public List<TBATeam> TeamsOfInterest { get; set; }
         public double ScheduleOffset { get; set; }
         //public List<Match> Matches { get; set; }
         public List<TBAMatchData> TBAMatches { get; set; }
@@ -32,7 +32,7 @@ namespace FRCGroove.Web.Models
         public List<TBAPlayoffAlliance> TBAPlayoffAlliances { get; set; }
         public PlayoffBracket Bracket { get; set; }
 
-        public Dictionary<int, RegisteredTeam> RegisteredTeams { get; set; }
+        public Dictionary<int, TBATeam> RegisteredTeams { get; set; }
         public Dictionary<int, EPA> EPACache { get; set; }
         public Dictionary<int, TBARanking> EventRankings { get; set; }
 
@@ -134,7 +134,7 @@ namespace FRCGroove.Web.Models
 
         public Dashboard()
         {
-            TeamsOfInterest = new List<RegisteredTeam>();
+            TeamsOfInterest = new List<TBATeam>();
         }
     }
 }

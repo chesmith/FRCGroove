@@ -1,5 +1,6 @@
 ﻿@using FRCGroove.Lib.Models
 @using FRCGroove.Web.Models
+@using System.Text.RegularExpressions;
 @model FRCGroove.Web.Models.Dashboard
 
 @{
@@ -156,7 +157,7 @@
                     var eventState = "@Model.EventState";
                     var matches = @(Model.TBAMatches == null ? 0 : Model.TBAMatches.Count(m => m.actual_time != 0));
 
-                    var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.teamNumber))";
+                    var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.team_number))";
                     var sortName = "Rank";
                     var prevSortName = "Rank";
                     var sortDirection = "ASC";
@@ -202,9 +203,9 @@
                             if (team.eventRank > -1)
                             {
                                 var teamListing = '<div style="margin-top:0.5rem">';
-                                teamListing += '<div>' + team.teamNumber + ' ' + team.nameShort;
+                                teamListing += '<div>' + team.team_number + ' ' + team.nickname;
                                 teamListing += ' (<span><a href="https://www.thebluealliance.com/event/@eventCode#rankings" target="_blank" rel="noopener noreferrer">#' + team.eventRank + '</a></span>) ';
-                                teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.teamNumber + ');">[<span style="color:red">x</span>]</sup></div>';
+                                teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.team_number + ');">[<span style="color:red">x</span>]</sup></div>';
                                 if (team.Stats != null) {
                                     teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
                                 }
@@ -327,8 +328,10 @@
                 foreach (string teamKey in match.alliances.red.team_keys)
                 {
                     List<string> classes = new List<string>();
-                    int teamNumber = Int32.Parse(teamKey.Substring(3));
-                    if (Model.TeamsOfInterest.Count(t => t.teamNumber == teamNumber) > 0)
+                    //TODO: Int32.Parse
+                    string teamKeyNum = Regex.Replace(teamKey, "[^0-9,-]+", "");
+                    int teamNumber = Int32.Parse(teamKeyNum);
+                    if (Model.TeamsOfInterest.Count(t => t.team_number == teamNumber) > 0)
                     {
                         classes.Add("redHighlight");
                         teamActions[teamNumber] = "remove";
@@ -348,8 +351,10 @@
                 foreach (string teamKey in match.alliances.blue.team_keys)
                 {
                     List<string> classes = new List<string>();
-                    int teamNumber = Int32.Parse(teamKey.Substring(3));
-                    if (Model.TeamsOfInterest.Count(t => t.teamNumber == teamNumber) > 0)
+                    //TODO: Int32.Parse
+                    string teamKeyNum = Regex.Replace(teamKey, "[^0-9,-]+", "");
+                    int teamNumber = Int32.Parse(teamKeyNum);
+                    if (Model.TeamsOfInterest.Count(t => t.team_number == teamNumber) > 0)
                     {
                         classes.Add("blueHighlight");
                         teamActions[teamNumber] = "remove";
@@ -366,6 +371,7 @@
                     { teamClasses[teamNumber] = string.Empty; }
                 }
 
+                //TODO: Int32.Parse
                 List<int> redAlliance = match.alliances.red.team_keys.Select(v => Int32.Parse(v.Substring(3))).ToList();
                 List<int> blueAlliance = match.alliances.blue.team_keys.Select(v => Int32.Parse(v.Substring(3))).ToList();
 
@@ -475,7 +481,7 @@
             {
                 <span class="teamRank" id="rank@(teamNumber)-@(match.comp_level)-@(match.match_number)"> (#@Model.EventRankings[teamNumber].rank)</span>
             }
-            <span class="teamName">@(Model.RegisteredTeams.ContainsKey(teamNumber) ? Model.RegisteredTeams[teamNumber].nameShort : "")@epaString</span>
+            <span class="teamName">@(Model.RegisteredTeams.ContainsKey(teamNumber) ? Model.RegisteredTeams[teamNumber].nickname : "")@epaString</span>
         </div>
     }
 }

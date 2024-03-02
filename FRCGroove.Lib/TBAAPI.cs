@@ -52,6 +52,7 @@ namespace FRCGroove.Lib
         }
 
         public static string CacheFolder { get; set; }
+        public static Dictionary<int, TBATeam> TeamListingCache { get; set; }
         public static Dictionary<int, EPA> EPACache { get; set; }
 
         private static Dictionary<string, TBAStatsCollection> _statsCache = new Dictionary<string, TBAStatsCollection>();
@@ -132,6 +133,7 @@ namespace FRCGroove.Lib
 
         public static void ResetEPACache()
         {
+            //TODO: perhaps automate resetting once per day during off hours (how?)
             string cachePath = $@"{CacheFolder}\EPACache.{DateTime.Now.Year}.json";
             if (File.Exists(cachePath))
             {
@@ -437,5 +439,84 @@ namespace FRCGroove.Lib
 
             return resp.Data;
         }
+
+        public static List<TBATeam> GetFullTeamListing(/*TODO: int year*/)
+        {
+            string path = $"teams/{DateTime.Now.Year}/0/simple";
+
+            var request = new RestRequest(path);
+            request.AddHeader("X-TBA-Auth-Key", ConfigurationManager.AppSettings["TBAAuthKey"]);
+            var response = _client.Execute<List<TBATeam>>(request);
+
+            //var response = new RestResponse<RegisteredTeamListing>();
+            //string cachePath = $@"{CacheFolder}\GetFullTeamListing.2019.json";
+            //if (File.Exists(cachePath))
+            //{
+            //    string cachedData = File.ReadAllText(cachePath);
+            //    response = new RestResponse<RegisteredTeamListing>() { Data = JsonConvert.DeserializeObject<RegisteredTeamListing>(cachedData) };
+            //}
+
+            if (response.Data != null)
+            {
+                List<TBATeam> teams = response.Data;
+                List<TBATeam> allTeams = new List<TBATeam>();
+                allTeams.AddRange(teams);
+                int page = 0;
+                while (teams.Count > 0)
+                {
+                    page++;
+                    System.Diagnostics.Debug.WriteLine(page);
+                    var subpageRequest = new RestRequest($"teams/{DateTime.Now.Year}/{page}/simple");
+                    subpageRequest.AddHeader("X-TBA-Auth-Key", ConfigurationManager.AppSettings["TBAAuthKey"]);
+                    var subpageResponse = _client.Execute<List<TBATeam>>(subpageRequest);
+                    //Log($"GetFullTeamListing-{page}", subpageResponse.Content);
+                    if (subpageResponse.Data != null)
+                    {
+                        teams = subpageResponse.Data;
+                        allTeams.AddRange(teams);
+                    }
+                }
+                return allTeams;
+            }
+            else
+                return null;
+        }
+
+        //Called by Global.asax
+        public static void InitializeTeamListingCache()
+        {
+            if (CacheFolder.Length > 0)
+            {
+                string cachePath = $@"{CacheFolder}\GetFullTeamListing.{DateTime.Now.Year}.json";
+                if (File.Exists(cachePath))
+                {
+                    string cachedData = File.ReadAllText(cachePath);
+                    List<TBATeam> teams = JsonConvert.DeserializeObject<List<TBATeam>>(cachedData);
+                    TeamListingCache = teams.ToDictionary(t => t.team_number, t => t);
+                }
+            }
+        }
+
+        public static TBATeam GetTeam(int teamNumber)
+        {
+            TBATeam team = null;
+            if (TeamListingCache != null && TeamListingCache.ContainsKey(teamNumber))
+            {
+                team = TeamListingCache[teamNumber];
+            }
+
+            if (team == null)
+            {
+                string path = $"team/frc{teamNumber}";
+                var request = new RestRequest(path);
+                var response = _client.Execute<TBATeam>(request);
+
+                if (response.StatusCode == HttpStatusCode.OK && response.Data != null)
+                    team = response.Data;
+            }
+
+            return team;
+        }
+
     }
 }

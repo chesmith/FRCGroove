@@ -1,6 +1,7 @@
 ﻿using FRCGroove.Web.Models;
 using FRCGroove.Lib;
 using FRCGroove.Lib.Models;
+using System.Text.RegularExpressions;
 
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace FRCGroove.Web.Controllers
             var stopwatch = Stopwatch.StartNew();
             List<string> teams = BuildTeamsOfInterest(teamList);
 
-            string tbaEventCode = TBAAPI.TranslateFRCEventCode(eventCode);
+            //string tbaEventCode = TBAAPI.TranslateFRCEventCode(eventCode);
             //Dashboard dashboard = BuildEventDashboardTBA(tbaEventCode, teams);
             Dashboard dashboard = BuildEventDashboardTBA(eventCode, teams);
 
@@ -84,7 +85,7 @@ namespace FRCGroove.Web.Controllers
 
                     dashboard.EventState = DetermineEventState(dashboard.TBAMatches);
 
-                    //TODO: replace with TBA
+                    //TODO: replace with TBA (I think mostly done but for brackets)
                     if (dashboard.TBAMatches != null && (dashboard.EventState == FRCEventState.Past || dashboard.EventState == FRCEventState.Qualifications || dashboard.EventState == FRCEventState.Quarterfinals || dashboard.EventState == FRCEventState.Semifinals || dashboard.EventState == FRCEventState.Finals))
                     {
                         if (dashboard.EventState != FRCEventState.Qualifications)
@@ -113,12 +114,13 @@ namespace FRCGroove.Web.Controllers
                         //Debug.WriteLine($"TBAAPI.GetEventRankings, {stopwatch.Elapsed.TotalMilliseconds}");
                         if (rankings != null && rankings.rankings != null)
                         {
-                            dashboard.EventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(e.team_key.Substring(3)), e => e);
+                            //TODO: Int32.Parse (I think this was an issue with offseason events where teams might have a letter in their name)
+                            dashboard.EventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(Regex.Replace(e.team_key, "[^0-9,-]+", "")), e => e);
                         }
                     }
                 }
 
-                dashboard.RegisteredTeams = FRCEventsAPI.TeamListingCache;  //TODO: replace with TBA
+                dashboard.RegisteredTeams = TBAAPI.TeamListingCache;
                 dashboard.EPACache = TBAAPI.EPACache;
             }
 
@@ -176,9 +178,9 @@ namespace FRCGroove.Web.Controllers
             return eventState;
         }
 
-        private List<RegisteredTeam> GatherTeamsOfInterest(string eventCode, List<string> teamList, Dictionary<int, TBARanking> eventRankings = null)
+        private List<TBATeam> GatherTeamsOfInterest(string eventCode, List<string> teamList, Dictionary<int, TBARanking> eventRankings = null)
         {
-            List<RegisteredTeam> teamsOfInterest = new List<RegisteredTeam>();
+            List<TBATeam> teamsOfInterest = new List<TBATeam>();
             if (teamList != null && teamList.Count > 0)
             {
                 TBAStatsCollection stats = TBAAPI.GetStats(eventCode); //API CALL (5 min cache)
@@ -187,21 +189,21 @@ namespace FRCGroove.Web.Controllers
                     TBAEventRankings rankings = TBAAPI.GetEventRankings(eventCode); //API CALL (TBA-compliant cache)
                     if (rankings != null && rankings.rankings != null)
                     {
-                        eventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(e.team_key.Substring(3)), e => e);
+                        //TODO: Int32.Parse (I think this was an issue with offseason events where teams might have a letter in their team number)
+                        eventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(Regex.Replace(e.team_key, "[^0-9,-]+", "")), e => e);
                     }
                 }
 
                 foreach (string teamNumber in teamList)
                 {
-                    //TODO: replace with TBA
-                    RegisteredTeam team = FRCEventsAPI.GetTeam(Int32.Parse(teamNumber)); //CACHED AT STARTUP
-                    if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.teamNumber))
-                        team.Stats = new TBAStats(stats, team.teamNumber);
+                    TBATeam team = TBAAPI.GetTeam(Int32.Parse(teamNumber)); //CACHED AT STARTUP
+                    if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.team_number))
+                        team.Stats = new TBAStats(stats, team.team_number);
                     else
                         team.Stats = null;
 
-                    if (eventRankings != null && eventRankings.Count > 0 && eventRankings.ContainsKey(team.teamNumber))
-                        team.eventRank = eventRankings[team.teamNumber].rank;
+                    if (eventRankings != null && eventRankings.Count > 0 && eventRankings.ContainsKey(team.team_number))
+                        team.eventRank = eventRankings[team.team_number].rank;
                     else
                         team.eventRank = -1;
 
@@ -247,15 +249,15 @@ namespace FRCGroove.Web.Controllers
 
                 this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(1) });
 
-                List<RegisteredTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
+                List<TBATeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
                 teamsOfInterest = teamsOfInterest.Where(t => t.Stats != null).ToList();
 
                 if (sortName.Length == 0) sortName = "Rank";
 
                 if (sortName == "Number")
-                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.teamNumber).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.teamNumber).ToList()));
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.team_number).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.team_number).ToList()));
                 else if (sortName == "Name")
-                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.nameShort).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.nameShort).ToList()));
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.nickname).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.nickname).ToList()));
                 else if (sortName == "Rank")
                     return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.eventRank).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.eventRank).ToList()));
                 else if (sortName == "OPR")
@@ -282,7 +284,8 @@ namespace FRCGroove.Web.Controllers
                 TBAEventRankings rankings = TBAAPI.GetEventRankings(eventCode); //API CALL (TBA-compliant cache)
                 if (rankings != null && rankings.rankings != null)
                 {
-                    dashboard.EventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(e.team_key.Substring(3)), e => e);
+                    //TODO: Int32.Parse (I think this was an issue with offseason events where teams might have a letter in their name)
+                    dashboard.EventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(Regex.Replace(e.team_key, "[^0-9,-]+", "")), e => e);
                 }
             }
 

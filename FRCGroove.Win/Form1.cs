@@ -135,13 +135,14 @@ namespace FRCGroove.Win
         {
             //TODO: Commented out to ween out unused FRCEventsAPI methods - suggest to embed building this cache into the web app, if not already there
             //List<RegisteredTeam> teams = FRCEventsAPI.GetFullTeamListing();
+            List<TBATeam> teams = TBAAPI.GetFullTeamListing();
 
-            //string json = JsonConvert.SerializeObject(teams);
-            //using (StreamWriter sw = new StreamWriter($@"C:\temp\GetFullTeamListing.{DateTime.Now:yyyy-dd-mm-HH-MM-ss}.json"))
-            //{
-            //    sw.Write(json);
-            //    sw.Close();
-            //}
+            string json = JsonConvert.SerializeObject(teams);
+            using (StreamWriter sw = new StreamWriter($@"C:\temp\GetFullTeamListing.{DateTime.Now:yyyy-dd-mm-HH-MM-ss}.json"))
+            {
+                sw.Write(json);
+                sw.Close();
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
