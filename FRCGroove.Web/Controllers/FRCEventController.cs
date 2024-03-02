@@ -21,8 +21,6 @@ namespace FRCGroove.Web.Controllers
             var stopwatch = Stopwatch.StartNew();
             List<string> teams = BuildTeamsOfInterest(teamList);
 
-            //string tbaEventCode = TBAAPI.TranslateFRCEventCode(eventCode);
-            //Dashboard dashboard = BuildEventDashboardTBA(tbaEventCode, teams);
             Dashboard dashboard = BuildEventDashboardTBA(eventCode, teams);
 
             this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(100) });
@@ -183,7 +181,6 @@ namespace FRCGroove.Web.Controllers
             List<TBATeam> teamsOfInterest = new List<TBATeam>();
             if (teamList != null && teamList.Count > 0)
             {
-                TBAStatsCollection stats = TBAAPI.GetStats(eventCode); //API CALL (5 min cache)
                 if (eventRankings == null)
                 {
                     TBAEventRankings rankings = TBAAPI.GetEventRankings(eventCode); //API CALL (TBA-compliant cache)
@@ -194,20 +191,24 @@ namespace FRCGroove.Web.Controllers
                     }
                 }
 
+                TBAStatsCollection stats = TBAAPI.GetStats(eventCode); //API CALL (5 min cache)
                 foreach (string teamNumber in teamList)
                 {
                     TBATeam team = TBAAPI.GetTeam(Int32.Parse(teamNumber)); //CACHED AT STARTUP
-                    if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.team_number))
-                        team.Stats = new TBAStats(stats, team.team_number);
-                    else
-                        team.Stats = null;
+                    if (team != null)
+                    {
+                        if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.team_number))
+                            team.Stats = new TBAStats(stats, team.team_number);
+                        else
+                            team.Stats = null;
 
-                    if (eventRankings != null && eventRankings.Count > 0 && eventRankings.ContainsKey(team.team_number))
-                        team.eventRank = eventRankings[team.team_number].rank;
-                    else
-                        team.eventRank = -1;
+                        if (eventRankings != null && eventRankings.Count > 0 && eventRankings.ContainsKey(team.team_number))
+                            team.eventRank = eventRankings[team.team_number].rank;
+                        else
+                            team.eventRank = -1;
 
-                    teamsOfInterest.Add(team);
+                        teamsOfInterest.Add(team);
+                    }
                 }
             }
             return teamsOfInterest;
