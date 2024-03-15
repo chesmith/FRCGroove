@@ -394,15 +394,21 @@
                     </td>
                     <td id="@matchKey-ar" class="red">
                         <a name="@(match.comp_level + match.match_number)"></a>
-                        @TeamListing(redAlliance[0], match, teamClasses, teamActions)
-                        @TeamListing(redAlliance[1], match, teamClasses, teamActions)
-                        @TeamListing(redAlliance[2], match, teamClasses, teamActions)
+                        @if (redAlliance != null && redAlliance.Count > 0)
+                        {
+                            TeamListing(redAlliance[0], match, teamClasses, teamActions);
+                            TeamListing(redAlliance[1], match, teamClasses, teamActions);
+                            TeamListing(redAlliance[2], match, teamClasses, teamActions);
+                        }
                     </td>
                     @ScoreBreakdown(match)
                     <td id="@matchKey-ab" class="blue">
-                        @TeamListing(blueAlliance[0], match, teamClasses, teamActions)
-                        @TeamListing(blueAlliance[1], match, teamClasses, teamActions)
-                        @TeamListing(blueAlliance[2], match, teamClasses, teamActions)
+                        @if (blueAlliance != null && blueAlliance.Count > 0)
+                        {
+                            TeamListing(blueAlliance[0], match, teamClasses, teamActions);
+                            TeamListing(blueAlliance[1], match, teamClasses, teamActions);
+                            TeamListing(blueAlliance[2], match, teamClasses, teamActions);
+                        }
                     </td>
                 </tr>
             }
