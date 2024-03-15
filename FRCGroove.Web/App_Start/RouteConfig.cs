@@ -74,9 +74,15 @@ namespace FRCGroove.Web
             );
 
             routes.MapRoute(
-                name: "GetChampsTeas",
+                name: "GetChampsTeams",
                 url: "Teams/GetChampsTeams",
                 defaults: new { controller = "Teams", action = "GetChampsTeams" }
+            );
+
+            routes.MapRoute(
+                name: "GetAllTeams",
+                url: "Teams/GetAllTeams",
+                defaults: new { controller = "Teams", action = "GetAllTeams" }
             );
 
             routes.MapRoute(

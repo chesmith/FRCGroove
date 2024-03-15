@@ -212,7 +212,7 @@
     <Content Include="Views\Teams\Index.cshtml" />
     <Content Include="Views\Shared\Navigation.cshtml" />
     <Content Include="App_Data\cache\GetFullTeamListing.2019.json" />
-    <Content Include="Views\Teams\Watch.cshtml" />
+    <Content Include="Views\Teams\WatchList.cshtml" />
     <Content Include="App_Data\cache\GetFullTeamListing.2020.json" />
     <Content Include="Views\Scout\Index.cshtml" />
     <Content Include="Views\Scout\Data.cshtml" />

@@ -25,12 +25,12 @@ namespace FRCGroove.Web.Controllers
         // GET: Teams
         public ActionResult Index(string sort, string search)
         {
-            TeamListing teamListingModel = BuildTeamListing(sort, search);
+            TeamListing teamListingModel = BuildChampsTeamListing(sort, search);
 
             return View(teamListingModel);
         }
 
-        private TeamListing BuildTeamListing(string sort, string search)
+        private TeamListing BuildChampsTeamListing(string sort, string search)
         {
             TeamListing teamListing = new TeamListing();
 
@@ -48,7 +48,10 @@ namespace FRCGroove.Web.Controllers
 
             foreach(RegisteredTeam team in champsTeams)
             {
-                team.epa = TBAAPI.EPACache[team.teamNumber];
+                if (TBAAPI.EPACache.ContainsKey(team.teamNumber))
+                    team.epa = TBAAPI.EPACache[team.teamNumber];
+                else
+                    team.epa = new EPA() { epa_end = -1 };
             }
 
             if (sort == null || sort.Length == 0) sort = "#";
@@ -69,6 +72,44 @@ namespace FRCGroove.Web.Controllers
                 teamListing.Teams = champsTeams.OrderBy(t => t.champsDivision).ToList();
             else if (sort.ToLower() == "pit")
                 teamListing.Teams = champsTeams.OrderBy(t => t.pitLocation).ToList();
+
+            teamListing.Watchlist = BuildTeamsOfInterest(string.Empty).Select(t => Int32.Parse(t)).ToList();
+
+            return teamListing;
+        }
+
+        private TeamListing BuildAllTeamListing(string sort, string search)
+        {
+            TeamListing teamListing = new TeamListing();
+
+            List<TBATeam> allTeams = TBAAPI.TeamListingCache.Select(t => t.Value).ToList();
+
+            // TODO: For some wild reason, including EPA info throws server 500 error (even
+            //       though the same does not on the champs listing... grr)
+            //foreach (TBATeam team in allTeams)
+            //{
+            //    if (TBAAPI.EPACache.ContainsKey(team.team_number))
+            //        team.epa = TBAAPI.EPACache[team.team_number];
+            //    else
+            //        team.epa = new EPA() { epa_end = -1 };
+            //}
+
+            if (sort == null || sort.Length == 0) sort = "#";
+
+            if (search != null && search.Length > 0)
+            {
+                search = search.ToLower();
+                allTeams = allTeams.Where(t => t.team_number.ToString().StartsWith(search) || t.nickname.ToLower().Contains(search)).ToList();
+            }
+
+            teamListing.TBATeams = allTeams;
+
+            if (sort == "#" || sort.ToLower() == "number")
+                teamListing.TBATeams = allTeams.OrderBy(t => t.team_number).ToList();
+            else if (sort.ToLower() == "name")
+                teamListing.TBATeams = allTeams.OrderBy(t => t.nickname).ToList();
+            else if (sort.ToLower() == "epa")
+                teamListing.TBATeams = allTeams.OrderByDescending(t => t.epa.epa_end).ToList();
 
             teamListing.Watchlist = BuildTeamsOfInterest(string.Empty).Select(t => Int32.Parse(t)).ToList();
 
@@ -105,14 +146,19 @@ namespace FRCGroove.Web.Controllers
         {
             List<string> teams = BuildTeamsOfInterest(teamList);
 
-            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(1) });
+            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = new DateTime(DateTime.Now.Year + 1, DateTime.Now.Month, DateTime.Now.Day) });
 
             return null;
         }
 
         public JsonResult GetChampsTeams(string sort, string search)
         {
-            return Json(BuildTeamListing(sort, search), JsonRequestBehavior.AllowGet);
+            return Json(BuildChampsTeamListing(sort, search), JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult GetAllTeams(string sort, string search)
+        {
+            return Json(BuildAllTeamListing(sort, search), JsonRequestBehavior.AllowGet);
         }
     }
 }

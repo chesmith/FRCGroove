@@ -23,7 +23,7 @@ namespace FRCGroove.Web.Controllers
 
             Dashboard dashboard = BuildEventDashboardTBA(eventCode, teams);
 
-            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(100) });
+            this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = new DateTime(DateTime.Now.Year + 1, DateTime.Now.Month, DateTime.Now.Day) });
             this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("eventCode") { Value = eventCode, Expires = DateTime.Now.AddYears(1) });
 
             //TODO: if we added teams from the cookie that weren't there in the input list, do a redirect with the full URL instead of just showing the dashboard (update the cookie first?)
@@ -248,7 +248,7 @@ namespace FRCGroove.Web.Controllers
             {
                 List<string> teams = BuildTeamsOfInterest(teamList);
 
-                this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = DateTime.Now.AddYears(1) });
+                this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = new DateTime(DateTime.Now.Year + 1, DateTime.Now.Month, DateTime.Now.Day) });
 
                 List<TBATeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
                 teamsOfInterest = teamsOfInterest.Where(t => t.Stats != null).ToList();
