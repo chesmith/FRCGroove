@@ -29,7 +29,7 @@
 @Html.Partial("Navigation", "Teams")
 
 <div id="watchlist">
-    <p>Your current watchlist is listed here to allow easy removal.  If you add teams by clicking down below, you'll need to refresh this page before this list refreshes.</p>
+    <p>Your current watchlist is listed here to allow easy removal.  If you add teams by clicking down below, you'll need to refresh this page before seeing them here.</p>
     @foreach (string team in teamList)
     {
         if (team.Length > 0)
@@ -38,7 +38,10 @@
             string teamName = string.Empty;
             if (Int32.TryParse(team, out teamNumber))
             {
-                teamName = FRCGroove.Lib.TBAAPI.TeamListingCache[teamNumber].nickname;
+                if (FRCGroove.Lib.TBAAPI.TeamListingCache.ContainsKey(teamNumber))
+                {
+                    teamName = FRCGroove.Lib.TBAAPI.TeamListingCache[teamNumber].nickname;
+                }
             }
 
             <div id="wl_@team">
@@ -83,6 +86,11 @@
         GetAllTeams(lastSort, lastSearch)
     });
 
+    function RemoveTeam(teamNumber) {
+        WatchTeam(teamNumber);
+        $("#wl_" + teamNumber).remove();
+    }
+
     function WatchTeam(teamNumber) {
         var entries = $("[id^=tm" + teamNumber + "-a]");
         var action = '';
@@ -116,20 +124,18 @@
             url: "/Teams/UpdateWatchlist",
             data: '{"teamList": "' + teamList + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
             success: function () {
                 console.log("successfully updated watchlist");
             },
             error: function (response) {
-                console.log("error updating teams: " + response.d);
+                console.error(response);
             }
         });
     }
 
     function GetAllTeams(sort, search) {
         $('#teams').find("tr:gt(0)").remove();
-        var uri = "GetAllTeams?sort=" + sort + "&search=" + search
-        $.get(uri.replace('#', '%23'), function (data) {
+        $.get("GetAllTeams", { sort: sort, search: search }, function (data) {
             var row = '';
             $.each(data.TBATeams, function (key, team) {
                 style = ''
@@ -146,10 +152,10 @@
 
             $('#teamsBody').append(row);
 
-            if (data.Teams.length == 1)
-                $("#numTeams").text(data.Teams.length + ' team');
+            if (data.TBATeams.length == 1)
+                $("#numTeams").text(data.TBATeams.length + ' team');
             else
-                $("#numTeams").text(data.Teams.length + ' teams');
+                $("#numTeams").text(data.TBATeams.length + ' teams');
         });
     }
 

@@ -128,8 +128,7 @@
 
     function GetChampsTeams(sort, search) {
         $('#teams').find("tr:gt(0)").remove();
-        var uri = "Teams/GetChampsTeams?sort=" + sort + "&search=" + search
-        $.get(uri.replace('#', '%23'), function (data) {
+        $.get("Teams/GetChampsTeams", { sort: sort, search: search }, function (data) {
             var row = '';
             $.each(data.Teams, function (key, team) {
                 style = ''
