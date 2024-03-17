@@ -86,51 +86,15 @@ namespace FRCGroove.Web
             );
 
             routes.MapRoute(
-                name: "Scout",
-                url: "Scout",
-                defaults: new { controller = "Scout", action = "Index" }
-            );
-
-            routes.MapRoute(
-                name: "LogCargo",
-                url: "Scout/LogCargo",
-                defaults: new { controller = "Scout", action = "LogCargo" }
-            );
-
-            routes.MapRoute(
-                name: "Data",
-                url: "Scout/Data/{team}/{match}",
-                defaults: new { controller = "Scout", action = "Data", team = UrlParameter.Optional, match = UrlParameter.Optional }
-            );
-
-            routes.MapRoute(
-                name: "Selection",
-                url: "Scout/Selection/{tbaEventCode}",
-                defaults: new { controller = "Scout", action = "Selection" }
-            );
-
-            routes.MapRoute(
-                name: "Rank",
-                url: "Scout/Rank/{tbaEventCode}/{teamNumber}",
-                defaults: new { controller = "Scout", action = "Rank" }
-            );
-
-            routes.MapRoute(
-                name: "ScoutList",
-                url: "Scout/List/{tbaEventCode}",
-                defaults: new { controller = "Scout", action = "List" }
-            );
-
-            routes.MapRoute(
-                name: "PreScout",
-                url: "Scout/PreScout/{tbaEventCode}",
-                defaults: new { controller = "Scout", action = "PreScout" }
-            );
-
-            routes.MapRoute(
                 name: "ResetEPACache",
                 url: "ResetEPACache",
                 defaults: new { controller = "Home", action = "ResetEPACache" }
+            );
+
+            routes.MapRoute(
+                name: "ResetTeamCache",
+                url: "ResetTeamCache",
+                defaults: new { controller = "Home", action = "ResetTeamCache" }
             );
         }
     }

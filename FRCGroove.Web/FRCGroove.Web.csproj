@@ -147,7 +147,6 @@
     <Compile Include="Controllers\AboutController.cs" />
     <Compile Include="Controllers\FRCEventController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\ScoutController.cs" />
     <Compile Include="Controllers\TeamsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -155,6 +154,7 @@
     <Compile Include="Models\Dashboard.cs" />
     <Compile Include="Models\FRCEventListing.cs" />
     <Compile Include="Models\SelectionTeamData.cs" />
+    <Compile Include="Models\EventListing.cs" />
     <Compile Include="Models\TBAEventListing.cs" />
     <Compile Include="Models\TeamListing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -214,12 +214,7 @@
     <Content Include="App_Data\cache\GetFullTeamListing.2019.json" />
     <Content Include="Views\Teams\WatchList.cshtml" />
     <Content Include="App_Data\cache\GetFullTeamListing.2020.json" />
-    <Content Include="Views\Scout\Index.cshtml" />
-    <Content Include="Views\Scout\Data.cshtml" />
     <Content Include="App_Data\cache\GetFullTeamListing.2022.json" />
-    <Content Include="Views\Scout\Selection.cshtml" />
-    <Content Include="Views\Scout\List.cshtml" />
-    <Content Include="Views\Scout\PreScout.cshtml" />
     <Content Include="App_Data\cache\GetFullTeamListing.2023.json" />
     <Content Include="App_Data\cache\pits.2023.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -239,6 +234,7 @@
     <Content Include="Scripts\bootstrap.js.map" />
     <Content Include="Scripts\bootstrap.bundle.min.js.map" />
     <Content Include="Scripts\bootstrap.bundle.js.map" />
+    <Content Include="Views\Home\ResetTeamCache.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

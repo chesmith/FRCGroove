@@ -1,22 +1,25 @@
 ﻿@using FRCGroove.Lib.Models
+@using FRCGroove.Lib
+@using FRCGroove.Lib.Models.Statboticsv2
+@using FRCGroove.Lib.Models.Groove
 @using FRCGroove.Web.Models
 @using System.Text.RegularExpressions;
 @model FRCGroove.Web.Models.Dashboard
 
 @{
     string eventName = string.Empty;
-    if (Model != null && Model.TBAEvent != null)
+    if (Model != null && Model.Event != null)
     {
-        eventName = $" - {Model.TBAEvent.name}";
+        eventName = $" - {Model.Event.name}";
     }
     ViewBag.Title = $"FRC Groove{eventName}";
 }
 
 @{
     var eventCode = "Invalid";
-    if (Model != null && Model.TBAEvent != null && Model.EventState != FRCEventState.Invalid)
+    if (Model != null && Model.Event != null && Model.EventState != EventState.Invalid)
     {
-        eventCode = Model.TBAEvent.key;
+        eventCode = Model.Event.key;
     }
 }
 
@@ -30,22 +33,19 @@
         border-radius: 1rem;
     }
 </style>
-<script>
-    if (typeof gtag != "undefined") gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'view', 'event_label': '@eventCode' });
-</script>
 
 @Html.Partial("Navigation", "Matches")
 
 @if (Model != null)
 {
     <div class="card" style="border-bottom-left-radius:0;border-bottom-right-radius:0">
-        @if (Model.TBAEvent != null)
+        @if (Model.Event != null)
         {
             <div class="card-header fixed-top" style="margin-bottom: 0; padding: 0.5rem;" onclick="$('html, body').animate({ scrollTop: 0 }, 250);">
-                <h6 style="margin-bottom:0">@Model.TBAEvent.name</h6>
+                <h6 style="margin-bottom:0">@Model.Event.name</h6>
                 <div style="width:100%; font-size:0.75rem; position: relative">
-                    <span style="float:left">@Model.TBAEvent.dateStart.ToString("ddd M/d") to @Model.TBAEvent.dateEnd.ToString("ddd M/d")</span>
-                    <span id="filterToggle" style="float:right; position: absolute; top: -10px; right: 15px"><a class="fas fa-filter fa-lg" style="color:white" onclick="toggleFilter()")"></a></span>
+                    <span style="float:left">@Model.Event.dateStart.ToString("ddd M/d") to @Model.Event.dateEnd.ToString("ddd M/d")</span>
+                    <span id="filterToggle" style="float:right; position: absolute; top: -10px; right: 15px"><a class="fas fa-filter fa-lg" style="color:white" onclick="toggleFilter()" )"></a></span>
                 </div>
             </div>
         }
@@ -63,40 +63,40 @@
                 @{
                     string eventStatus = string.Empty;
                 }
-                @if (Model.EventState == FRCEventState.Past)
+                @if (Model.EventState == EventState.Past)
                 {
-                    eventStatus = "Event is complete (<a href='#Semifinals'>playoffs</a>)";// "/ <a href='#Brackets'>brackets</a>)";
+                    eventStatus = "Event is complete (<a href='#Playoffs'>playoffs</a>)";// "/ <a href='#Brackets'>brackets</a>)";
                 }
-                else if (Model.EventState == FRCEventState.Future)
+                else if (Model.EventState == EventState.Future)
                 {
                     eventStatus = "Match schedule not yet available";
                 }
-                else if (Model.EventState == FRCEventState.Invalid)
+                else if (Model.EventState == EventState.Invalid)
                 {
                     eventStatus = "This appears to be an invalid event code<br />(<a href='/'>return to event listing</a>)";
                 }
                 else
                 {
-                    if (Model.EventState == FRCEventState.Qualifications && Model.TBAMatches != null
-                     && Model.TBAMatches.Count(m => m.comp_level == "qm" && m.score_breakdown != null) == 0)
+                    // TODO: broaden event states and move most of this logic backend
+                    if (Model.EventState == EventState.Qualifications && Model.Matches != null
+                     && Model.Matches.Count(m => m.competitionLevel == "Qualification" && m.alliances["blue"].score != -1) == 0)
                     {
                         eventStatus = "Qualifications haven't started";
                     }
                     else if (
-                        (Model.EventState == FRCEventState.Qualifications && Model.TBAMatches != null
-                          && Model.TBAMatches.Count(m => m.comp_level == "qm" && m.score_breakdown == null) == 0)
+                        (Model.EventState == EventState.Qualifications && Model.Matches != null
+                          && Model.Matches.Count(m => m.competitionLevel == "Qualification" && m.alliances["blue"].score == -1) == 0)
                         ||
-                        (Model.EventState == FRCEventState.Quarterfinals && Model.TBAMatches != null
-                          && Model.TBAMatches.Count(m => m.comp_level == "qf" && m.score_breakdown != null) == 0))
+                        (Model.EventState == EventState.Playoffs && Model.Matches != null
+                          && Model.Matches.Count(m => m.competitionLevel == "Playoff" && m.alliances["blue"].score != -1) == 0))
                     {
                         eventStatus = "Qualifications have completed - waiting for playoffs to begin";
-                        if (Model.TBAMatches.Count(m => m.comp_level == "qf") > 0)
+                        if (Model.Matches.Count(m => m.competitionLevel == "Playoff") > 0)
                         { eventStatus += "<span>(<a href='#nextmatch'>next match</a>)</span>"; }
                     }
-                    else if (Model.EventState == FRCEventState.Qualifications
-                          || Model.EventState == FRCEventState.Quarterfinals
-                          || Model.EventState == FRCEventState.Semifinals
-                          || Model.EventState == FRCEventState.Finals)
+                    else if (Model.EventState == EventState.Qualifications
+                          || Model.EventState == EventState.Playoffs
+                          || Model.EventState == EventState.Finals)
                     {
                         int scheduleOffset = (int)Math.Round(Model.ScheduleOffset, 0);
                         if (scheduleOffset == 0)
@@ -118,9 +118,9 @@
             <li class="list-group-item" style="padding:0.5rem 0.75rem 0.5rem 0.75rem">
                 @{
                     bool tapHint = true;
-                    if (Model.EventState != FRCEventState.Future && !(Model.EventState == FRCEventState.Qualifications && Model.TBAMatches.Count(m => m.actual_time != 0) == 0))
+                    if (Model.EventState != EventState.Future && !(Model.EventState == EventState.Qualifications && Model.Matches.Count(m => m.hasStarted) == 0))
                     {
-                        tapHint = (Model.TeamsOfInterest.Count == 0 && Model.EventState != FRCEventState.Future && Model.EventState != FRCEventState.Invalid);
+                        tapHint = (Model.TeamsOfInterest.Count == 0 && Model.EventState != EventState.Future && Model.EventState != EventState.Invalid);
                     }
                 }
 
@@ -137,7 +137,7 @@
                     <i id="watchlistToggle" class="fas fa-minus" style="display:inline; float:right" onclick="toggleWatchlist()"></i>
                 </div>
 
-                <div id="watchlist" style="height:@(Model.EventState != FRCEventState.Future && !(Model.TBAMatches != null && Model.TBAMatches.Count(m => m.actual_time != 0) == 0) ? Model.TeamsOfInterest.Count * 47 : 0)px"></div>
+                <div id="watchlist" style="height:@(Model.EventState != EventState.Future && !(Model.Matches != null && Model.Matches.Count(m => m.hasStarted) == 0) ? Model.TeamsOfInterest.Count * 47 : 0)px"></div>
 
                 <script type="text/javascript">
                     function toggleWatchlist() {
@@ -155,9 +155,9 @@
                     var loadTime = new Date();
 
                     var eventState = "@Model.EventState";
-                    var matches = @(Model.TBAMatches == null ? 0 : Model.TBAMatches.Count(m => m.actual_time != 0));
+                    var matches = @(Model.Matches == null ? 0 : Model.Matches.Count(m => m.hasStarted));
 
-                    var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.team_number))";
+                    var teamList = "@string.Join(",", Model.TeamsOfInterest.Select(t => t.number))";
                     var sortName = "Rank";
                     var prevSortName = "Rank";
                     var sortDirection = "ASC";
@@ -203,9 +203,9 @@
                             if (team.eventRank > -1)
                             {
                                 var teamListing = '<div style="margin-top:0.5rem">';
-                                teamListing += '<div>' + team.team_number + ' ' + team.nickname;
+                                teamListing += '<div>' + team.number + ' ' + team.name;
                                 teamListing += ' (<span><a href="https://www.thebluealliance.com/event/@eventCode#rankings" target="_blank" rel="noopener noreferrer">#' + team.eventRank + '</a></span>) ';
-                                teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.team_number + ');">[<span style="color:red">x</span>]</sup></div>';
+                                teamListing += '<sup style="font-size:small; cursor:pointer" onclick="javascript:ToggleWatch(' + team.number + ');">[<span style="color:red">x</span>]</sup></div>';
                                 if (team.Stats != null) {
                                     teamListing += '<div style="font-size:11px;">OPR: ' + team.Stats.OPR + ', DPR: ' + team.Stats.DPR + ', CCWM: ' + team.Stats.CCWM + '</div></div>';
                                 }
@@ -242,7 +242,6 @@
                                 $("#tapHint").css("display", "inline");
                             }
                         }
-                        if (typeof gtag != "undefined") gtag('event', 'stats', { 'event_category': 'Team', 'event_action': 'stats', 'event_label': teamList });
                     };
                     function OnFailure() {
                         $("#watchlist").empty();
@@ -276,7 +275,7 @@
 
 <div style="margin-top: 0px">
     <table id="tableMatches" style="width: 100%">
-        @if (Model != null && Model.TBAMatches != null && Model.TBAMatches.Count > 1)
+        @if (Model != null && Model.Matches != null && Model.Matches.Count > 1)
         {
             //Boolean inFuture = false;
             DateTime currentDate = DateTime.MinValue;
@@ -286,30 +285,30 @@
             //if (day2 != null && day2.Count > 0) { day2Date = day2[0].timeDT.Date; }
             //int? day2FirstMatch = day2[0]?.match_number;
             int nextmatch = -1;
-            for(int i = Model.TBAMatches.Count - 1; i > -1; i--)
+            for (int i = Model.Matches.Count - 1; i > -1; i--)
             {
-                if (Model.TBAMatches[i].actual_time > 0)
+                if (Model.Matches[i].hasStarted)
                 {
                     nextmatch = i + 1;
                     break;
                 }
             }
-            for(int i = 0; i < Model.TBAMatches.Count; i++)
+            for (int i = 0; i < Model.Matches.Count; i++)
             {
-                TBAMatchData match = Model.TBAMatches[i];
-                string matchKey = match.comp_level + match.set_number.ToString().PadLeft(2, '0') + match.match_number.ToString().PadLeft(3, '0');
-                if (match.set_number == 1 && match.match_number == 1)
+                GrooveMatch match = Model.Matches[i];
+                string matchKey = match.competitionLevel + match.setNumber.ToString().PadLeft(2, '0') + match.matchNumber.ToString().PadLeft(3, '0');
+                if (match.setNumber == 1 && match.matchNumber == 1)
                 {
-                    <tr><td colspan="5" style="padding: 0; background: #5151a8; padding: 5px 10px; position: relative; z-index: 1; color: #fff; font-weight: bold;"><a name="@(match.title.Substring(0, match.title.IndexOf(" ")))s"></a>@(match.title.Substring(0, match.title.IndexOf(" ")))s</td></tr>
+                    <tr><td colspan="5" style="padding: 0; background: #5151a8; padding: 5px 10px; position: relative; z-index: 1; color: #fff; font-weight: bold;"><a name="@(match.competitionLevel)s"></a>@(match.competitionLevel)s</td></tr>
                 }
 
-                if (match.timeDT.Date > currentDate)
+                if (match.timeScheduled.Date > currentDate)
                 {
                     if (currentDate > DateTime.MinValue)
                     {
                         <tr><td colspan="5" style="height: 3px; border-top-style: dashed"></td></tr>
                     }
-                    currentDate = match.timeDT.Date;
+                    currentDate = match.timeScheduled.Date;
                 }
 
                 //TODO: hacked together solution - If they skipped a match (e.g. needs to be replayed later), this was putting the "next match" header in the wrong place
@@ -325,22 +324,21 @@
                 Dictionary<int, string> teamClasses = new Dictionary<int, string>();
                 Dictionary<int, string> teamActions = new Dictionary<int, string>();
 
-                foreach (string teamKey in match.alliances.red.team_keys)
+                foreach (string teamKey in match.alliances["red"].teamKeys)
                 {
                     List<string> classes = new List<string>();
-                    //TODO: Int32.Parse
-                    string teamKeyNum = Regex.Replace(teamKey, "[^0-9,-]+", "");
-                    int teamNumber = Int32.Parse(teamKeyNum);
-                    if (Model.TeamsOfInterest.Count(t => t.team_number == teamNumber) > 0)
+                    //TODO: Int32.Parse on mix alphanumeric (typically offseason)
+                    int teamNumber = Int32.Parse(Regex.Replace(teamKey, "[^0-9,-]+", ""));
+                    if (Model.TeamsOfInterest.Count(t => t.number == teamNumber) > 0)
                     {
                         classes.Add("redHighlight");
                         teamActions[teamNumber] = "remove";
                     }
                     else { teamActions[teamNumber] = "add"; }
 
-                    if (match.alliances.red.dq_team_keys.Contains(teamKey)) { classes.Add("disqualified"); }
+                    if (match.alliances["red"].dqTeamKeys.Contains(teamKey)) { classes.Add("disqualified"); }
 
-                    if (match.alliances.red.surrogate_team_keys.Contains(teamKey)) { classes.Add("surrogate"); }
+                    if (match.alliances["red"].surrogateTeamKeys.Contains(teamKey)) { classes.Add("surrogate"); }
 
                     if (classes.Count > 0)
                     { teamClasses[teamNumber] = " class=\"" + String.Join(" ", classes) + "\""; }
@@ -348,22 +346,21 @@
                     { teamClasses[teamNumber] = string.Empty; }
                 }
 
-                foreach (string teamKey in match.alliances.blue.team_keys)
+                foreach (string teamKey in match.alliances["blue"].teamKeys)
                 {
                     List<string> classes = new List<string>();
-                    //TODO: Int32.Parse
-                    string teamKeyNum = Regex.Replace(teamKey, "[^0-9,-]+", "");
-                    int teamNumber = Int32.Parse(teamKeyNum);
-                    if (Model.TeamsOfInterest.Count(t => t.team_number == teamNumber) > 0)
+                    //TODO: Int32.Parse on mix alphanumeric (typically offseason)
+                    int teamNumber = Int32.Parse(Regex.Replace(teamKey, "[^0-9,-]+", ""));
+                    if (Model.TeamsOfInterest.Count(t => t.number == teamNumber) > 0)
                     {
                         classes.Add("blueHighlight");
                         teamActions[teamNumber] = "remove";
                     }
                     else { teamActions[teamNumber] = "add"; }
 
-                    if (match.alliances.blue.dq_team_keys.Contains(teamKey)) { classes.Add("disqualified"); }
+                    if (match.alliances["blue"].dqTeamKeys.Contains(teamKey)) { classes.Add("disqualified"); }
 
-                    if (match.alliances.blue.surrogate_team_keys.Contains(teamKey)) { classes.Add("surrogate"); }
+                    if (match.alliances["blue"].surrogateTeamKeys.Contains(teamKey)) { classes.Add("surrogate"); }
 
                     if (classes.Count > 0)
                     { teamClasses[teamNumber] = " class=\"" + String.Join(" ", classes) + "\""; }
@@ -371,29 +368,38 @@
                     { teamClasses[teamNumber] = string.Empty; }
                 }
 
-                //TODO: Int32.Parse
-                List<int> redAlliance = match.alliances.red.team_keys.Select(v => Int32.Parse(v.Substring(3))).ToList();
-                List<int> blueAlliance = match.alliances.blue.team_keys.Select(v => Int32.Parse(v.Substring(3))).ToList();
+                //TODO: Int32.Parse on mix alphanumeric (typically offseason)
+                List<int> redAlliance = match.alliances["red"].teamKeys.Select(v => Int32.Parse(v.Substring(3))).ToList();
+                List<int> blueAlliance = match.alliances["blue"].teamKeys.Select(v => Int32.Parse(v.Substring(3))).ToList();
 
                 <tr id="@matchKey-r">
                     <td id="@matchKey-title" style="text-align: center">
-                        <div><a href="@match.matchDetailsUrl">@match.title</a></div>
-                        <div id="@matchKey-time" style="font-size: x-small">
-                            @if (match.actual_time != 0)
+                        <div><a href="@match.matchDetailsUrl">
+                            @if (match.title.Contains("Bracket"))
                             {
-                                <span>@match.timeDT.ToString("ddd M/d h:mm") (@match.actual_timeDT.ToString("h:mm"))</span>
+                                @Html.Raw(match.title.Replace("Bracket ", "Bracket<br/>"))
                             }
-                            else if (Model.EventState != FRCEventState.Future)
+                            else
+                            {
+                                @match.title
+                            }
+                        </a></div>
+                        <div id="@matchKey-time" style="font-size: x-small">
+                            @if (match.hasStarted)
+                            {
+                                <span>@match.timeScheduled.ToString("ddd M/d h:mm") (@match.timeActual.ToString("h:mm"))</span>
+                            }
+                            else if (Model.EventState != EventState.Future)
                             {
                                 double offset = Model.ScheduleOffset;
                                 //if (match.match_number > day2FirstMatch && DateTime.Now.Date < day2Date) { offset = 0; }
-                                if (match.timeDT.Date > DateTime.Now.Date) { offset = 0; }
-                                <span>@match.timeDT.ToString("ddd M/d h:mm") <i>(est. @match.timeDT.AddMinutes(offset).ToString("h:mm"))</i></span>
+                                if (match.timeScheduled.Date > DateTime.Now.Date) { offset = 0; }
+                                <span>@match.timeScheduled.ToString("ddd M/d h:mm") <i>(est. @match.timeScheduled.AddMinutes(offset).ToString("h:mm"))</i></span>
                             }
                         </div>
                     </td>
                     <td id="@matchKey-ar" class="red">
-                        <a name="@(match.comp_level + match.match_number)"></a>
+                        <a name="@(match.competitionLevel + match.matchNumber)"></a>
                         @if (redAlliance != null && redAlliance.Count > 0)
                         {
                             @TeamListing(redAlliance[0], match, teamClasses, teamActions)
@@ -421,37 +427,37 @@
     </dialog>
 </div>
 
-@if (Model.Bracket != null && (Model.EventState == FRCEventState.Quarterfinals || Model.EventState == FRCEventState.Semifinals || Model.EventState == FRCEventState.Finals || Model.EventState == FRCEventState.Past) && eventCode != "CMPTX")
+@if (Model.Bracket != null && (Model.EventState == EventState.Playoffs || Model.EventState == EventState.Finals || Model.EventState == EventState.Past) && eventCode != "CMPTX")
 {
     <div style="margin-top: 15px">
         @Html.Partial("PlayoffBrackets", Model)
     </div>
 }
 
-@helper ScoreBreakdown(TBAMatchData match)
+@helper ScoreBreakdown(GrooveMatch match)
 {
     int totalRed = 0;
-    int predictedRed = match.alliances.red.predictedPoints;
+    int predictedRed = match.alliances["red"].predictedPoints;
     string rpRed;
     int totalBlue = 0;
-    int predictedBlue = match.alliances.blue.predictedPoints;
+    int predictedBlue = match.alliances["blue"].predictedPoints;
     string rpBlue;
 
-    string matchKey = match.comp_level + match.set_number.ToString().PadLeft(2, '0') + match.match_number.ToString().PadLeft(3, '0');
+    string matchKey = match.competitionLevel + match.setNumber.ToString().PadLeft(2, '0') + match.matchNumber.ToString().PadLeft(3, '0');
 
-    if (match.actual_time > 0 && match.score_breakdown != null)
+    if (match.hasStarted && match.alliances["red"].score != -1)
     {
-        totalRed = match.score_breakdown.red.totalPoints;
-        rpRed = String.Concat(Enumerable.Repeat(".", match.score_breakdown.red.rp));
+        totalRed = match.alliances["red"].totalPoints;
+        rpRed = String.Concat(Enumerable.Repeat(".", match.alliances["red"].rp));
 
-        totalBlue = match.score_breakdown.blue.totalPoints;
-        rpBlue = String.Concat(Enumerable.Repeat(".", match.score_breakdown.blue.rp));
+        totalBlue = match.alliances["blue"].totalPoints;
+        rpBlue = String.Concat(Enumerable.Repeat(".", match.alliances["blue"].rp));
 
-        <td id="@matchKey-sr" style="position:relative" class="@((match.winning_alliance == "red") ? "redHighlight" : "red")" onClick="showDialog('@match.title<br />Predicted @predictedRed-@predictedBlue')">
+        <td id="@matchKey-sr" style="position:relative" class="@((match.winningAlliance == "red") ? "redHighlight" : "red")" onClick="showDialog('@match.title<br />Predicted @predictedRed-@predictedBlue')">
             <span id="@matchKey-ssr">@Html.Raw(totalRed) @((predictedRed > predictedBlue) ? "*":"")</span>
             <span id="@matchKey-rpr" style="font-weight: bold; letter-spacing: 2px; position:absolute; bottom: 0; left: 1px">&nbsp;@rpRed</span>
         </td>
-        <td id="@matchKey-sb" style="position:relative" class="@((match.winning_alliance == "blue") ? "blueHighlight" : "blue")" onClick="showDialog('@match.title<br />Predicted @predictedRed-@predictedBlue')">
+        <td id="@matchKey-sb" style="position:relative" class="@((match.winningAlliance == "blue") ? "blueHighlight" : "blue")" onClick="showDialog('@match.title<br />Predicted @predictedRed-@predictedBlue')">
             <span id="@matchKey-ssb">@Html.Raw(totalBlue) @((predictedRed < predictedBlue) ? "*":"")</span>
             <span id="@matchKey-rpb" style="font-weight: bold; letter-spacing: 2px; position: absolute; bottom: 0; left: 1px">&nbsp;@rpBlue</span>
         </td>
@@ -474,20 +480,20 @@
     }
 }
 
-@helper TeamListing(int teamNumber, TBAMatchData match, Dictionary<int, string> classes, Dictionary<int, string> actions)
+@helper TeamListing(int teamNumber, GrooveMatch match, Dictionary<int, string> classes, Dictionary<int, string> actions)
 {
     if (teamNumber > 0)
     {
-        double epa = Model.EPACache.Where(t => t.Key == teamNumber).Select(e => e.Value.epa_end.Value).FirstOrDefault();
+        double epa = StatboticsAPIv2.EPACache.Where(t => t.Key == teamNumber).Select(e => e.Value.epa_end.Value).FirstOrDefault();
         string epaString = string.Empty;
         if (epa > 0) { epaString = $" [{epa}]"; }
-        <div id="tm@(teamNumber)-@(match.comp_level)-@(match.match_number)" @Html.Raw(classes[teamNumber])>
+        <div id="tm@(teamNumber)-@(match.competitionLevel)-@(match.matchNumber)" @Html.Raw(classes[teamNumber])>
             <span id="tmNum@(teamNumber)">@teamNumber</span>
             @if (Model.EventRankings.ContainsKey(teamNumber))
             {
-                <span class="teamRank" id="rank@(teamNumber)-@(match.comp_level)-@(match.match_number)"> (#@Model.EventRankings[teamNumber].rank)</span>
+                <span class="teamRank" id="rank@(teamNumber)-@(match.competitionLevel)-@(match.matchNumber)"> (#@Model.EventRankings[teamNumber].rank)</span>
             }
-            <span class="teamName">@(Model.RegisteredTeams.ContainsKey(teamNumber) ? Model.RegisteredTeams[teamNumber].nickname : "")@epaString</span>
+            <span class="teamName">@(Groove.TeamListingCache.ContainsKey(teamNumber) ? Groove.TeamListingCache[teamNumber].name : "")@epaString</span>
         </div>
     }
 }
@@ -591,8 +597,6 @@
             }
         });
 
-        if (typeof gtag != "undefined") gtag('event', 'watch', { 'event_category': 'Team', 'event_action': action, 'event_label': teamNumber });
-
         if (action == 'add') {
             if (teamList.length > 0) teamList += ",";
             teamList += teamNumber;
@@ -610,36 +614,30 @@
     function updateEventData() {
         $.get("/FRCEvent/GetDashboardData?eventCode=@eventCode", function (m) {
             let refresh = false;
-            if (!$("#qm01001-r").length) {
+            if (!$("#Qualification01001-r").length) {
                 console.log("no qm1");
                 refresh = true;
-            } else if (m.TBAMatches[m.TBAMatches.length-1].comp_level == "sf" && !$("#sf01001-r").length) {
+            } else if (m.Matches[m.Matches.length - 1].competitionLevel == "Playoff" && !$("#Playoff01001-r").length) {
                 console.log("no sf1");
                 refresh = true;
-            } else if (m.TBAMatches[m.TBAMatches.length-1].comp_level == "f" && !$("#f01001-r").length) {
+            } else if (m.Matches[m.Matches.length - 1].competitionLevel == "Final" && !$("#Final01001-r").length) {
                 console.log("no f1");
                 refresh = true;
             }
             if (refresh) location.reload();
 
-            //let inFuture = false;
             $("#nextmatch").remove();
             let nextmatch = "";
-            for (let i = m.TBAMatches.length - 1; i > -1; i--) {
-                if (m.TBAMatches[i].actual_time > 0) {
-                    if (i == m.TBAMatches.length - 1) break; // comp is done
-                    nextmatch = m.TBAMatches[i + 1].comp_level + m.TBAMatches[i + 1].set_number.toString().padStart(2, '0') + m.TBAMatches[i + 1].match_number.toString().padStart(3, '0');
+            for (let i = m.Matches.length - 1; i > -1; i--) {
+                if (m.Matches[i].hasStarted) {
+                    if (i == m.Matches.length - 1) break; // comp is done
+                    nextmatch = m.Matches[i + 1].competitionLevel + m.Matches[i + 1].setNumber.toString().padStart(2, '0') + m.Matches[i + 1].matchNumber.toString().padStart(3, '0');
                     break;
                 }
             }
-            $.each(m.TBAMatches, function (key, match) {
-                var matchKey = match.comp_level + match.set_number.toString().padStart(2, '0') + match.match_number.toString().padStart(3, '0');
-                @{ /*** Adding rows is a tad complicated - just refresh the page for now (handled above)
-                if (!$("#" + matchKey + "-r").length) {
-                    $('#tableMatches').append(`<tr id="${matchKey}-r"><td id="${matchKey}-title" style="text-align: center"><div><a href="${match.matchDetailsUrl}">${match.title}</a></div><div id="${matchKey}-time" style="font-size: x-small"></td><td id="${matchKey}-ar" class="red"></td><td id="${matchKey}-sr"></td><td id="${matchKey}-sb"></td><td id="${matchKey}-ab" class="blue"></td></tr>`);
-                }
-                ***/ }
-                //if (match.actual_time == 0 && !inFuture) {
+            $.each(m.Matches, function (key, match) {
+                var matchKey = match.competitionLevel + match.setNumber.toString().padStart(2, '0') + match.matchNumber.toString().padStart(3, '0');
+
                 if (matchKey == nextmatch) {
                     inFuture = true;
                     $("#" + matchKey + "-r").before('<tr id="nextmatch"><td colspan="5" style="color: white; background-color: #666699; text-align: left; font-size: small; "><a name="nextmatch"></a>&nbsp;next match &#8628;</td></tr>');
@@ -649,13 +647,12 @@
             });
             updateTeamStats(m.EventRankings);
             RefreshWatchlist();
-            updateEventStatus(m.EventState, m.TBAMatches, m.ScheduleOffset);
+            updateEventStatus(m.EventState, m.Matches, m.ScheduleOffset);
         });
     }
 
     function updateTeamStats(rankings) {
         $.each(rankings, function (key, ranking) {
-            //console.log(key);
             $("[id^=rank" + key + "]").html(" (#" + ranking.rank + ")");
         });
     }
@@ -663,27 +660,27 @@
     function scoreBreakdown(match)
     {
         @{/* TODO: This assumes the table exists - need to handle use case where the page was loaded before match schedule was released */}
-        @{/* TODO: Similar to above, this won't add playoffs once those have begun - requires a page refresh - detect if the row doesn't exist and add it */}
-        let predictedRed = match.alliances.red.predictedPoints;
-        let predictedBlue = match.alliances.blue.predictedPoints;
+        @{/* TODO: This won't add playoffs once those have begun - requires a page refresh - detect if the row doesn't exist and add it */}
+        let predictedRed = match.alliances["red"].predictedPoints;
+        let predictedBlue = match.alliances["blue"].predictedPoints;
 
-        var matchKey = match.comp_level + match.set_number.toString().padStart(2, '0') + match.match_number.toString().padStart(3, '0');
+        var matchKey = match.competitionLevel + match.setNumber.toString().padStart(2, '0') + match.matchNumber.toString().padStart(3, '0');
 
-        if (match.actual_time > 0 && match.score_breakdown && match.score_breakdown.red)
+        if (match.hasStarted && match.alliances["red"].score > -1)
         {
-            let totalRed = match.score_breakdown.red.totalPoints;
-            let rpRed = ".".repeat(match.score_breakdown.red.rp);
+            let totalRed = match.alliances["red"].totalPoints;
+            let rpRed = ".".repeat(match.alliances["red"].rp);
 
-            let totalBlue = match.score_breakdown.blue.totalPoints;
-            let rpBlue = ".".repeat(match.score_breakdown.blue.rp);
+            let totalBlue = match.alliances["blue"].totalPoints;
+            let rpBlue = ".".repeat(match.alliances["blue"].rp);
 
             $("#" + matchKey + "-ssr").html(`${totalRed} ${((predictedRed > predictedBlue) ? "*" : "")}`);
             $("#" + matchKey + "-rpr").html(`&nbsp;${rpRed}`);
             $("#" + matchKey + "-ssb").html(`${totalBlue} ${((predictedRed < predictedBlue) ? "*" : "")}`);
             $("#" + matchKey + "-rpb").html(`&nbsp;${rpBlue}`);
 
-            $("#" + matchKey + "-sr").attr('class', `${((match.winning_alliance == "red") ? "redHighlight" : "red")}`);
-            $("#" + matchKey + "-sb").attr('class', `${((match.winning_alliance == "blue") ? "blueHighlight" : "blue")}`);
+            $("#" + matchKey + "-sr").attr('class', `${((match.winningAlliance == "red") ? "redHighlight" : "red")}`);
+            $("#" + matchKey + "-sb").attr('class', `${((match.winningAlliance == "blue") ? "blueHighlight" : "blue")}`);
 
             $("#" + matchKey + "-sr").removeAttr('onclick').off('click').on('click', function () {
                 showDialog(`${match.title}<br />Predicted ${predictedRed}-${predictedBlue}`);
@@ -694,7 +691,7 @@
         }
         else if (predictedRed > 0 || predictedBlue > 0)
         {
-            // TODO: assume the team numbers haven't been populated
+            // TODO: assume the team numbers haven't been populated (e.g. playoffs)
 
             $("#" + matchKey + "-ar");
             $("#" + matchKey + "-ab");
@@ -710,11 +707,11 @@
     function updateEventStatus(eventState, matches, scheduleOffset) {
         let eventStatus = "";
         if (eventState == "Past") {
-            eventStatus = "Event is complete (<a href='#Semifinals'>playoffs</a>)";// "/ <a href='#Brackets'>brackets</a>)";
+            eventStatus = "Event is complete (<a href='#Playoffs'>playoffs</a>)";// "/ <a href='#Brackets'>brackets</a>)";
         } else if (eventState == "Future") {
             eventStatus = "Match schedule not yet available";
         } else {
-            if (eventState == "Qualifications" && matches[0].score_breakdown == null) {
+            if (eventState == "Qualifications" && matches[0].alliances["red"].score == -1) {
                 eventStatus = "Qualifications haven't started";
             }
             @{/*
@@ -725,7 +722,7 @@
                 }
             }
             */}
-            else if (eventState == "Qualifications" || eventState == "Semifinals" || eventState == "Finals") {
+            else if (eventState == "Qualifications" || eventState == "Playoffs" || eventState == "Finals") {
                 scheduleOffset = Math.floor(scheduleOffset);
                 if (scheduleOffset == 0) {
                     eventStatus = `${eventState} seem to be running on time (<a href='#nextmatch'>next match</a>)`;
@@ -743,29 +740,19 @@
 
     function updateMatchTime(match, eventState, scheduleOffset) {
         let matchTime = "";
-        var matchKey = match.comp_level + match.set_number.toString().padStart(2, '0') + match.match_number.toString().padStart(3, '0');
-        let schedTime = new Date(match.time * 1000);
-        let weekDays = {
-            0: 'Sun',
-            1: 'Mon',
-            2: 'Tue',
-            3: 'Wed',
-            4: 'Thu',
-            5: 'Fri',
-            6: 'Sat',
-            7: 'Sun'
-        };
+        var matchKey = match.competitionLevel + match.setNumber.toString().padStart(2, '0') + match.matchNumber.toString().padStart(3, '0');
+        let schedTime = new Date(match.timeScheduledUnix * 1000);
+        let weekDays = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' };
         let dayOfWeek = schedTime.getDay();
-        //console.log('dayOfWeek:' + dayOfWeek);
-        if (match.actual_time != 0) {
-            let actualTime = new Date(match.actual_time * 1000);
+        if (match.hasStarted) {
+            let actualTime = new Date(match.timeActualUnix * 1000);
             matchTime = `<span>${weekDays[dayOfWeek]} ${schedTime.format("M/d")} ${schedTime.format("h:mm")} (${actualTime.format("h:mm")})</span>`;
         }
         else if (eventState != "Future")
         {
             let offset = scheduleOffset;
             if (schedTime > new Date()) { offset = 0; }
-            let estTime = new Date((match.time + offset * 60) * 1000);
+            let estTime = new Date((match.timeScheduledUnix + offset * 60) * 1000);
             matchTime = `<span>${weekDays[dayOfWeek]} ${schedTime.format("M/d")} ${schedTime.format("h:mm")} <i>(est. ${estTime.format("h:mm")})</i></span>`;
         }
 
@@ -819,7 +806,7 @@
         $("#filterValue").val('');
     }
 
-    setInterval(updateEventData, 5000);
+    setInterval(updateEventData, 10000);
 
     function showDialog(message) {
         $("#prediction").html(message);

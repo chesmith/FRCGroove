@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-using FRCGroove.Lib.Models;
+using FRCGroove.Lib.Models.FRCv2;
 
 namespace FRCGroove.Web.Models
 {
     public class FRCEventListing
     {
-        public List<District> Districts { get; set; }
+        public List<FRCDistrict> Districts { get; set; }
 
         public string districtCode { get; set; }
 

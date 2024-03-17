@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-using FRCGroove.Lib.Models;
+using FRCGroove.Lib.Models.TBAv3;
 
 namespace FRCGroove.Web.Models
 {

@@ -1,13 +1,9 @@
-﻿@using FRCGroove.Lib.Models
-@model FRCGroove.Web.Models.TBAEventListing
+﻿@using FRCGroove.Lib.Models.Groove
+@model FRCGroove.Web.Models.EventListing
 
 @{
     ViewBag.Title = "FRC Groove";
 }
-
-<script>
-    if (typeof gtag != "undefined") gtag('event', 'event', { 'event_category': 'Event', 'event_action': 'list', 'event_label': '@Model.districtCode' });
-</script>
 
 <style>
     td {
@@ -23,14 +19,14 @@
     }
 
     .card-body {
-        padding:0.5rem 0.75rem 0.5rem 0.75rem
+        padding: 0.5rem 0.75rem 0.5rem 0.75rem
     }
 </style>
 
 @Html.Partial("Navigation", "Events")
 
 <div>
-    <p>@Html.DropDownList("districtCode", new SelectList(Model.Districts, "key", "display_name"), new { onchange = "location = '?districtCode=' + this.value;" })</p>
+    <p>@Html.DropDownList("districtKey", new SelectList(Model.Districts, "key", "name"), new { onchange = "location = '?districtKey=' + this.value;" })</p>
 
     @if (Model.CurrentEvents == null && Model.PastEvents == null && Model.FutureEvents == null)
     {
@@ -53,12 +49,12 @@
                 <div id="collapseOne" class="collapse show" data-parent="#accordion">
                     <div class="card-body">
                         <table style="width:100%" id="currentEvents">
-                            @foreach (TBAEvent tbaEvent in Model.CurrentEvents)
+                            @foreach (GrooveEvent e in Model.CurrentEvents)
                             {
                                 <tr style="background-color: none">
-                                    <td>@Html.ActionLink(tbaEvent.name, "Index", "FRCEvent", new { eventCode = tbaEvent.key }, null)</td>
-                                    <td style="margin: 0 0 5px 5px">@tbaEvent.dateStart.ToString("ddd M/d")</td>
-                                    <td style="margin: 0 0 5px 5px">@tbaEvent.dateEnd.ToString("ddd M/d")</td>
+                                    <td>@Html.ActionLink(e.name, "Index", "FRCEvent", new { eventCode = e.key }, null)</td>
+                                    <td style="margin: 0 0 5px 5px">@e.dateStart.ToString("ddd M/d")</td>
+                                    <td style="margin: 0 0 5px 5px">@e.dateEnd.ToString("ddd M/d")</td>
                                 </tr>
                             }
                         </table>
@@ -77,12 +73,12 @@
                 <div id="collapseTwo" class="collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) ? "show" : "")" data-parent="#accordion">
                     <div class="card-body">
                         <table style="width:100%">
-                            @foreach (TBAEvent tbaEvent in Model.PastEvents)
+                            @foreach (GrooveEvent e in Model.PastEvents)
                             {
                                 <tr>
-                                    <td>@Html.ActionLink(tbaEvent.name, "Index", "FRCEvent", new { eventCode = tbaEvent.key }, null)</td>
-                                    <td width="40px">@tbaEvent.dateStart.ToString("ddd M/d")</td>
-                                    <td width="40px">@tbaEvent.dateEnd.ToString("ddd M/d")</td>
+                                    <td>@Html.ActionLink(e.name, "Index", "FRCEvent", new { eventCode = e.key }, null)</td>
+                                    <td width="40px">@e.dateStart.ToString("ddd M/d")</td>
+                                    <td width="40px">@e.dateEnd.ToString("ddd M/d")</td>
                                 </tr>
                             }
                         </table>
@@ -102,12 +98,12 @@
                 <div id="collapseThree" class="collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) && (Model.PastEvents == null || Model.PastEvents.Count == 0)? "show" : "")" data-parent="#accordion">
                     <div class="card-body">
                         <table style="width:100%">
-                            @foreach (TBAEvent tbaEvent in Model.FutureEvents)
+                            @foreach (GrooveEvent e in Model.FutureEvents)
                             {
                                 <tr>
-                                    <td>@Html.ActionLink(tbaEvent.name, "Index", "FRCEvent", new { eventCode = tbaEvent.key }, null)</td>
-                                    <td style="margin: 0 0 5px 5px">@tbaEvent.dateStart.ToString("ddd M/d")</td>
-                                    <td style="margin: 0 0 5px 5px">@tbaEvent.dateEnd.ToString("ddd M/d")</td>
+                                    <td>@Html.ActionLink(e.name, "Index", "FRCEvent", new { eventCode = e.key }, null)</td>
+                                    <td style="margin: 0 0 5px 5px">@e.dateStart.ToString("ddd M/d")</td>
+                                    <td style="margin: 0 0 5px 5px">@e.dateEnd.ToString("ddd M/d")</td>
                                 </tr>
                             }
                         </table>

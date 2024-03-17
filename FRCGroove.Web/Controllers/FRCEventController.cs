@@ -1,14 +1,13 @@
 ﻿using FRCGroove.Web.Models;
 using FRCGroove.Lib;
-using FRCGroove.Lib.Models;
-using System.Text.RegularExpressions;
+using FRCGroove.Lib.Models.TBAv3;
+using FRCGroove.Lib.Models.Groove;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using System.Diagnostics;
 
 namespace FRCGroove.Web.Controllers
 {
@@ -18,18 +17,12 @@ namespace FRCGroove.Web.Controllers
 
         public ActionResult Index(string districtCode = "", string eventCode = "", string teamList = "")
         {
-            var stopwatch = Stopwatch.StartNew();
             List<string> teams = BuildTeamsOfInterest(teamList);
 
-            Dashboard dashboard = BuildEventDashboardTBA(eventCode, teams);
+            Dashboard dashboard = BuildEventDashboard(eventCode, teams);
 
             this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = new DateTime(DateTime.Now.Year + 1, DateTime.Now.Month, DateTime.Now.Day) });
             this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("eventCode") { Value = eventCode, Expires = DateTime.Now.AddYears(1) });
-
-            //TODO: if we added teams from the cookie that weren't there in the input list, do a redirect with the full URL instead of just showing the dashboard (update the cookie first?)
-
-            stopwatch.Stop();
-            //Debug.WriteLine($"Total, {stopwatch.Elapsed.TotalMilliseconds}");
 
             return View(dashboard);
         }
@@ -59,115 +52,91 @@ namespace FRCGroove.Web.Controllers
             return teamsToKeep.Distinct().OrderBy(t => Int32.Parse(t)).ToList();
         }
 
-        private Dashboard BuildEventDashboardTBA(string tbaEventCode, List<string> teamsOfInterest)
+        private Dashboard BuildEventDashboard(string eventKey, List<string> teamsOfInterest)
         {
             Dashboard dashboard = new Dashboard();
 
-            Stopwatch stopwatch;
+            // TODO: This was due to FRC referring to 2023 TRI as "TXHO2" while TBA used "txtri" - do this sort of translation elsewhere (low priority as we're now mainly depending on TBA)
+            //if (eventKey == "2023txho2") eventKey = "2023txri";
 
-            if (tbaEventCode == "2023txho2") tbaEventCode = "2023txri";
-
-            if (tbaEventCode.Length > 0)
+            if (eventKey.Length > 0)
             {
-                stopwatch = Stopwatch.StartNew();
-                dashboard.TBAEvent = TBAAPI.GetEvent(tbaEventCode); //API CALL (6 hour cache)
-                stopwatch.Stop();
-                //Debug.WriteLine($"TBAAPI.GetEvent, {stopwatch.Elapsed.TotalMilliseconds}");
-                if (dashboard.TBAEvent != null)
+                dashboard.Event = Groove.GetEvent(eventKey);
+                if (dashboard.Event != null)
                 {
-                    stopwatch = Stopwatch.StartNew();
-                    dashboard.TBAMatches = TBAAPI.GetMatches(tbaEventCode); //API CALL (TBA-compliant cache)
-                    stopwatch.Stop();
-                    //Debug.WriteLine($"TBAAPI.GetMatches, {stopwatch.Elapsed.TotalMilliseconds}");
-                    dashboard.TBAMatches = dashboard.TBAMatches?.OrderBy(m => m.sortTitle).ToList();
+                    dashboard.Matches = Groove.GetMatches(eventKey);
+                    dashboard.Matches = dashboard.Matches?.OrderBy(m => m.sortTitle).ToList();
 
-                    dashboard.EventState = DetermineEventState(dashboard.TBAMatches);
+                    dashboard.EventState = DetermineEventState(dashboard.Matches);
 
-                    //TODO: replace with TBA (I think mostly done but for brackets)
-                    if (dashboard.TBAMatches != null && (dashboard.EventState == FRCEventState.Past || dashboard.EventState == FRCEventState.Qualifications || dashboard.EventState == FRCEventState.Quarterfinals || dashboard.EventState == FRCEventState.Semifinals || dashboard.EventState == FRCEventState.Finals))
+                    //TODO: need to rework brackets after move to double elim
+                    if (dashboard.Matches != null && (dashboard.EventState == EventState.Past || dashboard.EventState == EventState.Qualifications || dashboard.EventState == EventState.Playoffs || dashboard.EventState == EventState.Finals))
                     {
-                        if (dashboard.EventState != FRCEventState.Qualifications)
+                        if (dashboard.EventState != EventState.Qualifications)
                         {
-                            stopwatch = Stopwatch.StartNew();
-                            dashboard.TBAPlayoffAlliances = TBAAPI.GetPlayoffAlliances(tbaEventCode); //API CALL (5 min cache)
-                            stopwatch.Stop();
-                            //Debug.WriteLine($"TBAAPI.GetPlayoffAlliances, {stopwatch.Elapsed.TotalMilliseconds}");
+                            //dashboard.TBAPlayoffAlliances = TBAAPIv3.GetPlayoffAlliances(eventKey); //API CALL (5 min cache)
                             //dashboard.TBABracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
                         }
 
-                        if (dashboard.EventState != FRCEventState.Past)
+                        if (dashboard.EventState != EventState.Past)
                         {
-                            List<TBAMatchData> matchesForOffsetCalc = dashboard.TBAMatches;
-                            if (dashboard.EventState != FRCEventState.Qualifications)
-                                matchesForOffsetCalc = dashboard.TBAMatches.Where(m => m.comp_level != "qm").ToList();
-                            dashboard.ScheduleOffset = CalculateScheduleOffsetTBA(matchesForOffsetCalc);
+                            List<GrooveMatch> matchesForOffsetCalc = dashboard.Matches;
+                            if (dashboard.EventState != EventState.Qualifications)
+                                matchesForOffsetCalc = dashboard.Matches.Where(m => m.competitionLevel != "Qualification").ToList();
+                            dashboard.ScheduleOffset = CalculateScheduleOffset(matchesForOffsetCalc);
                         }
                     }
 
-                    if (dashboard.EventState != FRCEventState.Invalid)
+                    if (dashboard.EventState != EventState.Invalid)
                     {
-                        stopwatch = Stopwatch.StartNew();
-                        TBAEventRankings rankings = TBAAPI.GetEventRankings(tbaEventCode); //API CALL (TBA-compliant cache)
-                        stopwatch.Stop();
-                        //Debug.WriteLine($"TBAAPI.GetEventRankings, {stopwatch.Elapsed.TotalMilliseconds}");
-                        if (rankings != null && rankings.rankings != null)
-                        {
-                            //TODO: Int32.Parse (I think this was an issue with offseason events where teams might have a letter in their name)
-                            dashboard.EventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(Regex.Replace(e.team_key, "[^0-9,-]+", "")), e => e);
-                        }
+                        List<GrooveEventRanking> rankings = Groove.GetEventRankings(eventKey);
+                        if(rankings != null)
+                            dashboard.EventRankings = rankings.ToDictionary(r => r.teamNumber, r => r);
                     }
                 }
-
-                dashboard.RegisteredTeams = TBAAPI.TeamListingCache;
-                dashboard.EPACache = TBAAPI.EPACache;
             }
 
             //TODO: I don't think we need to send this in the model, maybe just a count - otherwise we're doing a 2nd call to GatherTeamsOfInterest from javascript later
-            stopwatch = Stopwatch.StartNew();
-            dashboard.TeamsOfInterest.AddRange(GatherTeamsOfInterest(tbaEventCode, teamsOfInterest, dashboard.EventRankings));
-            stopwatch.Stop();
-            //Debug.WriteLine($"GatherTeamsOfInterest, {stopwatch.Elapsed.TotalMilliseconds}");
-
-            if(tbaEventCode == "2023txbel") dashboard.ScheduleOffset = rnd.Next(-10, 10);
+            dashboard.TeamsOfInterest.AddRange(GatherTeamsOfInterest(eventKey, teamsOfInterest, dashboard.EventRankings));
 
             return dashboard;
         }
 
-        private FRCEventState DetermineEventState(List<TBAMatchData> matches)
+        private EventState DetermineEventState(List<GrooveMatch> matches)
         {
-            FRCEventState eventState = FRCEventState.Invalid;
+            EventState eventState = EventState.Invalid;
             if (matches != null)
             {
                 if (matches.Count() <= 1)
-                    eventState = FRCEventState.Future;
+                    eventState = EventState.Future;
                 else
                 {
-                    List<TBAMatchData> finals = matches.Where(m =>
-                        m.comp_level == "f"
-                        && m.alliances.red.team_keys.Count() > 0
-                        && m.alliances.blue.team_keys.Count() > 0).ToList();
-                    if (finals.Exists(t => t.alliances.red.score > 0 || t.alliances.blue.score > 0))
+                    List<GrooveMatch> finals = matches.Where(m =>
+                        m.competitionLevel == "Final"
+                        && m.alliances["red"].teamKeys.Count() > 0
+                        && m.alliances["blue"].teamKeys.Count() > 0).ToList();
+                    if (finals.Exists(t => t.alliances["red"].score > 0 || t.alliances["blue"].score > 0))
                     {
-                        bool redWin = (finals.Count(t => t.alliances.red.score > t.alliances.blue.score) == 2);
-                        bool blueWin = (finals.Count(t => t.alliances.red.score < t.alliances.blue.score) == 2);
+                        bool redWin = (finals.Count(t => t.alliances["red"].score > t.alliances["blue"].score) == 2);
+                        bool blueWin = (finals.Count(t => t.alliances["red"].score < t.alliances["blue"].score) == 2);
                         if (redWin || blueWin)
-                            eventState = FRCEventState.Past;
+                            eventState = EventState.Past;
                         else
-                            eventState = FRCEventState.Finals;
+                            eventState = EventState.Finals;
                     }
                     else
                     {
-                        List<TBAMatchData> semifinals = matches.Where(m =>
-                            m.comp_level == "sf"
-                            && m.alliances.red.team_keys.Count() > 0
-                            && m.alliances.blue.team_keys.Count() > 0).ToList();
-                        if (semifinals.Exists(t => t.alliances.red.score > 0 || t.alliances.blue.score > 0))
+                        List<GrooveMatch> playoffs = matches.Where(m =>
+                            m.competitionLevel == "Playoff"
+                            && m.alliances["red"].teamKeys.Count() > 0
+                            && m.alliances["blue"].teamKeys.Count() > 0).ToList();
+                        if (playoffs.Exists(t => t.alliances["red"].score > 0 || t.alliances["blue"].score > 0))
                         {
-                            eventState = FRCEventState.Semifinals;
+                            eventState = EventState.Playoffs;
                         }
                         else
                         {
-                            eventState = FRCEventState.Qualifications;
+                            eventState = EventState.Qualifications;
                         }
                     }
                 }
@@ -176,34 +145,31 @@ namespace FRCGroove.Web.Controllers
             return eventState;
         }
 
-        private List<TBATeam> GatherTeamsOfInterest(string eventCode, List<string> teamList, Dictionary<int, TBARanking> eventRankings = null)
+        private List<GrooveTeam> GatherTeamsOfInterest(string eventCode, List<string> teamList, Dictionary<int, GrooveEventRanking> eventRankings = null)
         {
-            List<TBATeam> teamsOfInterest = new List<TBATeam>();
+            List<GrooveTeam> teamsOfInterest = new List<GrooveTeam>();
             if (teamList != null && teamList.Count > 0)
             {
                 if (eventRankings == null)
                 {
-                    TBAEventRankings rankings = TBAAPI.GetEventRankings(eventCode); //API CALL (TBA-compliant cache)
-                    if (rankings != null && rankings.rankings != null)
-                    {
-                        //TODO: Int32.Parse (I think this was an issue with offseason events where teams might have a letter in their team number)
-                        eventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(Regex.Replace(e.team_key, "[^0-9,-]+", "")), e => e);
-                    }
+                    List<GrooveEventRanking> rankings = Groove.GetEventRankings(eventCode);
+                    if (rankings != null)
+                        eventRankings = rankings.ToDictionary(r => r.teamNumber, r => r);
                 }
 
-                TBAStatsCollection stats = TBAAPI.GetStats(eventCode); //API CALL (5 min cache)
+                TBAStatsCollection stats = TBAAPIv3.GetStats(eventCode); //API CALL (5 min cache)
                 foreach (string teamNumber in teamList)
                 {
-                    TBATeam team = TBAAPI.GetTeam(Int32.Parse(teamNumber)); //CACHED AT STARTUP
+                    GrooveTeam team = Groove.GetTeam(Int32.Parse(teamNumber));
                     if (team != null)
                     {
-                        if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.team_number))
-                            team.Stats = new TBAStats(stats, team.team_number);
+                        if (stats != null && stats.oprs != null && stats.oprs.ContainsKey("frc" + team.number))
+                            team.Stats = new TBAStats(stats, team.number);
                         else
                             team.Stats = null;
 
-                        if (eventRankings != null && eventRankings.Count > 0 && eventRankings.ContainsKey(team.team_number))
-                            team.eventRank = eventRankings[team.team_number].rank;
+                        if (eventRankings != null && eventRankings.Count > 0 && eventRankings.ContainsKey(team.number))
+                            team.eventRank = eventRankings[team.number].rank;
                         else
                             team.eventRank = -1;
 
@@ -214,29 +180,18 @@ namespace FRCGroove.Web.Controllers
             return teamsOfInterest;
         }
 
-        private double CalculateScheduleOffsetTBA(List<TBAMatchData> matches)
+        private double CalculateScheduleOffset(List<GrooveMatch> matches)
         {
             DateTime today = DateTime.Now.Date;
-            var allOfTodaysMatches = matches.Where(m => m.timeDT.Date == today);
-            var todaysFinishedMatches = allOfTodaysMatches.Where(m => m.actual_time != 0);
+            var allOfTodaysMatches = matches.Where(m => m.timeScheduled.Date == today);
+            var todaysFinishedMatches = allOfTodaysMatches.Where(m => m.hasStarted);
             double average = 0.0;
             if (todaysFinishedMatches.Count() < allOfTodaysMatches.Count())
             {
-                List<TBAMatchData> last3Matches = todaysFinishedMatches.Reverse().Take(3).ToList();
-                double sum = last3Matches.Select(m => (m.actual_timeDT - m.timeDT).TotalMinutes).Sum();
+                List<GrooveMatch> last3Matches = todaysFinishedMatches.Reverse().Take(3).ToList();
+                double sum = last3Matches.Select(m => (m.timeActual - m.timeScheduled).TotalMinutes).Sum();
                 if (Math.Abs(sum) > 0)
                     average = sum / last3Matches.Count();
-
-                //if(average == 0.0)
-                //{
-                //    //TODO: if the next match scores have not posted and the time for the match after that has passed, consider matches running late
-                //    //      and report as schedule offset by that delta
-                //    List<Match> tmatches = matches.Where(m => m.actualStartTime == null).Take(3).ToList();
-                //    if(tmatches[1].startTime < DateTime.Now)
-                //    {
-                //        average = (DateTime.Now - tmatches[1].startTime).TotalMinutes;
-                //    }
-                //}
             }
             return average;
         }
@@ -250,15 +205,15 @@ namespace FRCGroove.Web.Controllers
 
                 this.ControllerContext.HttpContext.Response.Cookies.Add(new HttpCookie("teamList") { Value = string.Join(",", teams), Expires = new DateTime(DateTime.Now.Year + 1, DateTime.Now.Month, DateTime.Now.Day) });
 
-                List<TBATeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
+                List<GrooveTeam> teamsOfInterest = GatherTeamsOfInterest(eventCode, teams);
                 teamsOfInterest = teamsOfInterest.Where(t => t.Stats != null).ToList();
 
                 if (sortName.Length == 0) sortName = "Rank";
 
                 if (sortName == "Number")
-                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.team_number).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.team_number).ToList()));
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.number).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.number).ToList()));
                 else if (sortName == "Name")
-                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.nickname).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.nickname).ToList()));
+                    return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.name).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.name).ToList()));
                 else if (sortName == "Rank")
                     return (sortDirection == "ASC" ? Json(teamsOfInterest.OrderBy(t => t.eventRank).ToList()) : Json(teamsOfInterest.OrderByDescending(t => t.eventRank).ToList()));
                 else if (sortName == "OPR")
@@ -276,47 +231,17 @@ namespace FRCGroove.Web.Controllers
 
         public JsonResult GetDashboardData(string eventCode)
         {
-            //var matches = TBAAPI.GetMatches(eventCode);
             //TODO: getting the full dashboard may be overkill
-            Dashboard dashboard = BuildEventDashboardTBA(eventCode, new List<string>());
+            Dashboard dashboard = BuildEventDashboard(eventCode, new List<string>());
 
-            if (dashboard.EventState != FRCEventState.Invalid)
+            if (dashboard.EventState != EventState.Invalid)
             {
-                TBAEventRankings rankings = TBAAPI.GetEventRankings(eventCode); //API CALL (TBA-compliant cache)
-                if (rankings != null && rankings.rankings != null)
-                {
-                    //TODO: Int32.Parse (I think this was an issue with offseason events where teams might have a letter in their name)
-                    dashboard.EventRankings = rankings.rankings.ToDictionary(e => Int32.Parse(Regex.Replace(e.team_key, "[^0-9,-]+", "")), e => e);
-                }
+                List<GrooveEventRanking> rankings = Groove.GetEventRankings(eventCode);
+                if (rankings != null)
+                    dashboard.EventRankings = rankings.ToDictionary(r => r.teamNumber, r => r);
             }
 
-            //TODO: This is for testing live updates
-            var matches = dashboard.TBAMatches;
-            //matches = matches.OrderBy(m => m.sortTitle).ToList();
-            if (eventCode == "2023txbel")
-            {
-                int lastMatch = rnd.Next(5, matches.Count - 20);
-                for (int i = 0; i < matches.Count(); i++)
-                {
-                    TBAMatchData match = matches[i];
-                    if (i < lastMatch)
-                    {
-                        match.score_breakdown.red.totalPoints = rnd.Next(10, 125);
-                        match.alliances.red.predictedPoints = rnd.Next(10, 125);
-                        match.score_breakdown.red.rp = rnd.Next(0, 4);
-                        match.score_breakdown.blue.totalPoints = rnd.Next(10, 125);
-                        match.alliances.blue.predictedPoints = rnd.Next(10, 125);
-                        match.score_breakdown.blue.rp = rnd.Next(0, 4);
-
-                        //if (match.comp_level == "f")
-                        //    match.actual_time = 0;
-                    }
-                    else
-                        match.actual_time = 0;
-                }
-            }
-            //return Json(dashboard, JsonRequestBehavior.AllowGet);
-            return Json(new { EventState = dashboard.EventState.ToString(), TBAMatches = dashboard.TBAMatches, ScheduleOffset = dashboard.ScheduleOffset, EventRankings = dashboard.EventRankings.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value) }, JsonRequestBehavior.AllowGet);
+            return Json(new { EventState = dashboard.EventState.ToString(), Matches = dashboard.Matches, ScheduleOffset = dashboard.ScheduleOffset, EventRankings = dashboard.EventRankings.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value) }, JsonRequestBehavior.AllowGet);
         }
 
         //private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamsOfInterest)
@@ -352,7 +277,7 @@ namespace FRCGroove.Web.Controllers
 
         //        dashboard.RegisteredTeams = FRCEventsAPI.TeamListingCache;
 
-        //        //TODO: Should this be up in the != null section above?
+        //        //LEGACY TODO: Should this be up in the != null section above?
         //        if (dashboard.EventState != FRCEventState.Invalid)
         //        {
         //            List<EventRanking> eventRankings = FRCEventsAPI.GetEventRankings(eventCode);
@@ -377,7 +302,7 @@ namespace FRCGroove.Web.Controllers
 
         //    //if(average == 0.0)
         //    //{
-        //    //    //TODO: if the next match scores have not posted and the time for the match after that has passed, consider matches running late
+        //    //    //LEGACY TODO: if the next match scores have not posted and the time for the match after that has passed, consider matches running late
         //    //    //      and report as schedule offset by that delta
         //    //    List<Match> tmatches = matches.Where(m => m.actualStartTime == null).Take(3).ToList();
         //    //    if(tmatches[1].startTime < DateTime.Now)

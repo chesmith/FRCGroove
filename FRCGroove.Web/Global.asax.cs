@@ -19,10 +19,16 @@ namespace FRCGroove.Web
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-            FRCEventsAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
-            TBAAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
-            TBAAPI.InitializeTeamListingCache();
-            TBAAPI.InitializeEPACache();
+            FRCEventsAPIv2.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
+
+            Groove.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
+            if(Groove.DoesTeamListingCacheExist())
+                Groove.LoadTeamListingCache();
+            else
+                Groove.CreateTeamListingCache();
+
+            StatboticsAPIv2.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
+            StatboticsAPIv2.InitializeEPACache();
         }
     }
 }

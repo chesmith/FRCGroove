@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2019
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33712.159
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FRCGroove.Win", "FRCGroove.Win\FRCGroove.Win.csproj", "{8D9EBE48-A40A-4F57-B98B-C6928D8B315E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FRCGroove.Lib", "FRCGroove.Lib\FRCGroove.Lib.csproj", "{BD72F2F6-897C-43C6-933F-A23352EBD1F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FRCGroove.Web", "FRCGroove.Web\FRCGroove.Web.csproj", "{F618828E-C13D-46C3-A7E8-EBE030CC4901}"
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8D9EBE48-A40A-4F57-B98B-C6928D8B315E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D9EBE48-A40A-4F57-B98B-C6928D8B315E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D9EBE48-A40A-4F57-B98B-C6928D8B315E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D9EBE48-A40A-4F57-B98B-C6928D8B315E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BD72F2F6-897C-43C6-933F-A23352EBD1F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BD72F2F6-897C-43C6-933F-A23352EBD1F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD72F2F6-897C-43C6-933F-A23352EBD1F9}.Release|Any CPU.ActiveCfg = Release|Any CPU

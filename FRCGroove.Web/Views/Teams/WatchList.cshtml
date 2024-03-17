@@ -38,9 +38,9 @@
             string teamName = string.Empty;
             if (Int32.TryParse(team, out teamNumber))
             {
-                if (FRCGroove.Lib.TBAAPI.TeamListingCache.ContainsKey(teamNumber))
+                if (FRCGroove.Lib.Groove.TeamListingCache.ContainsKey(teamNumber))
                 {
-                    teamName = FRCGroove.Lib.TBAAPI.TeamListingCache[teamNumber].nickname;
+                    teamName = FRCGroove.Lib.Groove.TeamListingCache[teamNumber].name;
                 }
             }
 
@@ -53,7 +53,7 @@
 </div>
 <hr />
 <p>
-    <label for"search">Search (#, name, or div)</label>&nbsp;<input type="text" name="search" id="search" size="15" />
+    <label for"search">Search (# or name)</label>&nbsp;<input type="text" name="search" id="search" size="15" />
     <br /><span id="numTeams"></span>
 </p>
 
@@ -62,11 +62,10 @@
         <tr id="teamSort">
             <th>#</th>
             <th>Name</th>
-            @*<th>EPA</th>*@
+            <th>EPA</th>
         </tr>
     </thead>
-    <tbody id="teamsBody">
-    </tbody>
+    <tbody id="teamsBody"></tbody>
 </table>
 
 <script type="text/javascript">
@@ -107,7 +106,6 @@
                 action = 'remove';
             }
         });
-        if (typeof gtag != "undefined") gtag('event', 'watch', { 'event_category': 'Team', 'event_action': action, 'event_label': teamNumber });
         if (action == 'add') {
             if (teamList.length > 0) teamList += ",";
             teamList += teamNumber;
@@ -136,26 +134,34 @@
     function GetAllTeams(sort, search) {
         $('#teams').find("tr:gt(0)").remove();
         $.get("GetAllTeams", { sort: sort, search: search }, function (data) {
-            var row = '';
-            $.each(data.TBATeams, function (key, team) {
-                style = ''
-                if (data.Watchlist.includes(team.team_number)) {
-                    style = ' style="background-color: yellow; font-weight: 600"';
-                }
+            if (data.Teams != null) {
+                var row = '';
+                $.each(data.Teams, function (key, team) {
+                    style = ''
+                    if (data.Watchlist.includes(team.number)) {
+                        style = ' style="background-color: yellow; font-weight: 600"';
+                    }
 
-                row += '<tr>';
-                row += '<td id="tm' + team.team_number + '-a"' + style + '>' + team.team_number + '</td>';
-                row += '<td id="tm' + team.team_number + '-a"' + style + '>' + team.nickname + '</td>';
-                //row += '<td id="tm' + team.team_number + '-a"' + style + '>' + team.epa.epa_end + '</td>';
-                row += '</tr>';
-            });
+                    row += '<tr>';
+                    row += '<td id="tm' + team.number + '-a"' + style + '>' + team.number + '</td>';
+                    row += '<td id="tm' + team.number + '-a"' + style + '>' + team.name + '</td>';
+                    if (team.epa != null)
+                        row += '<td id="tm' + team.number + '-a"' + style + '>' + team.epa.epa_end + '</td>';
+                    else
+                        row += '<td id="tm' + team.number + '-a"' + style + '></td>';
+                    row += '</tr>';
+                });
 
-            $('#teamsBody').append(row);
+                $('#teamsBody').append(row);
 
-            if (data.TBATeams.length == 1)
-                $("#numTeams").text(data.TBATeams.length + ' team');
-            else
-                $("#numTeams").text(data.TBATeams.length + ' teams');
+                if (data.Teams.length == 1)
+                    $("#numTeams").text(data.Teams.length + ' team');
+                else
+                    $("#numTeams").text(data.Teams.length + ' teams');
+            } else {
+                $("#numTeams").text('Enter a search key to list teams');
+            }
+
         });
     }
 

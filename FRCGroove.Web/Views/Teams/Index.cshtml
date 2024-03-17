@@ -27,7 +27,6 @@
 
 <script type="text/javascript">
     var teamList = '@(Model.Watchlist != null ? string.Join(",", Model.Watchlist) : "")';
-    if (typeof gtag != "undefined") gtag('event', 'list', { 'event_category': 'Team', 'event_action': 'list', 'event_label': teamList });
 
     divisionColorMap = { };
     divisionColorMap["ARCHIMEDES"] = "#E58C88";
@@ -96,7 +95,6 @@
                 action = 'remove';
             }
         });
-        if (typeof gtag != "undefined") gtag('event', 'watch', { 'event_category': 'Team', 'event_action': action, 'event_label': teamNumber });
         if (action == 'add') {
             if (teamList.length > 0) teamList += ",";
             teamList += teamNumber;

@@ -1,21 +1,6 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    @if (System.Configuration.ConfigurationManager.AppSettings["gakey"] != null && System.Configuration.ConfigurationManager.AppSettings["gakey"].Length > 0)
-    {
-        //https://developers.google.com/analytics/devguides/collection/gtagjs/
-        //https://developers.google.com/analytics/devguides/collection/gtagjs/migration
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=@System.Configuration.ConfigurationManager.AppSettings["gakey"]"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', '@System.Configuration.ConfigurationManager.AppSettings["gakey"]');
-        </script>
-    }
-
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>

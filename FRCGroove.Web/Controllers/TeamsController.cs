@@ -1,5 +1,6 @@
 ﻿using FRCGroove.Lib;
-using FRCGroove.Lib.Models;
+using FRCGroove.Lib.Models.Groove;
+using FRCGroove.Lib.Models.Statboticsv2;
 using FRCGroove.Web.Models;
 using System;
 using System.Collections.Generic;
@@ -34,22 +35,22 @@ namespace FRCGroove.Web.Controllers
         {
             TeamListing teamListing = new TeamListing();
 
-            List<RegisteredTeam> champsTeams = FRCEventsAPI.GetChampsTeams();
+            List<GrooveTeam> champsTeams = Groove.GetChampsTeams();
 
-            Dictionary<int, string> pitLocations = FRCEventsAPI.GetChampsPitLocations();
+            Dictionary<int, string> pitLocations = Groove.GetChampsPitLocations();
             if (pitLocations != null)
             {
-                foreach (RegisteredTeam team in champsTeams)
+                foreach (GrooveTeam team in champsTeams)
                 {
-                    if (pitLocations.ContainsKey(team.teamNumber))
-                        team.pitLocation = pitLocations[team.teamNumber];
+                    if (pitLocations.ContainsKey(team.number))
+                        team.pitLocation = pitLocations[team.number];
                 }
             }
 
-            foreach(RegisteredTeam team in champsTeams)
+            foreach(GrooveTeam team in champsTeams)
             {
-                if (TBAAPI.EPACache.ContainsKey(team.teamNumber))
-                    team.epa = TBAAPI.EPACache[team.teamNumber];
+                if (StatboticsAPIv2.EPACache.ContainsKey(team.number))
+                    team.epa = StatboticsAPIv2.EPACache[team.number];
                 else
                     team.epa = new EPA() { epa_end = -1 };
             }
@@ -59,13 +60,13 @@ namespace FRCGroove.Web.Controllers
             if (search != null && search.Length > 0)
             {
                 search = search.ToLower();
-                champsTeams = champsTeams.Where(t => t.teamNumber.ToString().StartsWith(search) || t.nameShort.ToLower().Contains(search) || t.champsDivision.ToLower().Contains(search)).ToList();
+                champsTeams = champsTeams.Where(t => t.number.ToString().StartsWith(search) || t.name.ToLower().Contains(search) || t.champsDivision.ToLower().Contains(search)).ToList();
             }
 
             if (sort == "#" || sort.ToLower() == "number")
-                teamListing.Teams = champsTeams.OrderBy(t => t.teamNumber).ToList();
+                teamListing.Teams = champsTeams.OrderBy(t => t.number).ToList();
             else if (sort.ToLower() == "name")
-                teamListing.Teams = champsTeams.OrderBy(t => t.nameShort).ToList();
+                teamListing.Teams = champsTeams.OrderBy(t => t.name).ToList();
             else if (sort.ToLower() == "epa")
                 teamListing.Teams = champsTeams.OrderByDescending(t => t.epa.epa_end).ToList();
             else if (sort.ToLower() == "division")
@@ -82,34 +83,35 @@ namespace FRCGroove.Web.Controllers
         {
             TeamListing teamListing = new TeamListing();
 
-            List<TBATeam> allTeams = TBAAPI.TeamListingCache.Select(t => t.Value).ToList();
-
-            // TODO: For some wild reason, including EPA info throws server 500 error (even
-            //       though the same does not on the champs listing... grr)
-            //foreach (TBATeam team in allTeams)
-            //{
-            //    if (TBAAPI.EPACache.ContainsKey(team.team_number))
-            //        team.epa = TBAAPI.EPACache[team.team_number];
-            //    else
-            //        team.epa = new EPA() { epa_end = -1 };
-            //}
-
-            if (sort == null || sort.Length == 0) sort = "#";
-
-            if (search != null && search.Length > 0)
+            if (search.Length > 0)
             {
-                search = search.ToLower();
-                allTeams = allTeams.Where(t => t.team_number.ToString().StartsWith(search) || t.nickname.ToLower().Contains(search)).ToList();
+                List<GrooveTeam> allTeams = Groove.TeamListingCache.Select(t => t.Value).ToList();
+
+                foreach (GrooveTeam team in allTeams)
+                {
+                    if (StatboticsAPIv2.EPACache.ContainsKey(team.number))
+                        team.epa = StatboticsAPIv2.EPACache[team.number];
+                    else
+                        team.epa = new EPA() { epa_end = -1 };
+                }
+
+                if (sort == null || sort.Length == 0) sort = "#";
+
+                if (search != null && search.Length > 0)
+                {
+                    search = search.ToLower();
+                    allTeams = allTeams.Where(t => t.number.ToString().StartsWith(search) || t.name.ToLower().Contains(search)).ToList();
+                }
+
+                teamListing.Teams = allTeams;
+
+                if (sort == "#" || sort.ToLower() == "number")
+                    teamListing.Teams = allTeams.OrderBy(t => t.number).ToList();
+                else if (sort.ToLower() == "name")
+                    teamListing.Teams = allTeams.OrderBy(t => t.name).ToList();
+                else if (sort.ToLower() == "epa")
+                    teamListing.Teams = allTeams.OrderByDescending(t => t.epa.epa_end).ToList();
             }
-
-            teamListing.TBATeams = allTeams;
-
-            if (sort == "#" || sort.ToLower() == "number")
-                teamListing.TBATeams = allTeams.OrderBy(t => t.team_number).ToList();
-            else if (sort.ToLower() == "name")
-                teamListing.TBATeams = allTeams.OrderBy(t => t.nickname).ToList();
-            else if (sort.ToLower() == "epa")
-                teamListing.TBATeams = allTeams.OrderByDescending(t => t.epa.epa_end).ToList();
 
             teamListing.Watchlist = BuildTeamsOfInterest(string.Empty).Select(t => Int32.Parse(t)).ToList();
 

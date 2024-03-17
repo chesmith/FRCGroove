@@ -1,42 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
 
-using FRCGroove.Lib.Models;
+using FRCGroove.Lib.Models.FRCv2;
+using FRCGroove.Lib.Models.Groove;
 
 namespace FRCGroove.Web.Models
 {
-    public enum FRCEventState
+    public enum EventState
     {
         Invalid,
         Past,
         Qualifications,
-        Quarterfinals,
-        Semifinals,
+        Playoffs,
         Finals,
         Future
     }
 
     public class Dashboard
     {
-        //public string districtCode { get; set; }
-        //public Event FrcEvent { get; set; }
-        public TBAEvent TBAEvent { get; set; }
-        public List<TBATeam> TeamsOfInterest { get; set; }
+        public GrooveEvent Event { get; set; }
+        public List<GrooveTeam> TeamsOfInterest { get; set; }
+        public List<GrooveMatch> Matches { get; set; }
         public double ScheduleOffset { get; set; }
-        //public List<Match> Matches { get; set; }
-        public List<TBAMatchData> TBAMatches { get; set; }
 
-        public List<Alliance> Alliances { get; set; }
-        public List<TBAPlayoffAlliance> TBAPlayoffAlliances { get; set; }
+        //public List<TBAPlayoffAlliance> TBAPlayoffAlliances { get; set; }   // TODO
         public PlayoffBracket Bracket { get; set; }
 
-        public Dictionary<int, TBATeam> RegisteredTeams { get; set; }
-        public Dictionary<int, EPA> EPACache { get; set; }
-        public Dictionary<int, TBARanking> EventRankings { get; set; }
+        public Dictionary<int, GrooveEventRanking> EventRankings { get; set; }
 
-        private FRCEventState _eventState = FRCEventState.Invalid;
+        private EventState _eventState = EventState.Invalid;
 
         //public FRCEventState FrcEventState
         //{
@@ -84,7 +75,7 @@ namespace FRCGroove.Web.Models
         //    }
         //}
 
-        public FRCEventState EventState { get; set; }
+        public EventState EventState { get; set; }
         //{
         //    get
         //    {
@@ -134,7 +125,7 @@ namespace FRCGroove.Web.Models
 
         public Dashboard()
         {
-            TeamsOfInterest = new List<TBATeam>();
+            TeamsOfInterest = new List<GrooveTeam>();
         }
     }
 }

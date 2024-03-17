@@ -1,13 +1,11 @@
 ﻿using FRCGroove.Lib;
-using FRCGroove.Lib.Models;
+using FRCGroove.Lib.Models.Groove;
 
 using FRCGroove.Web.Models;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -15,62 +13,56 @@ namespace FRCGroove.Web.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index(string districtCode = "")
+        public ActionResult Index(string districtKey = "")
         {
-            TBAEventListing eventListing = new TBAEventListing();
+            EventListing eventListing = new EventListing();
 
-            eventListing.Districts = TBAAPI.GetDistrictListing();
-            eventListing.Districts.Insert(0, new TBADistrict() { abbreviation = "All", display_name = "All Districts", key = "All", year = 2023 });
-            eventListing.Districts.Insert(0, new TBADistrict() { abbreviation = "World", display_name = "World Championship", key = "World", year = 2023 });
+            eventListing.Districts = Groove.GetDistricts();
+            eventListing.Districts.Insert(0, new GrooveDistrict() { key = "All", name = "All Districts", year = DateTime.Now.Year });
+            eventListing.Districts.Add(new GrooveDistrict() { key = "World", name = "World Championship", year = DateTime.Now.Year });
 
-            if (districtCode.Length == 0 && this.ControllerContext.HttpContext.Request.Cookies.AllKeys.Contains("districtCode"))
+            if (districtKey.Length == 0 && this.ControllerContext.HttpContext.Request.Cookies.AllKeys.Contains("districtKey"))
             {
-                string districtCodeFromCookie = this.ControllerContext.HttpContext.Request.Cookies["districtCode"].Value;
-                if (districtCodeFromCookie.Length > 0)
+                string districtKeyFromCookie = this.ControllerContext.HttpContext.Request.Cookies["districtKey"].Value;
+                if (districtKeyFromCookie.Length > 0)
                 {
-                    districtCode = districtCodeFromCookie;
+                    districtKey = districtKeyFromCookie;
                 }
             }
 
-            eventListing.districtCode = districtCode;
+            eventListing.districtKey = districtKey;
 
-            List<TBAEvent> events;
-            if (districtCode.Length > 0 && districtCode != "World" && districtCode != "All")
-            {
-                events = TBAAPI.GetDistrictEventListing(districtCode);
-            }
-            else
-            {
-                events = TBAAPI.GetEventListing(DateTime.Now.Year);
-            }
-
+            List<GrooveEvent> events = GetEventListing(eventListing.districtKey);
             if (events != null)
             {
-                if (districtCode == "World")
-                {
-                    events = events.Where(e => e.event_type == 3).ToList();
-                }
-
-                //TODO: this assumes dates and times are in my timezone - adjust everything to UTC or something 
+                //TODO: this assumes dates and times are in my timezone (US Central) - is it possible to account for the user's local timezone?
                 eventListing.PastEvents = events.Where(e => e.dateEnd < DateTime.Now.Date).OrderBy(e => e.dateStart).ThenBy(e => e.name).ToList();
                 eventListing.CurrentEvents = events.Where(e => e.dateStart <= DateTime.Now.Date && e.dateEnd >= DateTime.Now.Date).OrderBy(e => e.dateStart).ThenBy(e => e.name).ToList();
                 eventListing.FutureEvents = events.Where(e => e.dateStart > DateTime.Now.Date).OrderBy(e => e.dateStart).ThenBy(e => e.name).ToList();
             }
 
-            HttpCookie cookie = new HttpCookie("districtCode");
-            cookie.Value = string.Join(",", districtCode);
+            HttpCookie cookie = new HttpCookie("districtKey");
+            cookie.Value = string.Join(",", districtKey);
             cookie.Expires = DateTime.Now.AddYears(1);
             this.ControllerContext.HttpContext.Response.Cookies.Add(cookie);
 
             return View(eventListing);
         }
 
-        private void AdjustChampsEventCodes(List<Event> events)
+        private static List<GrooveEvent> GetEventListing(string districtKey)
         {
-            var champs = events.Where(e => FRCEventsAPI.ChampsDivisions.ContainsKey(e.code));
-            foreach (Event e in champs)
+            if (districtKey.Length > 0 && districtKey != "World" && districtKey != "All")
             {
-                e.code = FRCEventsAPI.ChampsDivisions[e.code];
+                return Groove.GetDistrictEvents(districtKey);
+            }
+            else
+            {
+                List<GrooveEvent> events = Groove.GetEvents(DateTime.Now.Year);
+                if (districtKey == "World")
+                {
+                    return events.Where(e => e.type == "Championship Division" || e.type == "Championship Finals").ToList();
+                }
+                return events;
             }
         }
 
@@ -84,14 +76,18 @@ namespace FRCGroove.Web.Controllers
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
-
             return View();
         }
 
         public ActionResult ResetEPACache()
         {
-            TBAAPI.ResetEPACache();
+            StatboticsAPIv2.ResetEPACache();
+            return View();
+        }
 
+        public ActionResult ResetTeamListingCache()
+        {
+            Groove.CreateTeamListingCache();
             return View();
         }
     }
