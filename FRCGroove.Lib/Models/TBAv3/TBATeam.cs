@@ -1,4 +1,4 @@
-﻿using FRCGroove.Lib.Models.Statboticsv2;
+﻿using FRCGroove.Lib.Models.Statbotics;
 
 namespace FRCGroove.Lib.Models.TBAv3
 {
@@ -27,7 +27,7 @@ namespace FRCGroove.Lib.Models.TBAv3
         //public int districtRank { get; set; } = -1;
 
         public TBAStats Stats { get; set; }
-        public EPA epa { get; set; }
+        public Statbotics_v3 epa { get; set; }
 
         public string champsDivision { get; set; }
         public string pitLocation { get; set; }

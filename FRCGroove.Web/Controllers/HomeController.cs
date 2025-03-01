@@ -81,7 +81,7 @@ namespace FRCGroove.Web.Controllers
 
         public ActionResult ResetEPACache()
         {
-            StatboticsAPIv2.ResetEPACache();
+            StatboticsAPI.ResetEPACache();
             return View();
         }
 

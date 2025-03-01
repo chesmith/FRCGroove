@@ -5,7 +5,7 @@ using System.Linq;
 using RestSharp;
 
 using FRCGroove.Lib.Models.TBAv3;
-using FRCGroove.Lib.Models.Statboticsv2;
+using FRCGroove.Lib.Models.Statbotics;
 
 using System.Configuration;
 using Newtonsoft.Json.Linq;
@@ -172,11 +172,11 @@ namespace FRCGroove.Lib
                     AdjustForTimeZone(eventCode, "Qualification", schedule);
 
                     // enrich with prediction data
-                    Dictionary<int, EPA> epas = StatboticsAPIv2.EPACache;
+                    Dictionary<int, Statbotics_v3> epas = StatboticsAPI.EPACache;
                     foreach (TBAMatchData match in schedule)
                     {
-                        match.alliances.red.predictedPoints = Convert.ToInt32(epas.Where(t => match.alliances.red.team_keys.Contains("frc" + t.Key.ToString())).Sum(e => e.Value.epa_end));
-                        match.alliances.blue.predictedPoints = Convert.ToInt32(epas.Where(t => match.alliances.blue.team_keys.Contains("frc" + t.Key.ToString())).Sum(e => e.Value.epa_end));
+                        match.alliances.red.predictedPoints = Convert.ToInt32(epas.Where(t => match.alliances.red.team_keys.Contains("frc" + t.Key.ToString())).Sum(e => e.Value.epa.total_points.mean));
+                        match.alliances.blue.predictedPoints = Convert.ToInt32(epas.Where(t => match.alliances.blue.team_keys.Contains("frc" + t.Key.ToString())).Sum(e => e.Value.epa.total_points.mean));
                     }
                 }
 

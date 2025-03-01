@@ -1,6 +1,6 @@
 ﻿@using FRCGroove.Lib.Models
 @using FRCGroove.Lib
-@using FRCGroove.Lib.Models.Statboticsv2
+@using FRCGroove.Lib.Models.Statbotics
 @using FRCGroove.Lib.Models.Groove
 @using FRCGroove.Web.Models
 @using System.Text.RegularExpressions;
@@ -484,7 +484,7 @@
 {
     if (teamNumber > 0)
     {
-        double epa = StatboticsAPIv2.EPACache.Where(t => t.Key == teamNumber).Select(e => e.Value.epa_end.Value).FirstOrDefault();
+        double epa = StatboticsAPI.EPACache.Where(t => t.Key == teamNumber).Select(t => t.Value.epa.total_points.mean).FirstOrDefault();
         string epaString = string.Empty;
         if (epa > 0) { epaString = $" [{epa}]"; }
         <div id="tm@(teamNumber)-@(match.competitionLevel)-@(match.matchNumber)" @Html.Raw(classes[teamNumber])>

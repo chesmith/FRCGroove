@@ -27,8 +27,8 @@ namespace FRCGroove.Web
             else
                 Groove.CreateTeamListingCache();
 
-            StatboticsAPIv2.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
-            StatboticsAPIv2.InitializeEPACache();
+            StatboticsAPI.CacheFolder = HostingEnvironment.MapPath("~/App_Data/cache/");
+            StatboticsAPI.InitializeEPACache();
         }
     }
 }

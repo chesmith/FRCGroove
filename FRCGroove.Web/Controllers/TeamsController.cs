@@ -1,6 +1,6 @@
 ﻿using FRCGroove.Lib;
 using FRCGroove.Lib.Models.Groove;
-using FRCGroove.Lib.Models.Statboticsv2;
+using FRCGroove.Lib.Models.Statbotics;
 using FRCGroove.Web.Models;
 using System;
 using System.Collections.Generic;
@@ -51,10 +51,19 @@ namespace FRCGroove.Web.Controllers
             // TODO: place this deeper so it gets cached with the main champs teams cache
             foreach (GrooveTeam team in champsTeams)
             {
-                if (StatboticsAPIv2.EPACache.ContainsKey(team.number))
-                    team.epa = StatboticsAPIv2.EPACache[team.number];
+                if (StatboticsAPI.EPACache.ContainsKey(team.number))
+                    team.epa = StatboticsAPI.EPACache[team.number];
                 else
-                    team.epa = new EPA() { epa_end = -1 };
+                    team.epa = new Statbotics_v3()
+                    {
+                        epa = new Epa()
+                        {
+                            total_points = new TotalPoints()
+                            {
+                                mean = -1
+                            }
+                        }
+                    };
             }
 
             if (sort == null || sort.Length == 0) sort = "#";
@@ -70,7 +79,7 @@ namespace FRCGroove.Web.Controllers
             else if (sort.ToLower() == "name")
                 teamListing.Teams = champsTeams.OrderBy(t => t.name).ToList();
             else if (sort.ToLower() == "epa")
-                teamListing.Teams = champsTeams.OrderByDescending(t => t.epa.epa_end).ToList();
+                teamListing.Teams = champsTeams.OrderByDescending(t => t.epa.epa.total_points.mean).ToList();
             else if (sort.ToLower() == "division")
                 teamListing.Teams = champsTeams.OrderBy(t => t.champsDivision).ToList();
             else if (sort.ToLower() == "pit")
@@ -91,10 +100,19 @@ namespace FRCGroove.Web.Controllers
 
                 foreach (GrooveTeam team in allTeams)
                 {
-                    if (StatboticsAPIv2.EPACache.ContainsKey(team.number))
-                        team.epa = StatboticsAPIv2.EPACache[team.number];
+                    if (StatboticsAPI.EPACache.ContainsKey(team.number))
+                        team.epa = StatboticsAPI.EPACache[team.number];
                     else
-                        team.epa = new EPA() { epa_end = -1 };
+                        team.epa = new Statbotics_v3()
+                        {
+                            epa = new Epa()
+                            {
+                                total_points = new TotalPoints()
+                                {
+                                    mean = -1
+                                }
+                            }
+                        };
                 }
 
                 if (sort == null || sort.Length == 0) sort = "#";
@@ -112,7 +130,7 @@ namespace FRCGroove.Web.Controllers
                 else if (sort.ToLower() == "name")
                     teamListing.Teams = allTeams.OrderBy(t => t.name).ToList();
                 else if (sort.ToLower() == "epa")
-                    teamListing.Teams = allTeams.OrderByDescending(t => t.epa.epa_end).ToList();
+                    teamListing.Teams = allTeams.OrderByDescending(t => t.epa.epa.total_points.mean).ToList();
             }
 
             teamListing.Watchlist = BuildTeamsOfInterest(string.Empty).Select(t => Int32.Parse(t)).ToList();

@@ -1,0 +1,65 @@
+﻿using RestSharp;
+
+using FRCGroove.Lib.Models.Statbotics;
+
+using Newtonsoft.Json;
+using System.IO;
+using System.Collections.Generic;
+using System;
+using System.Linq;
+
+namespace FRCGroove.Lib
+{
+    public static class StatboticsAPI
+    {
+        private static readonly RestClient _client = new RestClient("https://api.statbotics.io/v3");
+        public static string CacheFolder { get; set; }
+        public static Dictionary<int, Statbotics_v3> EPACache { get; set; }
+
+        public static void InitializeEPACache()
+        {
+            if (CacheFolder.Length > 0)
+            {
+                string cachePath = $@"{CacheFolder}\EPACache.{DateTime.Now.Year}.json";
+                if (!File.Exists(cachePath))
+                {
+                    EPACache = new Dictionary<int, Statbotics_v3>();
+                    List<Statbotics_v3> epas = new List<Statbotics_v3>();
+                    int offset = 0;
+                    while (true)
+                    {
+                        System.Diagnostics.Debug.WriteLine(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - Getting offset " + offset);
+                        var request = new RestRequest($"/team_years?year={DateTime.Now.Year}&limit=500&offset={offset}");
+                        var resp = _client.Execute(request);
+                        List<Statbotics_v3> results = JsonConvert.DeserializeObject<List<Statbotics_v3>>(resp.Content);
+                        if (results.Count == 0) break;
+                        epas.AddRange(results);
+                        offset += 500;
+                        System.Diagnostics.Debug.WriteLine(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - Got " + results.Count + " results");
+                    }
+                    EPACache = epas.ToDictionary(v => v.team, v => v);
+                    File.WriteAllText(cachePath, JsonConvert.SerializeObject(EPACache));
+                }
+
+                try
+                {
+                    string cachedData = File.ReadAllText(cachePath);
+                    EPACache = JsonConvert.DeserializeObject<Dictionary<int, Statbotics_v3>>(cachedData);
+                }
+                catch (Exception) { /* do nothing */ }
+            }
+        }
+
+        public static void ResetEPACache()
+        {
+            //TODO: perhaps automate resetting EPA cache once per day during off hours (how?)
+            string cachePath = $@"{CacheFolder}\EPACache.{DateTime.Now.Year}.json";
+            if (File.Exists(cachePath))
+            {
+                File.Move(cachePath, $@"{CacheFolder}\EPACache.{DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss")}.json");
+            }
+
+            InitializeEPACache();
+        }
+    }
+}
