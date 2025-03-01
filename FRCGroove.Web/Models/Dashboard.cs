@@ -27,7 +27,7 @@ namespace FRCGroove.Web.Models
 
         public Dictionary<int, GrooveEventRanking> EventRankings { get; set; }
 
-        private EventState _eventState = EventState.Invalid;
+        //private EventState _eventState = EventState.Invalid;
 
         //public FRCEventState FrcEventState
         //{
