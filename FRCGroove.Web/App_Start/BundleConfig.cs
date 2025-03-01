@@ -19,11 +19,15 @@ namespace FRCGroove.Web
             bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
                         "~/Scripts/modernizr-*"));
 
-            bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js"));
+            // Disable minification for bootstrap bundle
+            var bootstrapBundle = new ScriptBundle("~/bundles/bootstrap").Include(
+                      "~/Scripts/bootstrap.js");
+            bootstrapBundle.Transforms.Clear();
+            bundles.Add(bootstrapBundle);
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
+                      "~/Content/bootstrap-theme.css",
                       "~/Content/site.css"));
         }
     }
