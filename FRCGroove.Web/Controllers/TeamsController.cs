@@ -37,6 +37,7 @@ namespace FRCGroove.Web.Controllers
 
             List<GrooveTeam> champsTeams = Groove.GetChampsTeams();
 
+            // TODO: place this deeper so it gets cached with the main champs teams cache
             Dictionary<int, string> pitLocations = Groove.GetChampsPitLocations();
             if (pitLocations != null)
             {
@@ -47,7 +48,8 @@ namespace FRCGroove.Web.Controllers
                 }
             }
 
-            foreach(GrooveTeam team in champsTeams)
+            // TODO: place this deeper so it gets cached with the main champs teams cache
+            foreach (GrooveTeam team in champsTeams)
             {
                 if (StatboticsAPIv2.EPACache.ContainsKey(team.number))
                     team.epa = StatboticsAPIv2.EPACache[team.number];

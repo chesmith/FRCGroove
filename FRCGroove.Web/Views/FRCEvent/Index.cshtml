@@ -42,7 +42,7 @@
         @if (Model.Event != null)
         {
             <div class="card-header fixed-top" style="margin-bottom: 0; padding: 0.5rem;" onclick="$('html, body').animate({ scrollTop: 0 }, 250);">
-                <h6 style="margin-bottom:0">@Model.Event.name</h6>
+                <h6 style="margin-bottom:0">@Model.Event.name.Replace("FIRST In Texas","FIT")</h6>
                 <div style="width:100%; font-size:0.75rem; position: relative">
                     <span style="float:left">@Model.Event.dateStart.ToString("ddd M/d") to @Model.Event.dateEnd.ToString("ddd M/d")</span>
                     <span id="filterToggle" style="float:right; position: absolute; top: -10px; right: 15px"><a class="fas fa-filter fa-lg" style="color:white" onclick="toggleFilter()" )"></a></span>
@@ -506,9 +506,12 @@
             ToggleWatch(teamNumber)
         });
 
+        var timeout;
         $("#filterValue").keyup(function () {
-            processFilter();
-            return false;
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                processFilter();
+            }, 300);
         });
 
         $("#filterSubmit").on('click', function () {
@@ -751,7 +754,7 @@
         else if (eventState != "Future")
         {
             let offset = scheduleOffset;
-            if (schedTime > new Date()) { offset = 0; }
+            if (schedTime.toDateString() != new Date().toDateString()) { offset = 0; }
             let estTime = new Date((match.timeScheduledUnix + offset * 60) * 1000);
             matchTime = `<span>${weekDays[dayOfWeek]} ${schedTime.format("M/d")} ${schedTime.format("h:mm")} <i>(est. ${estTime.format("h:mm")})</i></span>`;
         }

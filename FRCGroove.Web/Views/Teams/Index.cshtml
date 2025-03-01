@@ -42,8 +42,8 @@
     var lastSearch = '';
 </script>
 
-<i>2023 Houston Champs.  Tap columns to sort.  Tap teams to update your watchlist.</i>
-<a href="~/Content/2023FRCPitMap.htm" target="_blank">&lt;&lt;Pit Map&gt;&gt;</a>
+<i>2024 Houston Champs.  Tap columns to sort.  Tap teams to update your watchlist.</i>
+<a href="~/Content/2024CMPTXPitMap.htm" target="_blank">&lt;&lt;Pit Map&gt;&gt;</a>
 
 <p><label for"search">Search (#, name, or div)</label>&nbsp;<input type="text" name="search" id="search" size="15" />
 <br /><span id="numTeams"></span></p>
@@ -69,9 +69,13 @@
         WatchTeam(teamNumber);
     });
 
-    $("#search").on("input", function () {
-        lastSearch = $(this).val();
-        GetChampsTeams(lastSort, $(this).val());
+    var timeout;
+    $("#search").keyup(function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            lastSearch = $("#search").val();
+            GetChampsTeams(lastSort, $("#search").val());
+        }, 300);
     });
 
     $("th").click(function () {
@@ -130,16 +134,16 @@
             var row = '';
             $.each(data.Teams, function (key, team) {
                 style = ''
-                if (data.Watchlist.includes(team.teamNumber)) {
+                if (data.Watchlist.includes(team.number)) {
                     style = ' style="background-color: yellow; font-weight: 600"';
                 }
                 var division = team.champsDivision.substring(0, 1) + team.champsDivision.substring(1).toLowerCase();
                 row += '<tr>';
-                row += '<td id="tm' + team.teamNumber + '-a"' + style + '>' + team.teamNumber + '</td>';
-                row += '<td id="tm' + team.teamNumber + '-a"' + style + '>' + team.nameShort + '</td>';
-                row += '<td id="tm' + team.teamNumber + '-a"' + style + '>' + team.epa.epa_end + '</td>';
-                row += '<td id="tm' + team.teamNumber + '-d" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + division + '</td>';
-                row += '<td id="tm' + team.teamNumber + '-p" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + team.pitLocation + '</td>';
+                row += '<td id="tm' + team.number + '-a"' + style + '>' + team.number + '</td>';
+                row += '<td id="tm' + team.number + '-a"' + style + '>' + team.name + '</td>';
+                row += '<td id="tm' + team.number + '-a"' + style + '>' + team.epa.epa_end + '</td>';
+                row += '<td id="tm' + team.number + '-d" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + division + '</td>';
+                row += '<td id="tm' + team.number + '-p" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + team.pitLocation + '</td>';
                 row += '</tr>';
             });
 

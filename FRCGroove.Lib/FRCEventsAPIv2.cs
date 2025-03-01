@@ -11,6 +11,7 @@ using FRCGroove.Lib.Models;
 using FRCGroove.Lib.Models.FRCv2;
 using System.Configuration;
 using System.IO;
+using System.Text;
 
 namespace FRCGroove.Lib
 {
@@ -26,15 +27,8 @@ namespace FRCGroove.Lib
         public static Dictionary<int, RegisteredTeam> TeamListingCache { get; set; }
         private static List<RegisteredTeam> _champsTeamsCache;
 
-        public static Dictionary<string, string> ChampsDivisions = new Dictionary<string, string>() {
-                { "ARPKY", "ARCHIMEDES" },
-                { "CPRA", "CURIE" },
-                { "DCMP", "DALY" },
-                { "GCMP", "GALILEO" },
-                { "HCMP", "HOPPER" },
-                { "JCMP", "JOHNSON" },
-                { "MPCIA", "MILSTEIN" },
-                { "NPFCMP", "NEWTON" }
+        private static List<string> ChampsDivisions = new List<string>() {
+                "ARCHIMEDES", "CURIE", "DALY", "GALILEO", "HOPPER", "JOHNSON", "MILSTEIN", "NEWTON"
             };
 
         public static List<RegisteredTeam> GetEventTeamListing(string eventCode)
@@ -75,20 +69,24 @@ namespace FRCGroove.Lib
             if (CacheFolder.Length > 0)
             {
                 string cachePath = $@"{CacheFolder}\ChampsTeams.{DateTime.Now.Year}.json";
+                string csvPath = $@"{CacheFolder}\ChampsTeams.{DateTime.Now.Year}.csv";
                 if (!File.Exists(cachePath))
                 {
                     Dictionary<int, string> teamDivisions = new Dictionary<int, string>();
-                    foreach (string eventCode in ChampsDivisions.Keys)
+                    foreach (string eventCode in ChampsDivisions)
                     {
                         string initcap = eventCode.Substring(0, 1) + eventCode.Substring(1).ToLower();
                         List<RegisteredTeam> eventTeams = FRCEventsAPIv2.GetEventTeamListing(eventCode);
                         if (eventTeams != null && eventTeams.Count > 0)
                         {
-                            eventTeams.Select(t => { t.champsDivision = ChampsDivisions[eventCode]; return t; }).ToList();
+                            eventTeams.Select(t => { t.champsDivision = eventCode; return t; }).ToList();
                             _champsTeamsCache.AddRange(eventTeams);
                         }
                     }
                     File.WriteAllText(cachePath, JsonConvert.SerializeObject(_champsTeamsCache));
+
+                    var s = _champsTeamsCache.Select(t => $"{t.teamNumber},\"{t.nameShort}\",{t.champsDivision},\"{t.city}, {t.stateProv}, {t.country}\"");
+                    File.WriteAllText(csvPath, String.Join("\n", s), Encoding.Unicode);
                 }
                 else
                 {

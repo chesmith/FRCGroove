@@ -1,0 +1,22 @@
+﻿@{
+    Layout = null;
+}
+@model Dictionary<string,string>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <pre>
+        @foreach (var pair in Model)
+        {
+            @pair.Key @Html.Raw(";") @pair.Value
+            @Html.Raw("\n")
+        }
+    </pre>
+</body>
+</html>

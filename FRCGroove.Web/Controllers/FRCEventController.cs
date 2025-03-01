@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Text.RegularExpressions;
 
 namespace FRCGroove.Web.Controllers
 {
@@ -15,8 +16,9 @@ namespace FRCGroove.Web.Controllers
     {
         private static Random rnd = new Random();
 
-        public ActionResult Index(string districtCode = "", string eventCode = "", string teamList = "")
+        public ActionResult Index(string eventCode = "", string teamList = "")
         {
+            //TODO: I thought there was no need for this anymore, but removing this and the teamList param broke retention of watched teams
             List<string> teams = BuildTeamsOfInterest(teamList);
 
             Dashboard dashboard = BuildEventDashboard(eventCode, teams);
@@ -32,7 +34,7 @@ namespace FRCGroove.Web.Controllers
         /// </summary>
         /// <param name="teamList">Comma-separated list of team numbers pulled from the querystring</param>
         /// <returns>List of team numbers as strings</returns>
-        private List<string> BuildTeamsOfInterest(string teamList)
+        private List<string> BuildTeamsOfInterest(string teamList = "")
         {
             string[] teamsFromQuerystring = teamList.Split(',');
             List<string> teams = new List<string>(teamsFromQuerystring);
@@ -242,6 +244,29 @@ namespace FRCGroove.Web.Controllers
             }
 
             return Json(new { EventState = dashboard.EventState.ToString(), Matches = dashboard.Matches, ScheduleOffset = dashboard.ScheduleOffset, EventRankings = dashboard.EventRankings.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value) }, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult Pears(string eventCode)
+        {
+            // 5414 Pearadox specific for now - returns a list of matches in which we're allianced with each team
+            List<GrooveMatch> matches = Groove.GetMatches(eventCode);
+            List<string> teams = matches
+                .SelectMany(m => m.alliances.Values.SelectMany(a => a.teamKeys))
+                .Distinct().OrderBy(v => v)
+                .ToList();
+
+            Dictionary<string, string> pears = new Dictionary<string, string>();
+            foreach (string team in teams)
+            {
+                List<GrooveMatch> matchingMatches = matches
+                    .Where(match => match.alliances.Any(alliance =>
+                    alliance.Value.teamKeys.Contains(team) && alliance.Value.teamKeys.Contains("frc5414")))
+                .ToList();
+
+                pears.Add(team.Substring(3), String.Join(",", matchingMatches.Where(m => m.competitionLevel == "Qualification").Select(m => m.matchNumber)));
+            }
+
+            return View(pears);
         }
 
         //private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamsOfInterest)

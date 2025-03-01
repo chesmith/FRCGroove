@@ -34,6 +34,9 @@ namespace FRCGroove.Lib.Models.Groove
         {
             number = team.teamNumber;
             name = team.nameShort;
+
+            champsDivision = team.champsDivision;
+            pitLocation = team.pitLocation;
         }
     }
 }

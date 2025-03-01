@@ -55,6 +55,12 @@ namespace FRCGroove.Web
                 defaults: new { controller = "FRCEvent", action = "Index", teamList = UrlParameter.Optional }
             );
 
+            //routes.MapRoute(
+            //    name: "Pears",
+            //    url: "FRCEvent/{eventCode}/pears",
+            //    defaults: new {controller = "FRCEvent", action = "Pears" }
+            //);
+
             routes.MapRoute(
                 name: "Teams",
                 url: "Teams",

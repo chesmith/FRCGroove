@@ -162,6 +162,7 @@
   <ItemGroup>
     <Content Include="Content\2022FRCPitMap.png" />
     <Content Include="Content\2023FRCPitMap.htm" />
+    <Content Include="Content\2024CMPTXPitMap.htm" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-reboot.css" />
@@ -226,6 +227,10 @@
     <Content Include="Content\bootstrap-reboot.css.map" />
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
+    <Content Include="App_Data\cache\ChampsTeams.2024.json" />
+    <Content Include="App_Data\cache\pits.2024.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Properties\PublishProfiles\FRCGroove - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\FRCGroove - ReadOnly - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\FRCGroove - Web Deploy1.pubxml" />
@@ -235,6 +240,7 @@
     <Content Include="Scripts\bootstrap.bundle.min.js.map" />
     <Content Include="Scripts\bootstrap.bundle.js.map" />
     <Content Include="Views\Home\ResetTeamCache.cshtml" />
+    <Content Include="Views\FRCEvent\Pears.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
