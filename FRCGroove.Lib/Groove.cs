@@ -119,19 +119,19 @@ namespace FRCGroove.Lib
 
         public static Dictionary<int, string> GetChampsPitLocations()
         {
-            RestResponse<List<PitLocation>> response = new RestResponse<List<PitLocation>>();
-
             string cachePath = $@"{CacheFolder}\pits.{DateTime.Now.Year}.json";
+            List<PitLocation> pitLocationsData = null;
+
             if (File.Exists(cachePath))
             {
                 string cachedData = File.ReadAllText(cachePath);
-                response = new RestResponse<List<PitLocation>>() { Data = JsonConvert.DeserializeObject<List<PitLocation>>(cachedData) };
+                pitLocationsData = JsonConvert.DeserializeObject<List<PitLocation>>(cachedData);
             }
 
             Dictionary<int, string> pitLocations = null;
-            if (response.Data != null)
+            if (pitLocationsData != null)
             {
-                pitLocations = response.Data.ToDictionary(t => t.teamNumber, t => t.pitLocation);
+                pitLocations = pitLocationsData.ToDictionary(t => t.teamNumber, t => t.pitLocation);
             }
 
             return pitLocations;

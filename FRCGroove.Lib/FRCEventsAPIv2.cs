@@ -17,10 +17,10 @@ namespace FRCGroove.Lib
 {
     public class FRCEventsAPIv2
     {
-        private static readonly RestClient _client = new RestClient("https://frc-api.firstinspires.org/v2.0/" + DateTime.Now.Year)
+        private static readonly RestClient _client = new RestClient(new RestClientOptions("https://frc-api.firstinspires.org/v2.0/" + DateTime.Now.Year)
         {
             Authenticator = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["clientid"], ConfigurationManager.AppSettings["clientsecret"])
-        };
+        });
 
         public static string CacheFolder { get; set; }
 

@@ -16,9 +16,9 @@ namespace FRCGroove.Lib.Models.TBAv3
     public class TBARanking
     {
         public int matches_played { get; set; }
-        public int qual_average { get; set; }
+        public int? qual_average { get; set; }
         public List<int> extra_stats { get; set; }
-        public List<int> sort_orders { get; set; }
+        public List<double> sort_orders { get; set; }
         public Record record { get; set; }
         public int rank { get; set; }
         public int dq { get; set; }

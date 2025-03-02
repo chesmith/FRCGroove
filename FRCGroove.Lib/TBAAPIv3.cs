@@ -132,7 +132,7 @@ namespace FRCGroove.Lib
         {
             if (_matchCacheAge.ContainsKey(eventCode) && _matchCacheAge[eventCode] > DateTime.Now && _matchCache.ContainsKey(eventCode))
             {
-                Debug.WriteLine($"{DateTime.Now:s} GetMatches - pull from cache due to Cache-Control not yet expired: {_matchCacheAge[eventCode]:s}");
+                Debug.WriteLine($"{DateTime.Now:s} GetMatches ({eventCode}) - pull from cache due to Cache-Control not yet expired: {_matchCacheAge[eventCode]:s}");
 
                 return _matchCache[eventCode];
             }
@@ -159,7 +159,7 @@ namespace FRCGroove.Lib
 
             if (resp.StatusCode != HttpStatusCode.NotModified || resp.Data != null)
             {
-                Debug.WriteLine($"{DateTime.Now:s} GetMatches - Pull full data and store in cache; max-age: {cacheExpire}");
+                Debug.WriteLine($"{DateTime.Now:s} GetMatches ({eventCode}) - Pull full data and store in cache; max-age: {cacheExpire}");
 
                 List<TBAMatchData> schedule = resp.Data;
 
@@ -187,7 +187,7 @@ namespace FRCGroove.Lib
             }
             else if (_matchCache.ContainsKey(eventCode))
             {
-                Debug.WriteLine($"{DateTime.Now:s} GetMatches - API had no update so retrieve data from cache and update Cache-Control expiration: {_matchCacheAge[eventCode]}");
+                Debug.WriteLine($"{DateTime.Now:s} GetMatches ({eventCode}) - API had no update so retrieve data from cache and update Cache-Control expiration: {_matchCacheAge[eventCode]}");
 
                 _matchCacheAge[eventCode] = DateTime.Now.AddSeconds(cacheExpire);
                 
@@ -195,7 +195,7 @@ namespace FRCGroove.Lib
             }
             else
             {
-                Debug.WriteLine($"{DateTime.Now:s} Error - no update or data from API and nothing in cache");
+                Debug.WriteLine($"{DateTime.Now:s} GetMatches ({eventCode}) - no update or data from API and nothing in cache");
                 return null;
             }
         }
@@ -282,7 +282,7 @@ namespace FRCGroove.Lib
         {
             if (_eventRankCacheAge.ContainsKey(eventCode) && _eventRankCacheAge[eventCode] > DateTime.Now && _eventRankCache.ContainsKey(eventCode))
             {
-                Debug.WriteLine($"{DateTime.Now:s} GetStats - pull from cache due to Cache-Control not yet expired: {_matchCacheAge[eventCode]:s}");
+                Debug.WriteLine($"{DateTime.Now:s} GetStats ({eventCode}) - pull from cache due to Cache-Control not yet expired: {_matchCacheAge[eventCode]:s}");
                 return _eventRankCache[eventCode];
             }
 
@@ -308,7 +308,7 @@ namespace FRCGroove.Lib
 
             if (resp.StatusCode != HttpStatusCode.NotModified || resp.Data != null)
             {
-                Debug.WriteLine($"{DateTime.Now:s} GetStats - Pull full data and store in cache; max-age: {cacheExpire}");
+                Debug.WriteLine($"{DateTime.Now:s} GetStats ({eventCode}) - Pull full data and store in cache; max-age: {cacheExpire}");
 
                 if (resp.Headers.Any(t => t.Name == "ETag"))
                     _eventRankCacheETags[eventCode] = resp.Headers.FirstOrDefault(t => t.Name == "ETag").Value.ToString();
@@ -320,7 +320,7 @@ namespace FRCGroove.Lib
             }
             else if (_eventRankCache.ContainsKey(eventCode))
             {
-                Debug.WriteLine($"{DateTime.Now:s} GetStats - API had no update so retrieve data from cache and update Cache-Control expiration: {_matchCacheAge[eventCode]}");
+                Debug.WriteLine($"{DateTime.Now:s} GetStats ({eventCode}) - API had no update so retrieve data from cache and update Cache-Control expiration: {_matchCacheAge[eventCode]}");
 
                 _eventRankCacheAge[eventCode] = DateTime.Now.AddSeconds(cacheExpire);
                 return _eventRankCache[eventCode];
@@ -385,7 +385,6 @@ namespace FRCGroove.Lib
                 while (teams.Count > 0)
                 {
                     page++;
-                    System.Diagnostics.Debug.WriteLine(page);
                     var subpageRequest = new RestRequest($"teams/{DateTime.Now.Year}/{page}/simple");
                     subpageRequest.AddHeader("X-TBA-Auth-Key", ConfigurationManager.AppSettings["TBAAuthKey"]);
                     var subpageResponse = _client.Execute<List<TBATeam>>(subpageRequest);

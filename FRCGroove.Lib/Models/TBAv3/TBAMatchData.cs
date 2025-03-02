@@ -79,13 +79,13 @@ namespace FRCGroove.Lib.Models.TBAv3
             { "TURING", "tur" }
         };
 
-        public int actual_time { get; set; }
+        public int? actual_time { get; set; }
         public DateTime actual_timeDT
         {
             get
             {
                 DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                dateTime = dateTime.AddSeconds(this.actual_time).ToLocalTime();
+                dateTime = dateTime.AddSeconds(this.actual_time.HasValue ? this.actual_time.Value : 0).ToLocalTime();
                 return dateTime;
             }
         }
@@ -94,14 +94,14 @@ namespace FRCGroove.Lib.Models.TBAv3
         public string event_key { get; set; }
         public string key { get; set; }
         public int match_number { get; set; }
-        public int post_result_time { get; set; }
-        public int predicted_time { get; set; }
+        public int? post_result_time { get; set; }
+        public int? predicted_time { get; set; }
         public DateTime predicted_timeDT
         {
             get
             {
                 DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                dateTime = dateTime.AddSeconds(this.predicted_time).ToLocalTime();
+                dateTime = dateTime.AddSeconds(this.predicted_time.HasValue ? this.predicted_time.Value : 0).ToLocalTime();
                 return dateTime;
             }
         }
