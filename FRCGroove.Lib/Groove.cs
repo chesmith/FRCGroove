@@ -108,7 +108,10 @@ namespace FRCGroove.Lib
         public static List<GrooveEventRanking> GetEventRankings(string eventKey)
         {
             TBAEventRankings rankings = TBAAPIv3.GetEventRankings(eventKey); //API CALL (TBA-compliant cache)
-            return rankings.rankings.Select(r => new GrooveEventRanking(r)).ToList();
+            if (rankings != null)
+                return rankings.rankings.Select(r => new GrooveEventRanking(r)).ToList();
+            else
+                return null;
         }
 
         public static List<GrooveTeam> GetChampsTeams()

@@ -7,6 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Diagnostics;
 
 namespace FRCGroove.Lib
 {
@@ -28,14 +29,16 @@ namespace FRCGroove.Lib
                     int offset = 0;
                     while (true)
                     {
-                        System.Diagnostics.Debug.WriteLine(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - Getting offset " + offset);
+                        Debug.WriteLine($"{DateTime.Now:s} Initializing Statbotics Cache - Getting offset {offset}");
+
                         var request = new RestRequest($"/team_years?year={DateTime.Now.Year}&limit=500&offset={offset}");
                         var resp = _client.Execute(request);
                         List<Statbotics_v3> results = JsonConvert.DeserializeObject<List<Statbotics_v3>>(resp.Content);
                         if (results.Count == 0) break;
                         epas.AddRange(results);
                         offset += 500;
-                        System.Diagnostics.Debug.WriteLine(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - Got " + results.Count + " results");
+
+                        Debug.WriteLine($"{DateTime.Now:s} Initializing Statbotics Cache - Got " + results.Count + " results");
                     }
                     EPACache = epas.ToDictionary(v => v.team, v => v);
                     File.WriteAllText(cachePath, JsonConvert.SerializeObject(EPACache));

@@ -108,7 +108,7 @@ namespace FRCGroove.Lib
             var resp = _client.Execute(request);
 
             TBAStatsCollection stats = null;
-            if (resp.StatusCode != HttpStatusCode.NotModified || (resp.Content != "null" && resp.Content.Length > 5))
+            if (resp.StatusCode != HttpStatusCode.NotModified && !resp.Content.StartsWith("null") && resp.Content.Length > 5)
             {
                 if (resp.Headers.Any(t => t.Name == "ETag"))
                     _matchCacheETags[eventCode] = resp.Headers.FirstOrDefault(t => t.Name == "ETag").Value.ToString();
@@ -280,7 +280,7 @@ namespace FRCGroove.Lib
 
         public static TBAEventRankings GetEventRankings(string eventCode)
         {
-            if (_eventRankCacheAge.ContainsKey(eventCode) && _eventRankCacheAge[eventCode] > DateTime.Now && _eventRankCache.ContainsKey(eventCode))
+            if (_eventRankCacheAge.ContainsKey(eventCode) && _eventRankCacheAge[eventCode] > DateTime.Now && _eventRankCache.ContainsKey(eventCode) && _eventRankCache[eventCode] != null)
             {
                 Debug.WriteLine($"{DateTime.Now:s} GetStats ({eventCode}) - pull from cache due to Cache-Control not yet expired: {_matchCacheAge[eventCode]:s}");
                 return _eventRankCache[eventCode];

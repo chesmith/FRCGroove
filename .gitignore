@@ -264,3 +264,4 @@ __pycache__/
 /FRCGroove.Web/Web.config
 /FRCGroove.Web/Web.Debug.config
 /FRCGroove.Web/Web.Release.config
+/FRCGroove.Web/App_Data/cache/
