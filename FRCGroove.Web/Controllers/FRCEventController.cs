@@ -246,7 +246,7 @@ namespace FRCGroove.Web.Controllers
             return Json(new { EventState = dashboard.EventState.ToString(), Matches = dashboard.Matches, ScheduleOffset = dashboard.ScheduleOffset, EventRankings = dashboard.EventRankings.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value) }, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult Pears(string eventCode)
+        public ActionResult Pears(string eventCode, string teamNumber = "5414")
         {
             // 5414 Pearadox specific for now - returns a list of matches in which we're allianced with each team
             List<GrooveMatch> matches = Groove.GetMatches(eventCode);
@@ -260,7 +260,7 @@ namespace FRCGroove.Web.Controllers
             {
                 List<GrooveMatch> matchingMatches = matches
                     .Where(match => match.alliances.Any(alliance =>
-                    alliance.Value.teamKeys.Contains(team) && alliance.Value.teamKeys.Contains("frc5414")))
+                    alliance.Value.teamKeys.Contains(team) && alliance.Value.teamKeys.Contains($"frc{teamNumber}")))
                 .ToList();
 
                 pears.Add(team.Substring(3), String.Join(",", matchingMatches.Where(m => m.competitionLevel == "Qualification").Select(m => m.matchNumber)));
