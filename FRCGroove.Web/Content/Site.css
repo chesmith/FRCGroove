@@ -1,4 +1,8 @@
-﻿body {
+﻿:root {
+    color-scheme: light dark;
+}
+
+body {
     padding-top: 7px;
     padding-bottom: 20px;
 }
@@ -43,11 +47,15 @@ table th {
 }
 
 .blue {
-    color: blue;
+    color: #5555ff;
 }
 
 .red {
-    color: red;
+    color: #ff5555;
+}
+
+.green {
+    color: #0aa60c;
 }
 
 .redHighlight {
@@ -245,17 +253,59 @@ div#backToTop {
     font-weight: bold;
 }
 
-.nav-link {
-    color: #333399;
-    line-height: 1.0;
-    text-align: center;
-    padding-bottom: 18px
+.navbar {
+    padding: 0px 0px 0px 0px
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+/* Light Mode Styles */
+[data-bs-theme="light"] .nav-link {
+    color: #fff;
+    line-height: 1.0;
+    text-align: center;
+    padding: 5px 0px 5px 0px;
+    background-color: #5b5bc4
+}
+
+[data-bs-theme="light"] .nav-pills .nav-link.active,
+[data-bs-theme="light"] .nav-pills .show > .nav-link {
     color: #fff;
     background-color: #333399;
     text-align: center;
+}
+
+[data-bs-theme="light"] .accordion-button {
+    background-color: #5b5bc4;
+    color: #fff;
+}
+
+[data-bs-theme="light"] .accordion-button:not(.collapsed) {
+    background-color: #333399;
+}
+
+/* Dark Mode Styles */
+[data-bs-theme="dark"] .nav-link {
+    color: #b3b3ff; /* Lighter blue for dark mode for better contrast */
+    line-height: 1.0;
+    text-align: center;
+    padding: 5px 0px 5px 0px;
+    background-color: #111144; /* Dark blue background for inactive items */
+}
+
+[data-bs-theme="dark"] .nav-pills .nav-link.active,
+[data-bs-theme="dark"] .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #4a4ab3; /* Slightly brighter blue for active item */
+    text-align: center;
+}
+
+[data-bs-theme="dark"] .accordion-button {
+    background-color: #111144; /* Matches inactive nav items */
+    color: #ddd;
+}
+
+[data-bs-theme="dark"] .accordion-button:not(.collapsed) {
+    background-color: #4a4ab3; /* Matches active nav item */
+    color: #fff;
 }
 
 .teamRank {
@@ -324,17 +374,3 @@ div#backToTop {
     left: 0;
     white-space: nowrap;
 }
-
-/*@media (prefers-color-scheme: light) {
-    body {
-        background-color: white;
-        color: black;
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: black;
-        color: white;
-    }
-}*/

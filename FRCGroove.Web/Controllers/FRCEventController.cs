@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using System.Text.RegularExpressions;
 
 namespace FRCGroove.Web.Controllers
 {
@@ -248,7 +247,6 @@ namespace FRCGroove.Web.Controllers
 
         public ActionResult Pears(string eventCode, string teamNumber = "5414")
         {
-            // 5414 Pearadox specific for now - returns a list of matches in which we're allianced with each team
             List<GrooveMatch> matches = Groove.GetMatches(eventCode);
             List<string> teams = matches
                 .SelectMany(m => m.alliances.Values.SelectMany(a => a.teamKeys))
@@ -266,77 +264,58 @@ namespace FRCGroove.Web.Controllers
                 pears.Add(team.Substring(3), String.Join(",", matchingMatches.Where(m => m.competitionLevel == "Qualification").Select(m => m.matchNumber)));
             }
 
+            var firstEvents = new Dictionary<int, dynamic>();
+            List<GrooveTeam> eventTeams = Groove.GetEventTeams(eventCode);
+            int year = Int32.Parse(eventCode.Substring(0, 4));
+            foreach (GrooveTeam team in eventTeams)
+            {
+                // for every team in this event, get the list of their events this season
+                List<GrooveEvent> events = Groove.GetTeamEvents(team.number, year);
+                // sort that list by date and get their first event
+                var firstEvent = events.OrderBy(e => e.dateStart).FirstOrDefault();
+                // determine if this is their first event
+                bool isFirstEvent = firstEvent.key == eventCode;
+                // if this isn't their first event, for that first event, get (a) their rank and total number of teams, (b) their alliance and pick number (if chosen), and (c) how far they made it in playoffs
+                if (!isFirstEvent)
+                {
+                    var status = Groove.GetTeamEventStatus(team.number, firstEvent.key);
+                    if (status != null)
+                    {
+                        if (status.qual != null)
+                        {
+                            var rank = status.qual.ranking.rank;
+                            var totalTeams = status.qual.num_teams;
+                            var alliance = status.alliance?.number;
+                            var pick = status.alliance?.pick;
+                            var playoffLevel = status.playoff?.double_elim_round.Replace("Round", "Rnd");
+                            var won = (status.playoff?.status == "won");
+                            firstEvents.Add(team.number, new TeamFirstEvent { Name = Groove.TeamListingCache[team.number].name, FirstEvent = firstEvent.key, Rank = rank, TotalTeams = totalTeams, Alliance = alliance, Pick = pick, PlayoffLevel = playoffLevel, Won = won });
+                        }
+                        else
+                            firstEvents.Add(team.number, new TeamFirstEvent { Name = Groove.TeamListingCache[team.number].name, FirstEvent = firstEvent.key });
+                    }
+                }
+                else
+                {
+                    firstEvents.Add(team.number, new TeamFirstEvent { Name = Groove.TeamListingCache[team.number].name, FirstEvent = firstEvent.key });
+                }
+            }
+
+            ViewBag.FirstEvents = firstEvents;
+            ViewBag.TeamNumber = teamNumber;
             return View(pears);
         }
+    }
 
-        //private Dashboard BuildEventDashboard(string districtCode, string eventCode, List<string> teamsOfInterest)
-        //{
-        //    Dashboard dashboard = new Dashboard();
-
-        //    dashboard.districtCode = districtCode;
-
-        //    if (eventCode.Length > 0)
-        //    {
-        //        dashboard.FrcEvent = FRCEventsAPI.GetEvent(eventCode);
-        //        if (dashboard.FrcEvent != null)
-        //        {
-        //            dashboard.Matches = FRCEventsAPI.GetFullHybridSchedule(eventCode);
-
-        //            if (dashboard.Matches != null && (dashboard.EventState == FRCEventState.Past || dashboard.EventState == FRCEventState.Qualifications || dashboard.EventState == FRCEventState.Quarterfinals || dashboard.EventState == FRCEventState.Semifinals || dashboard.EventState == FRCEventState.Finals))
-        //            {
-        //                if (dashboard.EventState != FRCEventState.Qualifications)
-        //                {
-        //                    dashboard.Alliances = FRCEventsAPI.GetPlayoffAlliances(eventCode);
-        //                    dashboard.Bracket = new PlayoffBracket(dashboard.Alliances, dashboard.Matches);
-        //                }
-
-        //                if (dashboard.EventState != FRCEventState.Past)
-        //                {
-        //                    List<Match> matchesForOffsetCalc = dashboard.Matches;
-        //                    if (dashboard.EventState != FRCEventState.Qualifications)
-        //                        matchesForOffsetCalc = dashboard.Matches.Where(m => m.tournamentLevel == "Playoff").ToList();
-        //                    dashboard.ScheduleOffset = CalculateScheduleOffset(matchesForOffsetCalc);
-        //                }
-        //            }
-        //        }
-
-        //        dashboard.RegisteredTeams = FRCEventsAPI.TeamListingCache;
-
-        //        //LEGACY TODO: Should this be up in the != null section above?
-        //        if (dashboard.EventState != FRCEventState.Invalid)
-        //        {
-        //            List<EventRanking> eventRankings = FRCEventsAPI.GetEventRankings(eventCode);
-        //            if (eventRankings != null)
-        //                dashboard.EventRankings = eventRankings.ToDictionary(e => e.teamNumber, e => e);
-        //        }
-        //    }
-
-        //    dashboard.TeamsOfInterest.AddRange(GatherTeamsOfInterest(eventCode, teamsOfInterest, dashboard.EventRankings));
-
-        //    return dashboard;
-        //}
-
-        //private double CalculateScheduleOffset(List<Match> matches)
-        //{
-        //    DateTime today = DateTime.Now.Date;
-        //    List<Match> todaysMatches = matches.Where(m => m.startTime.Date == today && m.actualStartTime != null).Reverse().Take(3).ToList();
-        //    double sum = todaysMatches.Select(m => (m.actualStartTime.Value - m.startTime).TotalMinutes).Sum();
-        //    double average = 0.0;
-        //    if (Math.Abs(sum) > 0)
-        //        average = sum / todaysMatches.Count();
-
-        //    //if(average == 0.0)
-        //    //{
-        //    //    //LEGACY TODO: if the next match scores have not posted and the time for the match after that has passed, consider matches running late
-        //    //    //      and report as schedule offset by that delta
-        //    //    List<Match> tmatches = matches.Where(m => m.actualStartTime == null).Take(3).ToList();
-        //    //    if(tmatches[1].startTime < DateTime.Now)
-        //    //    {
-        //    //        average = (DateTime.Now - tmatches[1].startTime).TotalMinutes;
-        //    //    }
-        //    //}
-
-        //    return average;
-        //}
+    public class TeamFirstEvent
+    {
+        public string Name { get; set; }
+        public string FirstEvent { get; set; }
+        public int Rank { get; set; }
+        public int TotalTeams { get; set; }
+        public int? Alliance { get; set; }
+        public int? Pick { get; set; }
+        public string PlayoffLevel { get; set; }
+        public bool Won { get; set; }
     }
 }

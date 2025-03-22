@@ -2,12 +2,12 @@
 
 using FRCGroove.Lib.Models.Statbotics;
 
-using Newtonsoft.Json;
 using System.IO;
 using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace FRCGroove.Lib
 {
@@ -33,7 +33,7 @@ namespace FRCGroove.Lib
 
                         var request = new RestRequest($"/team_years?year={DateTime.Now.Year}&limit=500&offset={offset}");
                         var resp = _client.Execute(request);
-                        List<Statbotics_v3> results = JsonConvert.DeserializeObject<List<Statbotics_v3>>(resp.Content);
+                        List<Statbotics_v3> results = JsonSerializer.Deserialize<List<Statbotics_v3>>(resp.Content);
                         if (results.Count == 0) break;
                         epas.AddRange(results);
                         offset += 500;
@@ -41,13 +41,13 @@ namespace FRCGroove.Lib
                         Debug.WriteLine($"{DateTime.Now:s} Initializing Statbotics Cache - Got " + results.Count + " results");
                     }
                     EPACache = epas.ToDictionary(v => v.team, v => v);
-                    File.WriteAllText(cachePath, JsonConvert.SerializeObject(EPACache));
+                    File.WriteAllText(cachePath, JsonSerializer.Serialize(EPACache));
                 }
 
                 try
                 {
                     string cachedData = File.ReadAllText(cachePath);
-                    EPACache = JsonConvert.DeserializeObject<Dictionary<int, Statbotics_v3>>(cachedData);
+                    EPACache = JsonSerializer.Deserialize<Dictionary<int, Statbotics_v3>>(cachedData);
                 }
                 catch (Exception) { /* do nothing */ }
             }

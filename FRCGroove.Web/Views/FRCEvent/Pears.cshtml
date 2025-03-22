@@ -1,7 +1,8 @@
 ﻿@{
     Layout = null;
+    var firstEvents = ViewBag.FirstEvents;
 }
-@model Dictionary<string,string>
+@model Dictionary<string, string>
 
 <!DOCTYPE html>
 
@@ -9,14 +10,118 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title></title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        td {
+            padding: 0px 10px 0px 10px
+        }
+
+        tr:nth-child(even) {
+            background-color: #ccecd2;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        th {
+            font-weight: bold;
+            background-color: #006d14;
+            color: white
+        }
+    </style>
 </head>
 <body>
-    <pre>
-        @foreach (var pair in Model)
-        {
-            @pair.Key @Html.Raw(";") @pair.Value
-            @Html.Raw("\n")
-        }
-    </pre>
+    @if (ViewBag.TeamNumber != null && ViewBag.TeamNumber.Length > 0 && Model.ContainsKey(ViewBag.TeamNumber))
+    {
+        <div style="font-weight:bolder">Match-ups for team @ViewBag.TeamNumber</div>
+        <div>@(ViewBag.TeamNumber)'s matches: @(Model[ViewBag.TeamNumber])</div>
+        <div style="display: flex; gap: 20px">
+            <table>
+                <thead><tr><th colspan="2">Sort by team #</th></tr></thead>
+                <tbody>
+                    @foreach (var pair in Model.Where(p => p.Value.Length > 0 && p.Key != ViewBag.TeamNumber))
+                    {
+                        <tr>
+                            <td>@pair.Key</td>
+                            <td>@pair.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <table>
+                <thead><tr><th colspan="2">Sort by match #</th></tr></thead>
+                <tbody>
+                    @foreach (var pair in Model.Where(p => p.Value.Length > 0 && p.Key != ViewBag.TeamNumber).OrderBy(p => int.Parse(p.Value.Split(',')[0])))
+                    {
+                        <tr>
+                            <td>@pair.Key</td>
+                            <td>@pair.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p /> }
+
+    @*<div style="font-weight: bold">Raw Data</div>
+        <pre>
+            @foreach (var pair in Model)
+            {
+                @pair.Key @Html.Raw(";") @pair.Value
+                @Html.Raw("\n")
+            }
+        </pre>*@
+
+    <div style="font-weight:bolder">First-event data for teams at this event</div>
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team</th>
+                    <th>1st Event</th>
+                    <th>Rank</th>
+                    <th>Alliance / Pick</th>
+                    <th>Elim Round</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var kvp in firstEvents)
+                {
+                    var team = kvp.Value;
+                    <tr>
+                        <td>@kvp.Key</td>
+                        <td>@team.FirstEvent.Substring(6).ToUpper()</td>
+                        <td>@(team.Rank > 0 ? $"{team.Rank}/{team.TotalTeams}" : "")</td>
+                        <td>@(team.Pick != null ? $"A-{team.Alliance} / {GetOrdinalSuffix(team.Pick)}" : "")</td>
+                        <td>@(team.Won ? "Winner" : team.PlayoffLevel)</td>
+                    </tr>
+                    @*<tr><td colspan="5">@team.Name</td></tr>*@
+                }
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
+
+@{
+    string GetOrdinalSuffix(int number)
+    {
+        if (number == 0) return "Cap";
+        if (number == 1) return "1st";
+        if (number == 2) return "2nd";
+        if (number == 3) return "3rd";
+        return number.ToString();
+    }
+}

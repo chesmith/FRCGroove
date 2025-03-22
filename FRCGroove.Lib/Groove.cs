@@ -2,13 +2,11 @@
 using FRCGroove.Lib.Models.FRCv2;
 using FRCGroove.Lib.Models.Groove;
 using FRCGroove.Lib.Models.TBAv3;
-using Newtonsoft.Json;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Text.Json;
 
 namespace FRCGroove.Lib
 {
@@ -75,7 +73,7 @@ namespace FRCGroove.Lib
 
             List<GrooveTeam> teams = tbaTeams.Select(t => new GrooveTeam(t)).ToList();
 
-            string json = JsonConvert.SerializeObject(teams);
+            string json = JsonSerializer.Serialize(teams);
 
             string cachePath = $@"{CacheFolder}\FullTeamListing.{DateTime.Now.Year}.json";
             if (DoesTeamListingCacheExist())
@@ -99,7 +97,7 @@ namespace FRCGroove.Lib
                 if (DoesTeamListingCacheExist())
                 {
                     string cachedData = File.ReadAllText($@"{CacheFolder}\FullTeamListing.{DateTime.Now.Year}.json");
-                    List<GrooveTeam> teams = JsonConvert.DeserializeObject<List<GrooveTeam>>(cachedData);
+                    List<GrooveTeam> teams = JsonSerializer.Deserialize<List<GrooveTeam>>(cachedData);
                     TeamListingCache = teams.ToDictionary(t => t.number, t => t);
                 }
             }
@@ -112,6 +110,24 @@ namespace FRCGroove.Lib
                 return rankings.rankings.Select(r => new GrooveEventRanking(r)).ToList();
             else
                 return null;
+        }
+
+        public static List<GrooveTeam> GetEventTeams(string eventKey)
+        {
+            List<TBATeam> tbaTeams = TBAAPIv3.GetEventTeams(eventKey); //API CALL (TBA-compliant cache)
+            return tbaTeams.Select(t => new GrooveTeam(t)).ToList();
+        }
+
+        public static List<GrooveEvent> GetTeamEvents(int teamNumber, int year)
+        {
+            List<TBAEvent> tbaEvents = TBAAPIv3.GetTeamEvents(teamNumber, year); //API CALL (TBA-compliant cache)
+            return tbaEvents.Select(e => new GrooveEvent(e)).ToList();
+        }
+
+        public static TBATeamEventStatus GetTeamEventStatus(int teamNumber, string eventKey)
+        {
+            TBATeamEventStatus tbaStatus = TBAAPIv3.GetTeamEventStatus(teamNumber, eventKey); //API CALL (TBA-compliant cache)
+            return tbaStatus;
         }
 
         public static List<GrooveTeam> GetChampsTeams()
@@ -128,7 +144,7 @@ namespace FRCGroove.Lib
             if (File.Exists(cachePath))
             {
                 string cachedData = File.ReadAllText(cachePath);
-                pitLocationsData = JsonConvert.DeserializeObject<List<PitLocation>>(cachedData);
+                pitLocationsData = JsonSerializer.Deserialize<List<PitLocation>>(cachedData);
             }
 
             Dictionary<int, string> pitLocations = null;

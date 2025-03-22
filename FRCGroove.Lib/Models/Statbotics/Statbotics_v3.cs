@@ -44,7 +44,7 @@ namespace FRCGroove.Lib.Models.Statbotics
         public bool this_week { get; set; }
         public string next_event_key { get; set; }
         public string next_event_name { get; set; }
-        public int next_event_week { get; set; }
+        public int? next_event_week { get; set; }
     }
 
     public class Country

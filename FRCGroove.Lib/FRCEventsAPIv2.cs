@@ -5,13 +5,11 @@ using System.Linq;
 using RestSharp;
 using RestSharp.Authenticators;
 
-using Newtonsoft.Json;
-
-using FRCGroove.Lib.Models;
 using FRCGroove.Lib.Models.FRCv2;
 using System.Configuration;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace FRCGroove.Lib
 {
@@ -83,14 +81,14 @@ namespace FRCGroove.Lib
                             _champsTeamsCache.AddRange(eventTeams);
                         }
                     }
-                    File.WriteAllText(cachePath, JsonConvert.SerializeObject(_champsTeamsCache));
+                    File.WriteAllText(cachePath, JsonSerializer.Serialize(_champsTeamsCache));
 
                     var s = _champsTeamsCache.Select(t => $"{t.teamNumber},\"{t.nameShort}\",{t.champsDivision},\"{t.city}, {t.stateProv}, {t.country}\"");
                     File.WriteAllText(csvPath, String.Join("\n", s), Encoding.Unicode);
                 }
                 else
                 {
-                    _champsTeamsCache = JsonConvert.DeserializeObject<List<RegisteredTeam>>(File.ReadAllText(cachePath));
+                    _champsTeamsCache = JsonSerializer.Deserialize<List<RegisteredTeam>>(File.ReadAllText(cachePath));
                     return _champsTeamsCache;
                 }
             }

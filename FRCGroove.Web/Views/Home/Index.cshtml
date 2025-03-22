@@ -37,17 +37,17 @@
         }
     }
 
-    <div id="accordion">
+    <div class="accordion" id="accordion">
         @if (Model.CurrentEvents != null && Model.CurrentEvents.Count > 0)
         {
-            <div class="card" style="margin-bottom: 5px">
-                <a data-toggle="collapse" data-target="#collapseOne" style="cursor:pointer">
-                    <h5 class="card-header" id="headingOne">
+            <div class="accordion-item" style="margin-bottom: 5px">
+                <h5 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
                         Current Events
-                    </h5>
-                </a>
-                <div id="collapseOne" class="collapse show" data-parent="#accordion">
-                    <div class="card-body">
+                    </button>
+                </h5>
+                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordion">
+                    <div class="accordion-body">
                         <table style="width:100%" id="currentEvents">
                             @foreach (GrooveEvent e in Model.CurrentEvents)
                             {
@@ -64,14 +64,14 @@
         }
         @if (Model.PastEvents != null && Model.PastEvents.Count > 0)
         {
-            <div class="card" style="margin-bottom: 5px">
-                <a data-toggle="collapse" data-target="#collapseTwo" style="cursor:pointer">
-                    <h5 class="card-header" id="headingTwo">
-                        Past Events
+            <div class="accordion-item" style="margin-bottom: 5px">
+                    <h5 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                            Past Events
+                        </button>
                     </h5>
-                </a>
-                <div id="collapseTwo" class="collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) ? "show" : "")" data-parent="#accordion">
-                    <div class="card-body">
+                <div id="collapseTwo" class="accordion-collapse collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) ? "show" : "")" data-bs-parent="#accordion">
+                    <div class="accordion-body">
                         <table style="width:100%">
                             @foreach (GrooveEvent e in Model.PastEvents)
                             {
@@ -89,14 +89,14 @@
 
         @if (Model.FutureEvents != null && Model.FutureEvents.Count > 0)
         {
-            <div class="card">
-                <a data-toggle="collapse" data-target="#collapseThree" style="cursor:pointer">
-                    <h5 class="card-header" id="headingThree">
-                        Future Events
+            <div class="accordion-item">
+                    <h5 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                            Future Events
+                        </button>
                     </h5>
-                </a>
-                <div id="collapseThree" class="collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) && (Model.PastEvents == null || Model.PastEvents.Count == 0)? "show" : "")" data-parent="#accordion">
-                    <div class="card-body">
+                <div id="collapseThree" class="accordion-collapse collapse @((Model.CurrentEvents == null || Model.CurrentEvents.Count == 0) && (Model.PastEvents == null || Model.PastEvents.Count == 0)? "show" : "")" data-bs-parent="#accordion">
+                    <div class="accordion-body">
                         <table style="width:100%">
                             @foreach (GrooveEvent e in Model.FutureEvents)
                             {

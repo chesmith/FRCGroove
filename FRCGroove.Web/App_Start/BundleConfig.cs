@@ -21,7 +21,7 @@ namespace FRCGroove.Web
 
             // Disable minification for bootstrap bundle
             var bootstrapBundle = new ScriptBundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js");
+                      "~/Scripts/bootstrap.bundle.min.js");
             bootstrapBundle.Transforms.Clear();
             bundles.Add(bootstrapBundle);
 

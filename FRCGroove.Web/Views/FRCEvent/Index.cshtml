@@ -48,6 +48,15 @@
                     <span id="filterToggle" style="float:right; position: absolute; top: -10px; right: 15px"><a class="fas fa-filter fa-lg" style="color:white" onclick="toggleFilter()" )"></a></span>
                 </div>
             </div>
+            @*<div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownNav" data-bs-toggle="dropdown">
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/"><i class="fas fa-calendar-alt"></i> <span style="font-size:12px">Events</span></a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-clock"></i> <span style="font-size:12px">Matches</span></a></li>
+                    <li><a class="dropdown-item" href="/Teams"><i class="fas fa-users"></i> <span style="font-size:12px">Champs</span></a></li>
+                </ul>
+            </div>*@
         }
 
         <ul class="list-group list-group-flush" style="margin-top: 45px">
@@ -105,9 +114,9 @@
                         }
                         else
                         {
-                            string offsetColor = (scheduleOffset > 0 ? "#7c0a0a" : "#046705");
+                            string offsetColor = (scheduleOffset > 0 ? "red" : "green");
                             string offsetBehindAhead = (scheduleOffset > 0 ? "behind" : "ahead");
-                            eventStatus = $"<span style='font -style:italic; color:{offsetColor};'>{Model.EventState.ToString()} are running about {Math.Abs(scheduleOffset)} minute{(Math.Abs(scheduleOffset) > 1 ? "s" : "")} {offsetBehindAhead} (<a href='#nextmatch'>next match</a>)</span>";
+                            eventStatus = $"<span style='font-style:italic;' class='{offsetColor}'>{Model.EventState.ToString()} are running about {Math.Abs(scheduleOffset)} minute{(Math.Abs(scheduleOffset) > 1 ? "s" : "")} {offsetBehindAhead} (<a href='#nextmatch'>next match</a>)</span>";
                         }
                     }
                 }
@@ -374,7 +383,7 @@
 
                 <tr id="@matchKey-r">
                     <td id="@matchKey-title" style="text-align: center">
-                        <div><a href="@match.matchDetailsUrl">
+                        <div><a href="@match.matchDetailsUrl" target="_blank" rel="noopener noreferrer">
                             @if (match.title.Contains("Bracket"))
                             {
                                 @Html.Raw(match.title.Replace("Bracket ", "Bracket<br/>"))
@@ -438,20 +447,27 @@
 {
     int totalRed = 0;
     int predictedRed = match.alliances["red"].predictedPoints;
-    string rpRed;
+    string rpRed = "";
     int totalBlue = 0;
     int predictedBlue = match.alliances["blue"].predictedPoints;
-    string rpBlue;
+    string rpBlue = "";
 
     string matchKey = match.competitionLevel + match.setNumber.ToString().PadLeft(2, '0') + match.matchNumber.ToString().PadLeft(3, '0');
 
     if (match.hasStarted && match.alliances["red"].score != -1)
     {
         totalRed = match.alliances["red"].totalPoints;
-        rpRed = String.Concat(Enumerable.Repeat(".", match.alliances["red"].rp));
+        if (match.alliances["red"].rp > 0)
+        { 
+            rpRed = String.Concat(Enumerable.Repeat(".", match.alliances["red"].rp));
+        }
 
         totalBlue = match.alliances["blue"].totalPoints;
-        rpBlue = String.Concat(Enumerable.Repeat(".", match.alliances["blue"].rp));
+
+        if (match.alliances["blue"].rp > 0)
+        { 
+            rpBlue = String.Concat(Enumerable.Repeat(".", match.alliances["blue"].rp));
+        }
 
         <td id="@matchKey-sr" style="position:relative" class="@((match.winningAlliance == "red") ? "redHighlight" : "red")" onClick="showDialog('@match.title<br />Predicted @predictedRed-@predictedBlue')">
             <span id="@matchKey-ssr">@Html.Raw(totalRed) @((predictedRed > predictedBlue) ? "*":"")</span>
@@ -672,10 +688,10 @@
         if (match.hasStarted && match.alliances["red"].score > -1)
         {
             let totalRed = match.alliances["red"].totalPoints;
-            let rpRed = ".".repeat(match.alliances["red"].rp);
+            let rpRed = (match.alliances["red"].rp > -1 ? ".".repeat(match.alliances["red"].rp) : "");
 
             let totalBlue = match.alliances["blue"].totalPoints;
-            let rpBlue = ".".repeat(match.alliances["blue"].rp);
+            let rpBlue = (match.alliances["blue"].rp > -1 ? ".".repeat(match.alliances["blue"].rp) : "");
 
             $("#" + matchKey + "-ssr").html(`${totalRed} ${((predictedRed > predictedBlue) ? "*" : "")}`);
             $("#" + matchKey + "-rpr").html(`&nbsp;${rpRed}`);
@@ -731,9 +747,9 @@
                     eventStatus = `${eventState} seem to be running on time (<a href='#nextmatch'>next match</a>)`;
                 }
                 else {
-                    let offsetColor = (scheduleOffset > 0 ? "#7c0a0a" : "#046705");
+                    let offsetColor = (scheduleOffset > 0 ? "red" : "green");
                     let offsetBehindAhead = (scheduleOffset > 0 ? "behind" : "ahead");
-                    eventStatus = `<span style='font-style:italic; color:${offsetColor};'>${eventState} are running about ${Math.abs(scheduleOffset)} minute${(Math.abs(scheduleOffset) > 1 ? "s" : "")} ${offsetBehindAhead} (<a href='#nextmatch'>next match</a>)</span>`;
+                    eventStatus = `<span style='font-style:italic;' class='${offsetColor}'>${eventState} are running about ${Math.abs(scheduleOffset)} minute${(Math.abs(scheduleOffset) > 1 ? "s" : "")} ${offsetBehindAhead} (<a href='#nextmatch'>next match</a>)</span>`;
                 }
             }
         }
