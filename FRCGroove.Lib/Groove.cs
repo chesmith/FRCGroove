@@ -155,5 +155,10 @@ namespace FRCGroove.Lib
 
             return pitLocations;
         }
+
+        //TODO: GetAwards - primarily for use in Champs to get qualifying awards for data in the pit map sheet
+        //public static List<string> GetAwards(int teamNumber)
+        //{
+        //}
     }
 }

@@ -116,6 +116,7 @@
     <Compile Include="Models\TBAv3\TBATeam.cs" />
     <Compile Include="Models\FRCv2\Team.cs" />
     <Compile Include="Models\TBAv3\TBATeamEventStatus.cs" />
+    <Compile Include="NexusAPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatboticsAPI.cs" />
     <Compile Include="TBAAPIv3.cs" />

@@ -266,6 +266,18 @@ namespace FRCGroove.Lib
             return GetFromCacheOrApi(_teamEventStatusCache, $"{teamNumber}~{eventKey}", $"team/frc{teamNumber}/event/{eventKey}/status");
         }
 
+        public static List<string> GetTeamAwards(int teamNumber, int year)
+        {
+            string path = $"team/frc{teamNumber}/awards/{year}";
+            var request = new RestRequest(path);
+            request.AddHeader("X-TBA-Auth-Key", ConfigurationManager.AppSettings["TBAAuthKey"]);
+            var resp = _client.Execute<List<string>>(request);
+            if (resp.StatusCode == HttpStatusCode.OK && resp.Data != null)
+                return resp.Data;
+            else
+                return null;
+        }
+
         private static T GetFromCacheOrApi<T>(Cache<T> cache, string cacheKey, string requestPath, Func<RestResponse<T>, T> customProcessor = null) where T : class
         {
             var callingMethod = new StackFrame(1, true).GetMethod().Name;

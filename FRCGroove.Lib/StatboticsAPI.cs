@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text;
 
 namespace FRCGroove.Lib
 {
@@ -42,6 +43,10 @@ namespace FRCGroove.Lib
                     }
                     EPACache = epas.ToDictionary(v => v.team, v => v);
                     File.WriteAllText(cachePath, JsonSerializer.Serialize(EPACache));
+
+                    string csvPath = $@"{CacheFolder}\EPACache.{DateTime.Now.Year}.csv";
+                    var s = EPACache.Select(e => $"{e.Key},{e.Value.epa.breakdown.auto_points},{e.Value.epa.breakdown.teleop_points},{e.Value.epa.breakdown.endgame_points},{e.Value.epa.breakdown.total_points}");
+                    File.WriteAllText(csvPath, String.Join("\n", s), Encoding.Unicode);
                 }
 
                 try

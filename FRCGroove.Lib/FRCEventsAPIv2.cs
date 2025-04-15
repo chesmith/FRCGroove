@@ -80,10 +80,14 @@ namespace FRCGroove.Lib
                             eventTeams.Select(t => { t.champsDivision = eventCode; return t; }).ToList();
                             _champsTeamsCache.AddRange(eventTeams);
                         }
+
+                        PopulatePitLocations(eventCode, eventTeams);
+                        PopulateEPAs(eventTeams);
+                        //TODO: PopulateQualifyingAwards
                     }
                     File.WriteAllText(cachePath, JsonSerializer.Serialize(_champsTeamsCache));
 
-                    var s = _champsTeamsCache.Select(t => $"{t.teamNumber},\"{t.nameShort}\",{t.champsDivision},\"{t.city}, {t.stateProv}, {t.country}\"");
+                    var s = _champsTeamsCache.Select(t => $"{t.teamNumber},\"{t.nameShort}\",{t.champsDivision},\"{t.city}, {t.stateProv}, {t.country}\",{t.pitLocation},{t.epa?.epa.breakdown.auto_points},{t.epa?.epa.breakdown.teleop_points},{t.epa?.epa.breakdown.endgame_points},{t.epa?.epa.breakdown.total_points}");
                     File.WriteAllText(csvPath, String.Join("\n", s), Encoding.Unicode);
                 }
                 else
@@ -94,6 +98,30 @@ namespace FRCGroove.Lib
             }
 
             return _champsTeamsCache;
+        }
+
+        private static void PopulateEPAs(List<RegisteredTeam> eventTeams)
+        {
+            foreach (RegisteredTeam team in eventTeams)
+            {
+                if (StatboticsAPI.EPACache.ContainsKey(team.teamNumber))
+                    team.epa = StatboticsAPI.EPACache[team.teamNumber];
+            }
+        }
+
+        private static void PopulatePitLocations(string eventCode, List<RegisteredTeam> eventTeams)
+        {
+            string nexusEventCode = eventCode.ToLower();
+            if (!nexusEventCode.StartsWith(DateTime.Now.Year.ToString())) nexusEventCode = $"{DateTime.Now.Year}{eventCode}";
+            Dictionary<string, string> pitLocations = NexusAPI.GetPits(nexusEventCode);
+            if (pitLocations != null)
+            {
+                foreach (RegisteredTeam team in eventTeams)
+                {
+                    if (pitLocations.ContainsKey(team.teamNumber.ToString()))
+                        team.pitLocation = pitLocations[team.teamNumber.ToString()];
+                }
+            }
         }
 
         private static void Log(string v, string content)
