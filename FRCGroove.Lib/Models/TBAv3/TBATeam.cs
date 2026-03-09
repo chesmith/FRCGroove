@@ -16,8 +16,8 @@ namespace FRCGroove.Lib.Models.TBAv3
         public string postal_code { get; set; }
         public string gmaps_place_id { get; set; }
         public string gmaps_url { get; set; }
-        public int lat { get; set; }
-        public int lng { get; set; }
+        public int? lat { get; set; }
+        public int? lng { get; set; }
         public string location_name { get; set; }
         public string website { get; set; }
         public int rookie_year { get; set; }

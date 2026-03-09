@@ -243,10 +243,13 @@ namespace FRCGroove.Lib
             TBATeam team = null;
             string path = $"team/frc{teamNumber}";
             var request = new RestRequest(path);
+            request.AddHeader("X-TBA-Auth-Key", ConfigurationManager.AppSettings["TBAAuthKey"]);
             var response = _client.Execute<TBATeam>(request);
 
             if (response.StatusCode == HttpStatusCode.OK && response.Data != null)
+            {
                 team = response.Data;
+            }
 
             return team;
         }

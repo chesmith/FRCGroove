@@ -23,6 +23,9 @@
     table tr td {
         padding: 0.1rem 0.25rem 0.1rem 0.25rem;
     }
+    td[id^="tm"][id$="-d"], td[id^="tm"][id$="-p"] {
+        color: black;
+    }
 </style>
 
 <script type="text/javascript">
@@ -141,7 +144,7 @@
                 row += '<tr>';
                 row += '<td id="tm' + team.number + '-a"' + style + '>' + team.number + '</td>';
                 row += '<td id="tm' + team.number + '-a"' + style + '>' + team.name + '</td>';
-                row += '<td id="tm' + team.number + '-a"' + style + '>' + team.epa.epa_end + '</td>';
+                row += '<td id="tm' + team.number + '-a"' + style + '>' + team.epa.epa.stats.pre_champs + '</td>';
                 row += '<td id="tm' + team.number + '-d" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + division + '</td>';
                 row += '<td id="tm' + team.number + '-p" style="background-color: ' + divisionColorMap[team.champsDivision] + '">' + team.pitLocation + '</td>';
                 row += '</tr>';
